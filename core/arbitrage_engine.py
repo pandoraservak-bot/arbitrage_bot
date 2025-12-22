@@ -394,12 +394,15 @@ class ArbitrageEngine:
         }
         
         # Исполнение
+        logger.info(f"Attempting to execute FOK pair: buy on {spread_data['buy_exchange']}, sell on {spread_data['sell_exchange']}")
         entry_result = await self.paper_executor.execute_fok_pair(
             buy_order, sell_order, f"entry_{direction.value}"
         )
         
-        if not entry_result['success']:
-            logger.error(f"FOK entry failed: {entry_result.get('error')}")
+        if not entry_result.get('success', False):
+            error_msg = entry_result.get('error', 'Unknown error')
+            logger.error(f"❌ FOK entry FAILED: {error_msg}")
+            logger.error(f"   Response: {entry_result}")
             return False
         
         # Создание позиции с учетом проскальзывания

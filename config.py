@@ -86,7 +86,7 @@ DIAGNOSTIC_CONFIG = {
 LOGGING_CONFIG = {
     'LOG_FILE': os.path.join(LOG_DIR, f"arbitrage_{datetime.now().strftime('%Y%m%d')}.log"),
     'TRADES_FILE': os.path.join(LOG_DIR, "trades.csv"),
-    'LOG_LEVEL': 'INFO',
+    'LOG_LEVEL': 'DEBUG',
     'LOG_FORMAT': '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 }
 
