@@ -1,0 +1,804 @@
+2025-12-22 17:50:16,395 - __main__ - INFO - Запуск NVDA Арбитражного Бота...
+2025-12-22 17:50:16,395 - __main__ - INFO - ============================================================
+2025-12-22 17:50:16,396 - __main__ - INFO - NVDA АРБИТРАЖНЫЙ БОТ
+2025-12-22 17:50:16,396 - __main__ - INFO - Режим отображения: compact
+2025-12-22 17:50:16,396 - __main__ - INFO - ============================================================
+2025-12-22 17:50:16,396 - core.risk_manager - INFO - Risk Manager initialized. Daily loss limit: $400.0
+2025-12-22 17:50:16,419 - core.paper_executor - INFO - Portfolio loaded: USDT=$999.83
+2025-12-22 17:50:16,419 - core.paper_executor - INFO - Paper Trading initialized. Portfolio: USDT=$999.83
+2025-12-22 17:50:16,434 - core.arbitrage_engine - INFO - Arbitrage Engine initialized
+2025-12-22 17:50:16,434 - __main__ - INFO - Подключение WebSocket...
+2025-12-22 17:50:16,434 - __main__ - INFO - Bitget WebSocket...
+2025-12-22 17:50:17,343 - websocket - INFO - Websocket connected
+2025-12-22 17:50:17,343 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 17:50:19,458 - __main__ - INFO - Hyperliquid WebSocket...
+2025-12-22 17:50:20,195 - websocket - INFO - Websocket connected
+2025-12-22 17:50:20,195 - core.websocket_clients - INFO - ✅ Hyperliquid(xyz:NVDA) подключен
+2025-12-22 17:50:20,261 - __main__ - INFO - Режим: → Активна
+2025-12-22 17:50:20,261 - __main__ - INFO - ✅ Инициализация завершена
+2025-12-22 17:50:20,261 - __main__ - INFO - Время: 17:50:20
+2025-12-22 17:50:20,261 - __main__ - INFO - ============================================================
+2025-12-22 17:50:20,261 - __main__ - INFO - Начало торгового цикла...
+2025-12-22 17:50:20,590 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): 0.033% (B→H)
+2025-12-22 17:50:20,590 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.044% (H→B)
+2025-12-22 17:50:21,128 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.049% (H→B)
+2025-12-22 17:50:21,343 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.027% (H→B)
+2025-12-22 17:50:21,667 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.082% (H→B)
+2025-12-22 17:50:22,433 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.071% (H→B)
+2025-12-22 17:50:22,756 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.109% (H→B)
+2025-12-22 17:50:23,511 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.093% (H→B)
+2025-12-22 17:50:23,512 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.120% (H→B)
+2025-12-22 17:50:24,587 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.098% (H→B)
+2025-12-22 17:50:32,457 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.131% (H→B)
+2025-12-22 17:50:33,208 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.115% (H→B)
+2025-12-22 17:50:34,284 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.120% (H→B)
+2025-12-22 17:50:38,944 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.147% (H→B)
+2025-12-22 17:50:39,482 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.164% (H→B)
+2025-12-22 17:50:39,697 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.131% (H→B)
+2025-12-22 17:50:45,202 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.159% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 17:50:45,202 - __main__ - INFO - Найдена возможность: H→B
+2025-12-22 17:50:45,325 - core.paper_executor - INFO - FOK pair executed: entry_H→B, Fees: $0.0301
+2025-12-22 17:50:45,325 - core.arbitrage_engine - INFO - 📊 Position created: pos_000000, Entry spread (gross): 0.159%, Exit target (gross): -0.050%
+2025-12-22 17:50:45,326 - core.arbitrage_engine - INFO - ✅ Position opened: pos_000000, Direction: H→B, Gross spread: 0.159%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 17:50:45,433 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.175% (H→B)
+2025-12-22 17:50:46,190 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.164% (H→B)
+2025-12-22 17:50:46,514 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.197% (H→B)
+2025-12-22 17:50:47,269 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.181% (H→B)
+2025-12-22 17:50:47,595 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.202% (H→B)
+2025-12-22 17:50:49,210 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.235% (H→B)
+2025-12-22 17:50:49,424 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.208% (H→B)
+2025-12-22 17:50:49,747 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.240% (H→B)
+2025-12-22 17:50:50,285 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 17:50:50,286 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 17:50:50,286 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 17:50:50,286 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 17:50:50,286 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 17:50:50,286 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:00:04
+2025-12-22 17:50:50,286 - core.arbitrage_engine - INFO -   Entry spread: 0.159%, Current exit: -0.235%
+2025-12-22 17:50:50,286 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 17:50:50,286 - core.arbitrage_engine - INFO -   Spread updates: 45, Last update: 0s ago
+2025-12-22 17:50:50,286 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 17:50:50,501 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.219% (H→B)
+2025-12-22 17:50:50,824 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.257% (H→B)
+2025-12-22 17:50:51,592 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.224% (H→B)
+2025-12-22 17:51:09,698 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: ping/pong timed out
+2025-12-22 17:51:09,698 - websocket - ERROR - ping/pong timed out - goodbye
+2025-12-22 17:51:12,637 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.033% >= target -0.050%
+2025-12-22 17:51:12,720 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 17:51:12,720 - __main__ - WARNING - Bitget отключен
+2025-12-22 17:51:12,720 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000231FFC9D940>>: no running event loop
+2025-12-22 17:51:12,721 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 17:51:12,767 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 17:51:15,233 - websocket - INFO - Websocket connected
+2025-12-22 17:51:15,233 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 17:51:22,648 - __main__ - ERROR - Ошибка в итерации цикла: 
+2025-12-22 17:51:22,849 - core.paper_executor - INFO - FOK pair executed: exit_pos_000000, Fees: $0.0299
+2025-12-22 17:51:23,728 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 17:51:23,729 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 17:51:23,729 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 17:51:23,729 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 17:51:23,729 - core.arbitrage_engine - WARNING - ISSUES FOUND:
+2025-12-22 17:51:23,729 - core.arbitrage_engine - WARNING -   - pos_000000: Should close (exit_spread=-0.033% >= target=-0.050%)
+2025-12-22 17:51:23,729 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 17:51:23,729 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:00:38
+2025-12-22 17:51:23,729 - core.arbitrage_engine - INFO -   Entry spread: 0.159%, Current exit: -0.033%
+2025-12-22 17:51:23,729 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: True
+2025-12-22 17:51:23,729 - core.arbitrage_engine - INFO -   Spread updates: 253, Last update: 11s ago
+2025-12-22 17:51:23,729 - core.arbitrage_engine - WARNING -   ! Should close (exit_spread=-0.033% >= target=-0.050%)
+2025-12-22 17:51:23,729 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 17:51:27,095 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.044% >= target -0.050%
+2025-12-22 17:51:37,110 - __main__ - ERROR - Ошибка в итерации цикла: 
+2025-12-22 17:51:37,234 - core.paper_executor - INFO - FOK pair executed: exit_pos_000000, Fees: $0.0299
+2025-12-22 17:51:38,246 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.049% >= target -0.050%
+2025-12-22 17:51:48,252 - __main__ - ERROR - Ошибка в итерации цикла: 
+2025-12-22 17:51:48,375 - core.paper_executor - INFO - FOK pair executed: exit_pos_000000, Fees: $0.0299
+2025-12-22 17:51:50,232 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.049% >= target -0.050%
+2025-12-22 17:52:00,238 - __main__ - ERROR - Ошибка в итерации цикла: 
+2025-12-22 17:52:00,360 - core.paper_executor - INFO - FOK pair executed: exit_pos_000000, Fees: $0.0299
+2025-12-22 17:52:01,249 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 17:52:01,250 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 17:52:01,250 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 17:52:01,250 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 17:52:01,250 - core.arbitrage_engine - WARNING - ISSUES FOUND:
+2025-12-22 17:52:01,250 - core.arbitrage_engine - WARNING -   - pos_000000: Should close (exit_spread=-0.049% >= target=-0.050%)
+2025-12-22 17:52:01,250 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 17:52:01,250 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:01:15
+2025-12-22 17:52:01,250 - core.arbitrage_engine - INFO -   Entry spread: 0.159%, Current exit: -0.049%
+2025-12-22 17:52:01,250 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: True
+2025-12-22 17:52:01,251 - core.arbitrage_engine - INFO -   Spread updates: 297, Last update: 11s ago
+2025-12-22 17:52:01,251 - core.arbitrage_engine - WARNING -   ! Should close (exit_spread=-0.049% >= target=-0.050%)
+2025-12-22 17:52:01,251 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 17:52:02,989 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.044% >= target -0.050%
+2025-12-22 17:52:12,990 - __main__ - ERROR - Ошибка в итерации цикла: 
+2025-12-22 17:52:12,992 - __main__ - INFO - Завершение работы...
+2025-12-22 17:52:12,993 - __main__ - WARNING - Закрытие позиций...
+2025-12-22 17:52:12,993 - core.arbitrage_engine - WARNING - ⚠️ Force closing position pos_000000: Завершение работы
+2025-12-22 17:52:14,221 - asyncio - ERROR - Task was destroyed but it is pending!
+task: <Task pending name='Task-7' coro=<PaperTradeExecutor.execute_fok_pair() running at F:\arbitrage_bot\core\paper_executor.py:150> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[_chain_future.<locals>._call_set_state() at C:\Users\GOSPODIN\AppData\Local\Programs\Python\Python314\Lib\asyncio\futures.py:400]>
+2025-12-22 17:59:21,276 - __main__ - INFO - Запуск NVDA Арбитражного Бота...
+2025-12-22 17:59:21,276 - __main__ - INFO - ============================================================
+2025-12-22 17:59:21,276 - __main__ - INFO - NVDA АРБИТРАЖНЫЙ БОТ
+2025-12-22 17:59:21,276 - __main__ - INFO - Режим отображения: compact
+2025-12-22 17:59:21,276 - __main__ - INFO - ============================================================
+2025-12-22 17:59:21,277 - core.risk_manager - INFO - Risk Manager initialized. Daily loss limit: $400.0
+2025-12-22 17:59:21,288 - core.paper_executor - INFO - Portfolio loaded: USDT=$999.41
+2025-12-22 17:59:21,288 - core.paper_executor - INFO - Paper Trading initialized. Portfolio: USDT=$999.41
+2025-12-22 17:59:21,288 - core.arbitrage_engine - INFO - Arbitrage Engine initialized
+2025-12-22 17:59:21,288 - __main__ - INFO - Подключение WebSocket...
+2025-12-22 17:59:21,288 - __main__ - INFO - Bitget WebSocket...
+2025-12-22 17:59:22,361 - websocket - INFO - Websocket connected
+2025-12-22 17:59:22,362 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 17:59:24,407 - __main__ - INFO - Hyperliquid WebSocket...
+2025-12-22 17:59:25,183 - websocket - INFO - Websocket connected
+2025-12-22 17:59:25,183 - core.websocket_clients - INFO - ✅ Hyperliquid(xyz:NVDA) подключен
+2025-12-22 17:59:25,209 - __main__ - INFO - Режим: → Активна
+2025-12-22 17:59:25,209 - __main__ - INFO - ✅ Инициализация завершена
+2025-12-22 17:59:25,210 - __main__ - INFO - Время: 17:59:25
+2025-12-22 17:59:25,210 - __main__ - INFO - ============================================================
+2025-12-22 17:59:25,210 - __main__ - INFO - Начало торгового цикла...
+2025-12-22 17:59:25,637 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): 0.065% (B→H)
+2025-12-22 17:59:25,638 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.087% (H→B)
+2025-12-22 17:59:26,287 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.071% (H→B)
+2025-12-22 17:59:29,541 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.076% (H→B)
+2025-12-22 17:59:29,972 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.092% (H→B)
+2025-12-22 17:59:31,047 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.103% (H→B)
+2025-12-22 17:59:41,845 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.103% (H→B)
+2025-12-22 17:59:45,631 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.114% (H→B)
+2025-12-22 17:59:45,738 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.076% (H→B)
+2025-12-22 18:00:07,353 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.082% (H→B)
+2025-12-22 18:00:15,870 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.125% (H→B)
+2025-12-22 18:00:20,301 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.093% (H→B)
+2025-12-22 18:00:20,301 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.125% (H→B)
+2025-12-22 18:01:07,696 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.131% (H→B)
+2025-12-22 18:01:07,803 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.098% (H→B)
+2025-12-22 18:01:12,135 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.104% (H→B)
+2025-12-22 18:01:45,570 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: Connection to remote host was lost.
+2025-12-22 18:01:45,571 - websocket - ERROR - Connection to remote host was lost. - goodbye
+2025-12-22 18:01:45,571 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:01:45,571 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:01:45,571 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:01:45,571 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:01:45,574 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:01:47,321 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:01:48,111 - websocket - INFO - Websocket connected
+2025-12-22 18:01:48,111 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:01:50,347 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:02:16,315 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.104% (H→B)
+2025-12-22 18:02:22,234 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.131% (H→B)
+2025-12-22 18:02:47,665 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.104% (H→B)
+2025-12-22 18:02:47,665 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.131% (H→B)
+2025-12-22 18:03:43,875 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.136% (H→B)
+2025-12-22 18:03:52,690 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: Connection to remote host was lost.
+2025-12-22 18:03:52,690 - websocket - ERROR - Connection to remote host was lost. - goodbye
+2025-12-22 18:03:52,690 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:03:52,690 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:03:52,690 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:03:52,690 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:03:52,691 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:03:54,466 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:03:55,092 - websocket - INFO - Websocket connected
+2025-12-22 18:03:55,093 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:03:57,474 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:04:47,487 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: ping/pong timed out
+2025-12-22 18:04:47,487 - websocket - ERROR - ping/pong timed out - goodbye
+2025-12-22 18:04:50,499 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:04:50,499 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:04:50,500 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:04:50,500 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:04:50,500 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:04:50,913 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.136% (H→B)
+2025-12-22 18:04:51,452 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.104% (H→B)
+2025-12-22 18:04:51,882 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:04:52,971 - websocket - INFO - Websocket connected
+2025-12-22 18:04:52,971 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:04:54,915 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:05:45,421 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: ping/pong timed out
+2025-12-22 18:05:45,421 - websocket - ERROR - ping/pong timed out - goodbye
+2025-12-22 18:05:48,431 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:05:48,431 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:05:48,431 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:05:48,431 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:05:48,432 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:05:49,339 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:05:50,818 - websocket - INFO - Websocket connected
+2025-12-22 18:05:50,818 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:05:52,348 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:06:43,228 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: ping/pong timed out
+2025-12-22 18:06:43,228 - websocket - ERROR - ping/pong timed out - goodbye
+2025-12-22 18:06:46,242 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:06:46,242 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:06:46,242 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:06:46,242 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:06:46,243 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:06:46,887 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:06:48,648 - websocket - INFO - Websocket connected
+2025-12-22 18:06:48,648 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:06:49,915 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:07:41,157 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: ping/pong timed out
+2025-12-22 18:07:41,157 - websocket - ERROR - ping/pong timed out - goodbye
+2025-12-22 18:07:44,167 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:07:44,167 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:07:44,167 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:07:44,167 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:07:44,168 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:07:44,290 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:07:46,635 - websocket - INFO - Websocket connected
+2025-12-22 18:07:46,635 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:07:47,302 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:08:36,961 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.152% (H→B)
+2025-12-22 18:08:38,057 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.109% (H→B)
+2025-12-22 18:08:38,057 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.158% (H→B)
+2025-12-22 18:08:38,701 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.153% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 18:08:38,701 - __main__ - INFO - Найдена возможность: H→B
+2025-12-22 18:08:38,824 - core.paper_executor - INFO - FOK pair executed: entry_H→B, Fees: $0.0301
+2025-12-22 18:08:38,825 - core.arbitrage_engine - INFO - 📊 Position created: pos_000000, Entry spread (gross): 0.153%, Exit target (gross): -0.050%
+2025-12-22 18:08:38,825 - core.arbitrage_engine - INFO - ✅ Position opened: pos_000000, Direction: H→B, Gross spread: 0.153%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 18:08:39,148 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.158% (H→B)
+2025-12-22 18:08:39,148 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.201% (H→B)
+2025-12-22 18:08:39,716 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: ping/pong timed out
+2025-12-22 18:08:39,717 - websocket - ERROR - ping/pong timed out - goodbye
+2025-12-22 18:08:40,238 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.207% (H→B)
+2025-12-22 18:08:41,316 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.169% (H→B)
+2025-12-22 18:08:42,397 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.180% (H→B)
+2025-12-22 18:08:42,719 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:08:42,719 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:08:42,719 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:08:42,719 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:08:42,719 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:08:44,776 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:08:45,143 - websocket - INFO - Websocket connected
+2025-12-22 18:08:45,143 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:08:47,805 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:08:56,345 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:08:56,345 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:08:56,346 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:08:56,346 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:08:56,346 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:08:56,346 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:00:17
+2025-12-22 18:08:56,346 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.136%
+2025-12-22 18:08:56,346 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:08:56,346 - core.arbitrage_engine - INFO -   Spread updates: 133, Last update: 0s ago
+2025-12-22 18:08:56,346 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:09:26,374 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:09:26,374 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:09:26,374 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:09:26,374 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:09:26,374 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:09:26,374 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:00:47
+2025-12-22 18:09:26,374 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.103%
+2025-12-22 18:09:26,374 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:09:26,375 - core.arbitrage_engine - INFO -   Spread updates: 411, Last update: 0s ago
+2025-12-22 18:09:26,375 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:09:37,572 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: ping/pong timed out
+2025-12-22 18:09:37,573 - websocket - ERROR - ping/pong timed out - goodbye
+2025-12-22 18:09:40,578 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:09:40,578 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:09:40,578 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:09:40,578 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:09:40,579 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:09:42,288 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:09:43,074 - websocket - INFO - Websocket connected
+2025-12-22 18:09:43,075 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:09:45,313 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:09:56,425 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:09:56,425 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:09:56,426 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:09:56,426 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:09:56,426 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:09:56,426 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:01:17
+2025-12-22 18:09:56,426 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.120%
+2025-12-22 18:09:56,426 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:09:56,426 - core.arbitrage_engine - INFO -   Spread updates: 661, Last update: 0s ago
+2025-12-22 18:09:56,426 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:10:26,514 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:10:26,514 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:10:26,514 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:10:26,514 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:10:26,515 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:10:26,515 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:01:47
+2025-12-22 18:10:26,515 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.131%
+2025-12-22 18:10:26,515 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:10:26,515 - core.arbitrage_engine - INFO -   Spread updates: 939, Last update: 0s ago
+2025-12-22 18:10:26,515 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:10:56,593 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:10:56,594 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:10:56,594 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:10:56,594 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:10:56,594 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:10:56,594 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:02:17
+2025-12-22 18:10:56,594 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.098%
+2025-12-22 18:10:56,594 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:10:56,594 - core.arbitrage_engine - INFO -   Spread updates: 1217, Last update: 0s ago
+2025-12-22 18:10:56,594 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:11:26,608 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:11:26,609 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:11:26,609 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:11:26,609 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:11:26,609 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:11:26,609 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:02:47
+2025-12-22 18:11:26,609 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.082%
+2025-12-22 18:11:26,609 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:11:26,609 - core.arbitrage_engine - INFO -   Spread updates: 1495, Last update: 0s ago
+2025-12-22 18:11:26,609 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:11:56,660 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:11:56,660 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:11:56,660 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:11:56,660 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:11:56,660 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:11:56,661 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:03:17
+2025-12-22 18:11:56,661 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.087%
+2025-12-22 18:11:56,661 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:11:56,661 - core.arbitrage_engine - INFO -   Spread updates: 1773, Last update: 0s ago
+2025-12-22 18:11:56,661 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:11:58,449 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: Connection to remote host was lost.
+2025-12-22 18:11:58,449 - websocket - ERROR - Connection to remote host was lost. - goodbye
+2025-12-22 18:11:58,449 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:11:58,449 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:11:58,449 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:11:58,449 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:11:58,450 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:11:58,486 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:12:00,957 - websocket - INFO - Websocket connected
+2025-12-22 18:12:00,958 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:12:01,518 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:12:26,713 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:12:26,713 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:12:26,713 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:12:26,713 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:12:26,713 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:12:26,713 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:03:47
+2025-12-22 18:12:26,714 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.104%
+2025-12-22 18:12:26,714 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:12:26,714 - core.arbitrage_engine - INFO -   Spread updates: 2023, Last update: 0s ago
+2025-12-22 18:12:26,714 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:12:56,782 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:12:56,782 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:12:56,782 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:12:56,782 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:12:56,783 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:12:56,783 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:04:17
+2025-12-22 18:12:56,783 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.109%
+2025-12-22 18:12:56,783 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:12:56,783 - core.arbitrage_engine - INFO -   Spread updates: 2301, Last update: 0s ago
+2025-12-22 18:12:56,783 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:13:26,853 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:13:26,853 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:13:26,854 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:13:26,854 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:13:26,854 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:13:26,854 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:04:48
+2025-12-22 18:13:26,854 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.131%
+2025-12-22 18:13:26,854 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:13:26,854 - core.arbitrage_engine - INFO -   Spread updates: 2579, Last update: 0s ago
+2025-12-22 18:13:26,854 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:13:56,854 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:13:56,855 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:13:56,855 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:13:56,855 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:13:56,855 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:13:56,855 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:05:18
+2025-12-22 18:13:56,855 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.125%
+2025-12-22 18:13:56,855 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:13:56,855 - core.arbitrage_engine - INFO -   Spread updates: 2856, Last update: 0s ago
+2025-12-22 18:13:56,855 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:14:14,497 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: Connection to remote host was lost.
+2025-12-22 18:14:14,497 - websocket - ERROR - Connection to remote host was lost. - goodbye
+2025-12-22 18:14:14,497 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:14:14,497 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:14:14,497 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:14:14,498 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:14:14,498 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:14:14,838 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:14:16,979 - websocket - INFO - Websocket connected
+2025-12-22 18:14:16,980 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:14:17,867 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:14:26,856 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:14:26,856 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:14:26,857 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:14:26,857 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:14:26,857 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:14:26,857 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:05:48
+2025-12-22 18:14:26,857 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.136%
+2025-12-22 18:14:26,857 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:14:26,857 - core.arbitrage_engine - INFO -   Spread updates: 3105, Last update: 0s ago
+2025-12-22 18:14:26,857 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:14:56,933 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:14:56,933 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:14:56,933 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:14:56,933 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:14:56,933 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:14:56,933 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:06:18
+2025-12-22 18:14:56,933 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.164%
+2025-12-22 18:14:56,933 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:14:56,933 - core.arbitrage_engine - INFO -   Spread updates: 3383, Last update: 0s ago
+2025-12-22 18:14:56,933 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:15:10,161 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: ping/pong timed out
+2025-12-22 18:15:10,162 - websocket - ERROR - ping/pong timed out - goodbye
+2025-12-22 18:15:13,170 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:15:13,170 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:15:13,170 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:15:13,170 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:15:13,171 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:15:15,435 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:15:15,610 - websocket - INFO - Websocket connected
+2025-12-22 18:15:15,611 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:15:18,469 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:15:27,008 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:15:27,008 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:15:27,008 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:15:27,008 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:15:27,008 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:15:27,008 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:06:48
+2025-12-22 18:15:27,009 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.142%
+2025-12-22 18:15:27,009 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:15:27,009 - core.arbitrage_engine - INFO -   Spread updates: 3633, Last update: 0s ago
+2025-12-22 18:15:27,009 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:15:57,010 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:15:57,010 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:15:57,010 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:15:57,010 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:15:57,010 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:15:57,010 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:07:18
+2025-12-22 18:15:57,011 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.087%
+2025-12-22 18:15:57,011 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:15:57,011 - core.arbitrage_engine - INFO -   Spread updates: 3910, Last update: 0s ago
+2025-12-22 18:15:57,011 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:16:07,966 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: ping/pong timed out
+2025-12-22 18:16:07,966 - websocket - ERROR - ping/pong timed out - goodbye
+2025-12-22 18:16:10,974 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:16:10,974 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:16:10,974 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:16:10,974 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:16:10,975 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:16:13,021 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:16:13,516 - websocket - INFO - Websocket connected
+2025-12-22 18:16:13,517 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:16:16,046 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:16:27,066 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:16:27,067 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:16:27,067 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:16:27,067 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:16:27,068 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:16:27,068 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:07:48
+2025-12-22 18:16:27,068 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.131%
+2025-12-22 18:16:27,068 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:16:27,068 - core.arbitrage_engine - INFO -   Spread updates: 4160, Last update: 0s ago
+2025-12-22 18:16:27,069 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:16:57,085 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:16:57,085 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:16:57,085 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:16:57,085 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:16:57,086 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:16:57,086 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:08:18
+2025-12-22 18:16:57,086 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.120%
+2025-12-22 18:16:57,086 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:16:57,086 - core.arbitrage_engine - INFO -   Spread updates: 4438, Last update: 0s ago
+2025-12-22 18:16:57,086 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:17:27,141 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:17:27,142 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:17:27,142 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:17:27,142 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:17:27,142 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:17:27,142 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:08:48
+2025-12-22 18:17:27,142 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.109%
+2025-12-22 18:17:27,142 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:17:27,142 - core.arbitrage_engine - INFO -   Spread updates: 4716, Last update: 0s ago
+2025-12-22 18:17:27,142 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:17:57,231 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:17:57,232 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:17:57,232 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:17:57,232 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:17:57,232 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:17:57,232 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:09:18
+2025-12-22 18:17:57,232 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.125%
+2025-12-22 18:17:57,232 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:17:57,232 - core.arbitrage_engine - INFO -   Spread updates: 4994, Last update: 0s ago
+2025-12-22 18:17:57,232 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:18:19,810 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: Connection to remote host was lost.
+2025-12-22 18:18:19,811 - websocket - ERROR - Connection to remote host was lost. - goodbye
+2025-12-22 18:18:19,811 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:18:19,811 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:18:19,811 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:18:19,811 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:18:19,811 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:18:20,085 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:18:22,219 - websocket - INFO - Websocket connected
+2025-12-22 18:18:22,219 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:18:23,096 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:18:27,310 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:18:27,311 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:18:27,311 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:18:27,311 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:18:27,311 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:18:27,311 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:09:48
+2025-12-22 18:18:27,311 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.104%
+2025-12-22 18:18:27,311 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:18:27,311 - core.arbitrage_engine - INFO -   Spread updates: 5245, Last update: 0s ago
+2025-12-22 18:18:27,311 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:18:57,377 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:18:57,377 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:18:57,377 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:18:57,377 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:18:57,377 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:18:57,378 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:10:18
+2025-12-22 18:18:57,378 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.055%
+2025-12-22 18:18:57,378 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:18:57,378 - core.arbitrage_engine - INFO -   Spread updates: 5523, Last update: 0s ago
+2025-12-22 18:18:57,378 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:19:06,492 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.038% >= target -0.050%
+2025-12-22 18:19:14,803 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: ping/pong timed out
+2025-12-22 18:19:14,803 - websocket - ERROR - ping/pong timed out - goodbye
+2025-12-22 18:19:16,494 - __main__ - ERROR - Ошибка в итерации цикла: 
+2025-12-22 18:19:16,619 - core.paper_executor - INFO - FOK pair executed: exit_pos_000000, Fees: $0.0299
+2025-12-22 18:19:17,512 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.016% >= target -0.050%
+2025-12-22 18:19:17,818 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:19:17,818 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:19:17,818 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:19:17,818 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:19:17,819 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:19:20,385 - websocket - INFO - Websocket connected
+2025-12-22 18:19:20,385 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:19:27,522 - __main__ - ERROR - Ошибка в итерации цикла: 
+2025-12-22 18:19:27,645 - core.paper_executor - INFO - FOK pair executed: exit_pos_000000, Fees: $0.0299
+2025-12-22 18:19:28,538 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:19:28,538 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:19:28,538 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:19:28,538 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:19:28,538 - core.arbitrage_engine - WARNING - ISSUES FOUND:
+2025-12-22 18:19:28,538 - core.arbitrage_engine - WARNING -   - pos_000000: Should close (exit_spread=-0.016% >= target=-0.050%)
+2025-12-22 18:19:28,538 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:19:28,538 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:10:49
+2025-12-22 18:19:28,538 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.016%
+2025-12-22 18:19:28,538 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: True
+2025-12-22 18:19:28,538 - core.arbitrage_engine - INFO -   Spread updates: 5609, Last update: 11s ago
+2025-12-22 18:19:28,538 - core.arbitrage_engine - WARNING -   ! Should close (exit_spread=-0.016% >= target=-0.050%)
+2025-12-22 18:19:28,539 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:19:58,575 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:19:58,575 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:19:58,575 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:19:58,575 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:19:58,575 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:19:58,575 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:11:19
+2025-12-22 18:19:58,575 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.093%
+2025-12-22 18:19:58,575 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:19:58,575 - core.arbitrage_engine - INFO -   Spread updates: 5887, Last update: 0s ago
+2025-12-22 18:19:58,575 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:20:28,631 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:20:28,631 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:20:28,632 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:20:28,632 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:20:28,632 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:20:28,632 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:11:49
+2025-12-22 18:20:28,632 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.103%
+2025-12-22 18:20:28,632 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:20:28,632 - core.arbitrage_engine - INFO -   Spread updates: 6165, Last update: 0s ago
+2025-12-22 18:20:28,632 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:20:58,677 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:20:58,678 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:20:58,678 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:20:58,678 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:20:58,678 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:20:58,678 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:12:19
+2025-12-22 18:20:58,678 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.076%
+2025-12-22 18:20:58,678 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:20:58,678 - core.arbitrage_engine - INFO -   Spread updates: 6443, Last update: 0s ago
+2025-12-22 18:20:58,678 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:21:22,661 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: Connection to remote host was lost.
+2025-12-22 18:21:22,661 - websocket - ERROR - Connection to remote host was lost. - goodbye
+2025-12-22 18:21:22,661 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:21:22,661 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:21:22,661 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:21:22,662 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:21:22,662 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:21:23,558 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:21:25,076 - websocket - INFO - Websocket connected
+2025-12-22 18:21:25,077 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:21:26,603 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:21:28,773 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:21:28,773 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:21:28,773 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:21:28,773 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:21:28,773 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:21:28,773 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:12:49
+2025-12-22 18:21:28,773 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.092%
+2025-12-22 18:21:28,773 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:21:28,773 - core.arbitrage_engine - INFO -   Spread updates: 6693, Last update: 0s ago
+2025-12-22 18:21:28,774 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:21:58,850 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:21:58,850 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:21:58,850 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:21:58,851 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:21:58,851 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:21:58,851 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:13:20
+2025-12-22 18:21:58,851 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.158%
+2025-12-22 18:21:58,851 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:21:58,851 - core.arbitrage_engine - INFO -   Spread updates: 6971, Last update: 0s ago
+2025-12-22 18:21:58,851 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:22:17,643 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: ping/pong timed out
+2025-12-22 18:22:17,643 - websocket - ERROR - ping/pong timed out - goodbye
+2025-12-22 18:22:20,657 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:22:20,657 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:22:20,657 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:22:20,658 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:22:20,658 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:22:21,135 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:22:23,056 - websocket - INFO - Websocket connected
+2025-12-22 18:22:23,056 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:22:24,180 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:22:25,906 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.049% >= target -0.050%
+2025-12-22 18:22:35,920 - __main__ - ERROR - Ошибка в итерации цикла: 
+2025-12-22 18:22:36,043 - core.paper_executor - INFO - FOK pair executed: exit_pos_000000, Fees: $0.0299
+2025-12-22 18:22:36,938 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:22:36,938 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:22:36,938 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:22:36,938 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:22:36,938 - core.arbitrage_engine - WARNING - ISSUES FOUND:
+2025-12-22 18:22:36,938 - core.arbitrage_engine - WARNING -   - pos_000000: Should close (exit_spread=-0.049% >= target=-0.050%)
+2025-12-22 18:22:36,939 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:22:36,939 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:13:58
+2025-12-22 18:22:36,939 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.049%
+2025-12-22 18:22:36,939 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: True
+2025-12-22 18:22:36,939 - core.arbitrage_engine - INFO -   Spread updates: 7194, Last update: 11s ago
+2025-12-22 18:22:36,939 - core.arbitrage_engine - WARNING -   ! Should close (exit_spread=-0.049% >= target=-0.050%)
+2025-12-22 18:22:36,940 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:23:02,179 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.049% >= target -0.050%
+2025-12-22 18:23:12,182 - __main__ - ERROR - Ошибка в итерации цикла: 
+2025-12-22 18:23:12,307 - core.paper_executor - INFO - FOK pair executed: exit_pos_000000, Fees: $0.0299
+2025-12-22 18:23:13,197 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:23:13,197 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:23:13,197 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:23:13,197 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:23:13,197 - core.arbitrage_engine - WARNING - ISSUES FOUND:
+2025-12-22 18:23:13,197 - core.arbitrage_engine - WARNING -   - pos_000000: Should close (exit_spread=-0.049% >= target=-0.050%)
+2025-12-22 18:23:13,197 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:23:13,198 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:14:34
+2025-12-22 18:23:13,198 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.049%
+2025-12-22 18:23:13,198 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: True
+2025-12-22 18:23:13,198 - core.arbitrage_engine - INFO -   Spread updates: 7428, Last update: 11s ago
+2025-12-22 18:23:13,198 - core.arbitrage_engine - WARNING -   ! Should close (exit_spread=-0.049% >= target=-0.050%)
+2025-12-22 18:23:13,198 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:23:43,209 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:23:43,209 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:23:43,209 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:23:43,210 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:23:43,210 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:23:43,210 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:15:04
+2025-12-22 18:23:43,210 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.082%
+2025-12-22 18:23:43,210 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:23:43,210 - core.arbitrage_engine - INFO -   Spread updates: 7706, Last update: 0s ago
+2025-12-22 18:23:43,210 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:24:13,263 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:24:13,263 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:24:13,263 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:24:13,263 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:24:13,263 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:24:13,263 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:15:34
+2025-12-22 18:24:13,264 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.082%
+2025-12-22 18:24:13,264 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:24:13,264 - core.arbitrage_engine - INFO -   Spread updates: 7984, Last update: 0s ago
+2025-12-22 18:24:13,264 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:24:43,271 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:24:43,271 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:24:43,271 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:24:43,272 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:24:43,272 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:24:43,272 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:16:04
+2025-12-22 18:24:43,272 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.098%
+2025-12-22 18:24:43,272 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:24:43,272 - core.arbitrage_engine - INFO -   Spread updates: 8261, Last update: 0s ago
+2025-12-22 18:24:43,272 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:24:45,534 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: Connection to remote host was lost.
+2025-12-22 18:24:45,534 - websocket - ERROR - Connection to remote host was lost. - goodbye
+2025-12-22 18:24:45,534 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:24:45,535 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:24:45,535 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:24:45,535 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:24:45,535 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:24:47,056 - __main__ - INFO - Режим: → Частичная
+2025-12-22 18:24:47,992 - websocket - INFO - Websocket connected
+2025-12-22 18:24:47,992 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:24:50,084 - __main__ - INFO - Режим: → Активна
+2025-12-22 18:25:13,350 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:25:13,350 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:25:13,350 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:25:13,350 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:25:13,350 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:25:13,350 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:16:34
+2025-12-22 18:25:13,350 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.082%
+2025-12-22 18:25:13,350 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:25:13,350 - core.arbitrage_engine - INFO -   Spread updates: 8511, Last update: 0s ago
+2025-12-22 18:25:13,350 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:25:43,441 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:25:43,441 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:25:43,441 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:25:43,441 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:25:43,441 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:25:43,441 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:17:04
+2025-12-22 18:25:43,441 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.082%
+2025-12-22 18:25:43,441 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:25:43,441 - core.arbitrage_engine - INFO -   Spread updates: 8789, Last update: 0s ago
+2025-12-22 18:25:43,441 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:26:11,847 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.049% >= target -0.050%
+2025-12-22 18:26:21,851 - __main__ - ERROR - Ошибка в итерации цикла: 
+2025-12-22 18:26:21,972 - core.paper_executor - INFO - FOK pair executed: exit_pos_000000, Fees: $0.0299
+2025-12-22 18:26:22,864 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:26:22,864 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:26:22,864 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:26:22,865 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:26:22,865 - core.arbitrage_engine - WARNING - ISSUES FOUND:
+2025-12-22 18:26:22,865 - core.arbitrage_engine - WARNING -   - pos_000000: Should close (exit_spread=-0.049% >= target=-0.050%)
+2025-12-22 18:26:22,865 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:26:22,865 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:17:44
+2025-12-22 18:26:22,865 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.049%
+2025-12-22 18:26:22,865 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: True
+2025-12-22 18:26:22,865 - core.arbitrage_engine - INFO -   Spread updates: 9052, Last update: 11s ago
+2025-12-22 18:26:22,865 - core.arbitrage_engine - WARNING -   ! Should close (exit_spread=-0.049% >= target=-0.050%)
+2025-12-22 18:26:22,865 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:26:52,928 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:26:52,928 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:26:52,928 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:26:52,929 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:26:52,929 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:26:52,929 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:18:14
+2025-12-22 18:26:52,929 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.076%
+2025-12-22 18:26:52,929 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:26:52,929 - core.arbitrage_engine - INFO -   Spread updates: 9330, Last update: 0s ago
+2025-12-22 18:26:52,930 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:27:06,687 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.049% >= target -0.050%
+2025-12-22 18:27:14,439 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: Connection to remote host was lost.
+2025-12-22 18:27:14,440 - websocket - ERROR - Connection to remote host was lost. - goodbye
+2025-12-22 18:27:14,440 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 18:27:14,440 - __main__ - WARNING - Bitget отключен
+2025-12-22 18:27:14,440 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000214D312DA90>>: no running event loop
+2025-12-22 18:27:14,440 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-22 18:27:14,441 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 18:27:16,700 - __main__ - ERROR - Ошибка в итерации цикла: 
+2025-12-22 18:27:16,823 - core.paper_executor - INFO - FOK pair executed: exit_pos_000000, Fees: $0.0299
+2025-12-22 18:27:17,151 - websocket - INFO - Websocket connected
+2025-12-22 18:27:17,152 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 18:27:23,020 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:27:23,020 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:27:23,020 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:27:23,020 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:27:23,021 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:27:23,021 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:18:44
+2025-12-22 18:27:23,021 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.093%
+2025-12-22 18:27:23,021 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:27:23,021 - core.arbitrage_engine - INFO -   Spread updates: 9507, Last update: 0s ago
+2025-12-22 18:27:23,021 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:27:53,076 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:27:53,076 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:27:53,076 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:27:53,076 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:27:53,076 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:27:53,077 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:19:14
+2025-12-22 18:27:53,077 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.076%
+2025-12-22 18:27:53,077 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:27:53,077 - core.arbitrage_engine - INFO -   Spread updates: 9785, Last update: 0s ago
+2025-12-22 18:27:53,077 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:28:23,076 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:28:23,077 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:28:23,077 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:28:23,077 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:28:23,077 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:28:23,077 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:19:44
+2025-12-22 18:28:23,077 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.087%
+2025-12-22 18:28:23,077 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:28:23,077 - core.arbitrage_engine - INFO -   Spread updates: 10062, Last update: 0s ago
+2025-12-22 18:28:23,077 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:28:40,819 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.049% >= target -0.050%
+2025-12-22 18:28:50,826 - __main__ - ERROR - Ошибка в итерации цикла: 
+2025-12-22 18:28:50,950 - core.paper_executor - INFO - FOK pair executed: exit_pos_000000, Fees: $0.0299
+2025-12-22 18:28:53,147 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:28:53,147 - core.arbitrage_engine - INFO - POSITION DIAGNOSIS
+2025-12-22 18:28:53,147 - core.arbitrage_engine - INFO - Open positions: 1
+2025-12-22 18:28:53,147 - core.arbitrage_engine - INFO - Closed positions: 0
+2025-12-22 18:28:53,147 - core.arbitrage_engine - INFO - Position pos_000000:
+2025-12-22 18:28:53,147 - core.arbitrage_engine - INFO -   Direction: H→B, Age: 00:20:14
+2025-12-22 18:28:53,147 - core.arbitrage_engine - INFO -   Entry spread: 0.153%, Current exit: -0.071%
+2025-12-22 18:28:53,147 - core.arbitrage_engine - INFO -   Target: -0.050%, Should close: False
+2025-12-22 18:28:53,147 - core.arbitrage_engine - INFO -   Spread updates: 10239, Last update: 0s ago
+2025-12-22 18:28:53,147 - core.arbitrage_engine - INFO - ============================================================
+2025-12-22 18:28:53,685 - __main__ - INFO - Завершение работы...
+2025-12-22 18:28:53,685 - __main__ - WARNING - Закрытие позиций...
+2025-12-22 18:28:53,685 - core.arbitrage_engine - WARNING - ⚠️ Force closing position pos_000000: Завершение работы

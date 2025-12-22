@@ -1,0 +1,80 @@
+2025-12-19 23:51:31,579 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-19 23:51:31,579 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-19 23:51:32,886 - __main__ - INFO - Режим: → Частичная
+2025-12-19 23:51:34,343 - websocket - INFO - Websocket connected
+2025-12-19 23:51:34,343 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-19 23:51:35,910 - __main__ - INFO - Режим: → Активна
+2025-12-19 23:53:10,589 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.155% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:10,696 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.155% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:10,803 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.155% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:10,912 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.155% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:11,020 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.155% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:11,128 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.155% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:11,235 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.155% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:11,344 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.155% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:11,451 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.155% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:11,574 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.155% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:11,681 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.194% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:11,788 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.194% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:11,896 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.194% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:12,003 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.194% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:53:57,848 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: Connection to remote host was lost.
+2025-12-19 23:53:57,848 - websocket - ERROR - Connection to remote host was lost. - goodbye
+2025-12-19 23:53:57,848 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-19 23:53:57,848 - __main__ - WARNING - Bitget отключен
+2025-12-19 23:53:57,848 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x00000211F7E0D940>>: no running event loop
+2025-12-19 23:53:57,848 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-19 23:53:57,849 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-19 23:53:58,071 - __main__ - INFO - Режим: → Частичная
+2025-12-19 23:54:00,329 - websocket - INFO - Websocket connected
+2025-12-19 23:54:00,330 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-19 23:54:01,083 - __main__ - INFO - Режим: → Активна
+2025-12-19 23:54:12,643 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.200% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:12,751 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.200% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:12,858 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.200% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:12,966 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.200% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:13,089 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.216% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:13,197 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.216% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:13,306 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.216% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:13,413 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.216% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:13,522 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.216% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:13,628 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.216% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:13,738 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.188% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:13,846 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.188% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:13,954 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.188% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:14,063 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.188% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:14,063 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.304% (H→B)
+2025-12-19 23:54:14,171 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.188% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:14,278 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.266% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:14,385 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.266% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:14,491 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.266% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:14,604 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.266% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:14,707 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.272% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:14,814 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.266% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:14,922 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.266% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:15,029 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.294% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:15,137 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.277% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:15,138 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.277% (H→B)
+2025-12-19 23:54:15,138 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.376% (H→B)
+2025-12-19 23:54:15,245 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.283% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:15,352 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.283% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:15,459 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.288% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:15,566 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.283% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:15,673 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.283% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:15,673 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.381% (H→B)
+2025-12-19 23:54:15,782 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.283% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:15,889 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.283% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:15,997 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.283% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:16,105 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.283% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:16,211 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.305% (no fees), Min required: 0.150%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:16,212 - __main__ - INFO - Найдена возможность: H→B
+2025-12-19 23:54:16,334 - core.paper_executor - INFO - FOK pair executed: entry_H→B, Fees: $0.0301
+2025-12-19 23:54:16,334 - core.arbitrage_engine - INFO - 📊 Position created: pos_000000, Entry spread (gross): 0.305%, Exit target (gross): -0.050%
+2025-12-19 23:54:16,335 - core.arbitrage_engine - INFO - ✅ Position opened: pos_000000, Direction: H→B, Gross spread: 0.305%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-19 23:54:16,335 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.288% (H→B)
+2025-12-19 23:54:16,335 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.381% (H→B)
+2025-12-19 23:54:16,442 - core.arbitrage_engine - INFO - 🚀 Closing position pos_000000: Exit spread -0.376% <= target -0.050%
+2025-12-19 23:54:16,443 - __main__ - ERROR - Ошибка цикла: asyncio.run() cannot be called from a running event loop
+2025-12-19 23:54:16,477 - __main__ - INFO - Завершение работы...
+2025-12-19 23:54:16,477 - __main__ - WARNING - Закрытие позиций...
+2025-12-19 23:54:16,477 - core.arbitrage_engine - WARNING - ⚠️ Force closing position pos_000000: Завершение работы

@@ -1,0 +1,22 @@
+{
+  "start_time": "2025-12-18 06:02:58.808399",
+  "total_checks": 7657,
+  "total_trades": 0,
+  "bitget_updates": 7489,
+  "hyper_updates": 7654,
+  "bitget_connections": 0,
+  "hyper_connections": 0,
+  "bitget_disconnects": 10,
+  "hyper_disconnects": 0,
+  "mode_changes": 13,
+  "time_in_active": 810.6076319217682,
+  "time_in_partial": 18.226643085479736,
+  "time_in_stopped": 4.318060398101807,
+  "total_pnl": 0.0,
+  "total_fees": 0.0,
+  "total_volume": 0.0,
+  "end_time": "2025-12-18T06:16:55.283873",
+  "runtime_seconds": 832.1563816070557,
+  "final_mode": "ACTIVE",
+  "open_positions_at_end": 0
+}

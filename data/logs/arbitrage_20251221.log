@@ -1,0 +1,44 @@
+2025-12-21 02:36:58,882 - __main__ - INFO - Запуск NVDA Арбитражного Бота...
+2025-12-21 02:36:58,882 - __main__ - INFO - ============================================================
+2025-12-21 02:36:58,882 - __main__ - INFO - NVDA АРБИТРАЖНЫЙ БОТ
+2025-12-21 02:36:58,883 - __main__ - INFO - Режим отображения: compact
+2025-12-21 02:36:58,883 - __main__ - INFO - ============================================================
+2025-12-21 02:36:58,883 - core.risk_manager - INFO - Risk Manager initialized. Daily loss limit: $400.0
+2025-12-21 02:36:58,891 - core.paper_executor - INFO - Portfolio loaded: USDT=$999.83
+2025-12-21 02:36:58,891 - core.paper_executor - INFO - Paper Trading initialized. Portfolio: USDT=$999.83
+2025-12-21 02:36:58,906 - core.arbitrage_engine - INFO - Arbitrage Engine initialized
+2025-12-21 02:36:58,906 - __main__ - INFO - Подключение WebSocket...
+2025-12-21 02:36:58,906 - __main__ - INFO - Bitget WebSocket...
+2025-12-21 02:36:59,906 - websocket - INFO - Websocket connected
+2025-12-21 02:36:59,907 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-21 02:37:01,917 - __main__ - INFO - Hyperliquid WebSocket...
+2025-12-21 02:37:02,641 - websocket - INFO - Websocket connected
+2025-12-21 02:37:02,646 - core.websocket_clients - INFO - ✅ Hyperliquid(xyz:NVDA) подключен
+2025-12-21 02:37:02,719 - __main__ - INFO - Режим: → Активна
+2025-12-21 02:37:02,720 - __main__ - INFO - ✅ Инициализация завершена
+2025-12-21 02:37:02,720 - __main__ - INFO - Время: 02:37:02
+2025-12-21 02:37:02,720 - __main__ - INFO - ============================================================
+2025-12-21 02:37:02,720 - __main__ - INFO - Начало торгового цикла...
+2025-12-21 02:37:03,040 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.215% (B→H)
+2025-12-21 02:37:58,364 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: ping/pong timed out
+2025-12-21 02:37:58,364 - websocket - ERROR - ping/pong timed out - goodbye
+2025-12-21 02:38:01,376 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-21 02:38:01,376 - __main__ - WARNING - Bitget отключен
+2025-12-21 02:38:01,376 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x000001F89E47DA90>>: no running event loop
+2025-12-21 02:38:01,377 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-21 02:38:01,415 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-21 02:38:03,364 - __main__ - INFO - Режим: → Частичная
+2025-12-21 02:38:04,122 - websocket - INFO - Websocket connected
+2025-12-21 02:38:04,123 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-21 02:38:06,386 - __main__ - INFO - Режим: → Активна
+2025-12-21 02:40:14,517 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: Connection to remote host was lost.
+2025-12-21 02:40:14,518 - websocket - ERROR - Connection to remote host was lost. - goodbye
+2025-12-21 02:40:14,518 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-21 02:40:14,518 - __main__ - WARNING - Bitget отключен
+2025-12-21 02:40:14,518 - websocket - ERROR - error from callback <bound method BaseWebSocketClient._on_close of <core.websocket_clients.BitgetWebSocketClient object at 0x000001F89E47DA90>>: no running event loop
+2025-12-21 02:40:14,518 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: no running event loop
+2025-12-21 02:40:14,518 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-21 02:40:16,860 - __main__ - INFO - Режим: → Частичная
+2025-12-21 02:40:17,233 - websocket - INFO - Websocket connected
+2025-12-21 02:40:17,234 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-21 02:40:19,878 - __main__ - INFO - Режим: → Активна
