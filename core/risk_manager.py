@@ -56,6 +56,7 @@ class RiskManager:
     
     def can_open_position(self, direction: str, spread: float, price: float) -> Tuple[bool, str]:
         """Проверка возможности открытия позиции"""
+        logger.debug(f"Risk check: {direction}, spread={spread:.3f}%, price={price:.2f}")
         
         # Проверка дневного лимита убытков
         if self.daily_stats['daily_limit_exceeded']:
@@ -83,6 +84,7 @@ class RiskManager:
         if position_value > self.config['MAX_POSITION_USD']:
             return False, f"Position value ${position_value:.2f} > ${self.config['MAX_POSITION_USD']}"
         
+        logger.debug(f"Risk check result: OK")
         return True, "OK"
     
     def calculate_position_size(self, price: float, spread: float) -> Dict:

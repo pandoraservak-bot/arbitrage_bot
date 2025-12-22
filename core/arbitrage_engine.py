@@ -65,8 +65,11 @@ class Position:
     def should_close(self) -> bool:
         """Проверка, нужно ли закрывать позицию (по валовому спреду)
         Закрываем, когда спред выхода станет РАВЕН ИЛИ ВЫШЕ целевого
-        (т.е. current_exit_spread >= exit_target)"""
-        return self.current_exit_spread >= self.exit_target
+        (т.е. current_exit_spread >= exit_target) с небольшой погрешностью"""
+        
+        # Добавляем погрешность 0.001% для учета округлений
+        epsilon = 0.001
+        return self.current_exit_spread >= (self.exit_target - epsilon)
     
     def get_age_seconds(self) -> float:
         """Возраст позиции в секундах"""
@@ -277,16 +280,16 @@ class ArbitrageEngine:
         # Защита от отсутствия данных
         if not bitget_data or not hyper_data:
             logger.debug("❌ Missing market data")
-            return 0.0
+            return position.current_exit_spread  # Возвращаем предыдущее значение
         
         # Проверяем наличие необходимых полей
         if 'bid' not in bitget_data or 'ask' not in bitget_data:
             logger.debug("❌ Bitget missing bid/ask")
-            return 0.0
-            
+            return position.current_exit_spread
+        
         if 'bid' not in hyper_data or 'ask' not in hyper_data:
             logger.debug("❌ Hyperliquid missing bid/ask")
-            return 0.0
+            return position.current_exit_spread
         
         # Используем расчетное проскальзывание или берем из конфига
         if bitget_slippage:
@@ -430,7 +433,14 @@ class ArbitrageEngine:
         """Мониторинг и закрытие позиций по условиям (только валовый спред)"""
         current_time = time.time()
         
-        for position in self.open_positions[:]:
+        # Создаем копию списка для безопасной итерации
+        positions_to_check = self.open_positions.copy()
+        
+        for position in positions_to_check:
+            # Проверяем, что позиция все еще открыта
+            if position.status != 'open' or position not in self.open_positions:
+                continue
+            
             # Проверка времени удержания (только для логирования)
             hold_time = current_time - position.entry_time
             if hold_time > self.config['MAX_HOLD_TIME']:
@@ -459,6 +469,11 @@ class ArbitrageEngine:
     
     def close_position(self, position: Position, exit_spread: float, reason: str):
         """Закрытие позиции"""
+        # Проверяем, что позиция еще не закрыта
+        if position.status != 'open':
+            logger.warning(f"Position {position.id} already closed, skipping")
+            return
+        
         # Определение ордеров для закрытия
         if position.direction == TradeDirection.B_TO_H:
             sell_order = {'exchange': 'bitget', 'side': 'sell', 'amount': position.contracts}
@@ -473,7 +488,7 @@ class ArbitrageEngine:
         )
         
         if not exit_result['success']:
-            logger.error(f"Failed to close position {position.id}")
+            logger.error(f"Failed to close position {position.id}: {exit_result.get('error')}")
             return
         
         # Вызываем callback для обновления статистики лучших спредов выхода
@@ -487,11 +502,22 @@ class ArbitrageEngine:
         position.status = 'closed'
         position.exit_time = time.time()
         position.exit_reason = reason
+        position.exit_prices = {
+            'buy': exit_result['buy_order']['price'],
+            'sell': exit_result['sell_order']['price']
+        }
         position.final_pnl = pnl_data
         
-        # Обновление статистики
-        self.open_positions.remove(position)
+        # Удаляем позицию из открытых
+        try:
+            self.open_positions.remove(position)
+        except ValueError:
+            logger.warning(f"Position {position.id} not found in open positions list")
+        
+        # Добавляем в историю
         self.trade_history.append(position)
+        
+        # Обновление статистики
         self.total_fees += pnl_data['fees']
         self.total_pnl += pnl_data['net']
         
@@ -602,16 +628,17 @@ class ArbitrageEngine:
     
     def has_open_positions(self) -> bool:
         """Проверка наличия открытых позиций"""
-        return len(self.open_positions) > 0
+        return any(pos.status == 'open' for pos in self.open_positions)
     
     def get_open_positions(self) -> List[Position]:
-        """Получение списка открытых позиций"""
-        return self.open_positions.copy()
+        """Получение списка действительно открытых позиций"""
+        return [pos for pos in self.open_positions if pos.status == 'open']
     
     def get_statistics(self) -> Dict:
         """Получение статистики движка"""
+        open_positions = self.get_open_positions()
         return {
-            'open_positions': len(self.open_positions),
+            'open_positions': len(open_positions),
             'total_trades': len(self.trade_history),
             'total_pnl': self.total_pnl,
             'total_fees': self.total_fees,
@@ -620,16 +647,17 @@ class ArbitrageEngine:
     
     def diagnose_positions(self) -> Dict:
         """Диагностика состояния всех позиций"""
+        open_positions = self.get_open_positions()
         diagnosis = {
-            'total_positions': len(self.open_positions) + len(self.trade_history),
-            'open_positions': len(self.open_positions),
+            'total_positions': len(open_positions) + len(self.trade_history),
+            'open_positions': len(open_positions),
             'closed_positions': len(self.trade_history),
             'positions_detailed': [],
             'issues': []
         }
         
         # Диагностика открытых позиций
-        for pos in self.open_positions:
+        for pos in open_positions:
             pos_data = {
                 'id': pos.id,
                 'direction': pos.direction.value,
@@ -652,7 +680,7 @@ class ArbitrageEngine:
                 issues.append(f"Position too old: {pos.get_age_formatted()}")
             
             # 2. Спред давно не обновлялся
-            if time.time() - pos.last_spread_update > 60:  # Более минуты
+            if time.time() - pos.last_spread_update > 60:  # Более минута
                 issues.append(f"Spread not updated for {time.time() - pos.last_spread_update:.0f}s")
             
             # 3. Позиция должна закрыться, но не закрывается

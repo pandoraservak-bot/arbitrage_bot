@@ -188,6 +188,8 @@ class PaperTradeExecutor:
     
     def execute_fok_pair_sync(self, buy_order: Dict, sell_order: Dict, tag: str = "") -> Dict:
         """Синхронная версия исполнения FOK пары"""
+        logger.debug(f"Executing FOK pair sync: {tag}, buy: {buy_order}, sell: {sell_order}")
+        
         try:
             # Пробуем получить текущий event loop
             loop = asyncio.get_event_loop()
@@ -197,13 +199,22 @@ class PaperTradeExecutor:
                     self.execute_fok_pair(buy_order, sell_order, tag),
                     loop
                 )
-                return future.result(timeout=10)  # Таймаут 10 секунд
+                result = future.result(timeout=10)  # Таймаут 10 секунд
+                logger.debug(f"FOK pair sync completed: {tag}, success: {result.get('success', False)}")
+                return result
             else:
                 # Loop не запущен, запускаем новый
-                return asyncio.run(self.execute_fok_pair(buy_order, sell_order, tag))
-        except RuntimeError:
-            # Нет event loop, создаем новый
-            return asyncio.run(self.execute_fok_pair(buy_order, sell_order, tag))
+                logger.debug(f"Starting new event loop for FOK pair: {tag}")
+                result = asyncio.run(self.execute_fok_pair(buy_order, sell_order, tag))
+                logger.debug(f"FOK pair sync completed: {tag}, success: {result.get('success', False)}")
+                return result
+        except Exception as e:
+            logger.error(f"Error executing FOK pair sync {tag}: {e}", exc_info=True)
+            return {
+                'success': False,
+                'error': str(e),
+                'tag': tag
+            }
     
     def get_portfolio(self) -> Dict:
         """Получение текущего состояния портфеля"""

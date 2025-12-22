@@ -277,7 +277,23 @@ class BaseWebSocketClient:
         
         # Вызываем callback при отключении
         if self.on_disconnect_callback:
-            self.on_disconnect_callback()
+            try:
+                # Пытаемся выполнить callback в основном потоке
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    asyncio.create_task(self.on_disconnect_callback())
+                else:
+                    loop.run_until_complete(self.on_disconnect_callback())
+            except RuntimeError as e:
+                if "no running event loop" in str(e):
+                    # Создаем новый event loop
+                    new_loop = asyncio.new_event_loop()
+                    asyncio.set_event_loop(new_loop)
+                    new_loop.run_until_complete(self.on_disconnect_callback())
+                else:
+                    logger.error(f"Ошибка при вызове callback: {e}")
+            except Exception as e:
+                logger.error(f"Ошибка при вызове callback: {e}")
     
     def is_healthy(self) -> bool:
         """Проверка здоровья соединения"""
