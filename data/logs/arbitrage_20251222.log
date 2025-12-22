@@ -831,3 +831,125 @@ task: <Task pending name='Task-7' coro=<PaperTradeExecutor.execute_fok_pair() ru
 2025-12-22 21:10:19,436 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.125% (H→B)
 2025-12-22 21:10:23,960 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.141% (H→B)
 2025-12-22 21:10:25,873 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.098% (H→B)
+2025-12-22 21:10:52,057 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.103% (H→B)
+2025-12-22 21:12:08,662 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.141% (H→B)
+2025-12-22 21:12:14,535 - core.websocket_clients - ERROR - Bitget(NVDAUSDT) ошибка: Connection to remote host was lost.
+2025-12-22 21:12:14,537 - websocket - ERROR - Connection to remote host was lost. - goodbye
+2025-12-22 21:12:14,538 - core.websocket_clients - INFO - Bitget(NVDAUSDT) закрыт: None - None
+2025-12-22 21:12:14,540 - core.websocket_clients - ERROR - Ошибка при вызове callback: There is no current event loop in thread 'Thread-1 (_run_forever)'.
+2025-12-22 21:12:14,544 - core.websocket_clients - WARNING - Bitget(NVDAUSDT) переподключение через 1.5с (попытка 1)
+2025-12-22 21:12:14,702 - __main__ - INFO - Режим: → Частичная
+2025-12-22 21:12:16,388 - websocket - INFO - Websocket connected
+2025-12-22 21:12:16,388 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 21:12:17,718 - __main__ - INFO - Режим: → Активна
+2025-12-22 21:12:17,718 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.103% (H→B)
+2025-12-22 21:14:32,861 - __main__ - INFO - Запуск NVDA Арбитражного Бота...
+2025-12-22 21:14:32,861 - __main__ - INFO - ============================================================
+2025-12-22 21:14:32,861 - __main__ - INFO - NVDA АРБИТРАЖНЫЙ БОТ
+2025-12-22 21:14:32,861 - __main__ - INFO - Режим отображения: compact
+2025-12-22 21:14:32,861 - __main__ - INFO - ============================================================
+2025-12-22 21:14:32,861 - core.risk_manager - INFO - Risk Manager initialized. Daily loss limit: $400.0
+2025-12-22 21:14:32,861 - core.paper_executor - INFO - Portfolio loaded: USDT=$998.73
+2025-12-22 21:14:32,878 - core.paper_executor - INFO - Paper Trading initialized. Portfolio: USDT=$998.73
+2025-12-22 21:14:32,878 - core.arbitrage_engine - INFO - Arbitrage Engine initialized
+2025-12-22 21:14:32,878 - __main__ - INFO - Подключение WebSocket...
+2025-12-22 21:14:32,878 - __main__ - INFO - Bitget WebSocket...
+2025-12-22 21:14:33,379 - websocket - INFO - Websocket connected
+2025-12-22 21:14:33,379 - core.websocket_clients - INFO - ✅ Bitget(NVDAUSDT) подключен
+2025-12-22 21:14:35,382 - __main__ - INFO - Hyperliquid WebSocket...
+2025-12-22 21:14:35,619 - websocket - INFO - Websocket connected
+2025-12-22 21:14:35,621 - core.websocket_clients - INFO - ✅ Hyperliquid(xyz:NVDA) подключен
+2025-12-22 21:14:35,683 - __main__ - INFO - Режим: → Активна
+2025-12-22 21:14:35,683 - __main__ - INFO - ✅ Инициализация завершена
+2025-12-22 21:14:35,683 - __main__ - INFO - Время: 21:14:35
+2025-12-22 21:14:35,683 - __main__ - INFO - ============================================================
+2025-12-22 21:14:35,683 - __main__ - INFO - Начало торгового цикла...
+2025-12-22 21:14:35,784 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:35,784 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): 0.103% (B→H)
+2025-12-22 21:14:35,784 - __main__ - INFO - 🎯 Новый рекордный выходной спред (рыночный): -0.120% (H→B)
+2025-12-22 21:14:35,885 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:35,985 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:36,086 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:36,187 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:36,288 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:36,389 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:36,490 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:36,590 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:36,691 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:36,691 - __main__ - INFO - 🎯 Новый рекордный спред для входа: 0.103% (H→B)
+2025-12-22 21:14:36,792 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:36,892 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:36,993 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:37,094 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:37,194 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:37,295 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:37,396 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:37,496 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:37,597 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:37,698 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:37,803 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:37,904 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:38,004 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:38,105 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:38,205 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:38,306 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:38,408 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:38,509 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:38,609 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:38,710 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:38,811 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:38,913 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:39,018 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:39,120 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:39,221 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:39,323 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:39,424 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:39,526 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:39,626 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:39,727 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:39,833 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:39,934 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:40,034 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:40,137 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:40,238 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:40,339 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:40,439 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:40,540 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:40,641 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:40,753 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:40,854 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:40,954 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:41,056 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:41,157 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:41,257 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:41,359 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:41,460 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:41,562 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:41,662 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:41,763 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:41,866 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:41,967 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:42,068 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:42,168 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:42,269 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:42,370 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:42,470 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:42,571 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:42,672 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:42,773 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:42,873 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:42,974 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:43,075 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:43,178 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:43,281 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:43,382 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:43,483 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:43,584 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:43,685 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:43,785 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:43,889 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:43,991 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:44,092 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:44,195 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:44,296 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
+2025-12-22 21:14:44,402 - core.arbitrage_engine - INFO - 🎯 Opportunity found: H→B, Gross spread: 0.103% (no fees), Min required: 0.100%, Slippage: {'hyperliquid_buy': 0.0, 'bitget_sell': 0.0}
