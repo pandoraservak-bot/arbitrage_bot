@@ -1,11 +1,14 @@
 # core/arbitrage_engine.py
 import time
 import logging
+import json
+import os
 from typing import Dict, Optional, Tuple, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, asdict
 from enum import Enum
+from datetime import datetime
 
-from config import TRADING_CONFIG
+from config import TRADING_CONFIG, DATA_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +120,57 @@ class Position:
             stats['final_pnl_with_fees'] = self.final_pnl  # С комиссиями
         
         return stats
+    
+    def to_dict(self) -> Dict:
+        """Сериализация позиции в словарь для сохранения"""
+        return {
+            'id': self.id,
+            'direction': self.direction.value,
+            'entry_time': self.entry_time,
+            'contracts': self.contracts,
+            'entry_prices': self.entry_prices,
+            'entry_spread': self.entry_spread,
+            'entry_slippage': self.entry_slippage,
+            'exit_target': self.exit_target,
+            'status': self.status,
+            'current_exit_spread': self.current_exit_spread,
+            'last_spread_update': self.last_spread_update,
+            'spread_history': self.spread_history,
+            'update_count': self.update_count,
+            'exit_time': self.exit_time,
+            'exit_reason': self.exit_reason,
+            'exit_prices': self.exit_prices,
+            'final_pnl': self.final_pnl,
+        }
+    
+    @classmethod
+    def from_dict(cls, data: Dict) -> 'Position':
+        """Десериализация позиции из словаря"""
+        # Преобразуем строку направления обратно в Enum
+        direction_str = data['direction']
+        direction = TradeDirection.B_TO_H if direction_str == "B→H" else TradeDirection.H_TO_B
+        
+        # Создаем позицию без вызова __post_init__
+        position = cls.__new__(cls)
+        position.id = data['id']
+        position.direction = direction
+        position.entry_time = data['entry_time']
+        position.contracts = data['contracts']
+        position.entry_prices = data['entry_prices']
+        position.entry_spread = data['entry_spread']
+        position.entry_slippage = data['entry_slippage']
+        position.exit_target = data['exit_target']
+        position.status = data['status']
+        position.current_exit_spread = data['current_exit_spread']
+        position.last_spread_update = data['last_spread_update']
+        position.spread_history = data['spread_history']
+        position.update_count = data['update_count']
+        position.exit_time = data['exit_time']
+        position.exit_reason = data['exit_reason']
+        position.exit_prices = data['exit_prices']
+        position.final_pnl = data['final_pnl']
+        
+        return position
 
 class ArbitrageEngine:
     def __init__(self, risk_manager, paper_executor):
@@ -136,10 +190,64 @@ class ArbitrageEngine:
         self.total_fees = 0.0
         self.total_pnl = 0.0
         self.total_volume = 0.0
+        
+        # Путь к файлу с позициями
+        self.positions_file = os.path.join(DATA_DIR, "positions.json")
     
     def set_exit_spread_callback(self, callback):
         """Установка callback для обновления статистики лучших спредов выхода"""
         self.update_exit_spread_callback = callback
+    
+    def _save_positions(self):
+        """Сохранение открытых позиций в файл"""
+        try:
+            positions_data = {
+                'positions': [pos.to_dict() for pos in self.open_positions if pos.status == 'open'],
+                'position_counter': self.position_counter,
+                'last_saved': datetime.now().isoformat()
+            }
+            
+            os.makedirs(DATA_DIR, exist_ok=True)
+            with open(self.positions_file, 'w') as f:
+                json.dump(positions_data, f, indent=2)
+            
+            logger.debug(f"Saved {len(positions_data['positions'])} open position(s) to {self.positions_file}")
+        except Exception as e:
+            logger.error(f"Error saving positions: {e}")
+    
+    def _load_positions(self):
+        """Загрузка открытых позиций из файла"""
+        try:
+            if not os.path.exists(self.positions_file):
+                logger.info("No saved positions file found - starting fresh")
+                return
+            
+            with open(self.positions_file, 'r') as f:
+                positions_data = json.load(f)
+            
+            # Восстанавливаем позиции
+            restored_positions = []
+            for pos_dict in positions_data.get('positions', []):
+                try:
+                    position = Position.from_dict(pos_dict)
+                    restored_positions.append(position)
+                    logger.info(f"✅ Restored position: {position.id}, "
+                               f"Direction: {position.direction.value}, "
+                               f"Age: {position.get_age_formatted()}, "
+                               f"Entry spread: {position.entry_spread:.3f}%, "
+                               f"Current exit spread: {position.current_exit_spread:.3f}%")
+                except Exception as e:
+                    logger.error(f"Error restoring position: {e}")
+            
+            self.open_positions = restored_positions
+            self.position_counter = positions_data.get('position_counter', 0)
+            
+            if restored_positions:
+                logger.info(f"🔄 Restored {len(restored_positions)} open position(s) from previous session")
+                logger.info(f"   Last saved: {positions_data.get('last_saved', 'unknown')}")
+            
+        except Exception as e:
+            logger.error(f"Error loading positions: {e}")
     
     def calculate_spreads(self, bitget_data: Dict, hyper_data: Dict, 
                          bitget_slippage: Dict = None, hyper_slippage: Dict = None) -> Dict:
@@ -434,6 +542,9 @@ class ArbitrageEngine:
                    f"Gross spread: {spread_data['gross_spread']:.3f}%, "
                    f"Slippage: {spread_data['slippage_used']}")
         
+        # Сохраняем позиции после открытия
+        self._save_positions()
+        
         return True
     
     def monitor_positions(self, bitget_data: Dict, hyper_data: Dict,
@@ -443,6 +554,7 @@ class ArbitrageEngine:
         
         # Создаем копию списка для безопасной итерации
         positions_to_check = self.open_positions.copy()
+        should_save = False
         
         for position in positions_to_check:
             # Проверяем, что позиция все еще открыта
@@ -466,6 +578,7 @@ class ArbitrageEngine:
             if position.update_count % 10 == 0:  # Каждые 10 обновлений
                 logger.debug(f"Position {position.id}: exit_spread={current_spread:.3f}%, "
                             f"target={position.exit_target:.3f}%, hold_time={hold_time:.1f}s")
+                should_save = True  # Сохраняем каждые 10 обновлений
             
             # Закрытие по целевому спреду (выходной валовый спред >= целевого)
             # exit_target отрицательный (например -0.05%), но для выхода нужен спред >= этого значения
@@ -474,6 +587,10 @@ class ArbitrageEngine:
                            f"Exit spread {current_spread:.3f}% >= target {position.exit_target:.3f}%")
                 self.close_position(position, current_spread, 
                                   f"Exit spread reached: {current_spread:.3f}% >= {position.exit_target:.3f}%")
+        
+        # Периодически сохраняем позиции (каждые 10 обновлений)
+        if should_save and self.open_positions:
+            self._save_positions()
     
     def close_position(self, position: Position, exit_spread: float, reason: str):
         """Закрытие позиции"""
@@ -534,6 +651,9 @@ class ArbitrageEngine:
                    f"Gross PnL: ${pnl_data['gross']:.4f}, "
                    f"Fees: ${pnl_data['fees']:.4f}, "
                    f"Net PnL: ${pnl_data['net']:.4f}")
+        
+        # Сохраняем позиции после закрытия
+        self._save_positions()
     
     def force_close_position(self, position: Position, reason: str):
         """Принудительное закрытие позиции"""
@@ -710,5 +830,10 @@ class ArbitrageEngine:
     
     async def initialize(self):
         """Инициализация движка"""
+        logger.info("Arbitrage Engine initializing...")
+        
+        # Загружаем сохраненные позиции
+        self._load_positions()
+        
         logger.info("Arbitrage Engine initialized")
         return True

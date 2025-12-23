@@ -1244,6 +1244,11 @@ class NVDAFuturesArbitrageBot:
             logger.warning("Закрытие позиций...")
             self.arb_engine.close_all_positions("Завершение работы")
         
+        # Сохраняем открытые позиции перед завершением
+        if self.arb_engine.has_open_positions():
+            logger.info(f"Сохранение {len(self.arb_engine.get_open_positions())} открытых позиций...")
+            self.arb_engine._save_positions()
+        
         if self.bitget_ws:
             self.bitget_ws.disconnect()
         if self.hyper_ws:
