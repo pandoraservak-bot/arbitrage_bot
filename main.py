@@ -15,6 +15,15 @@ from core.risk_manager import RiskManager
 from core.paper_executor import PaperTradeExecutor
 from core.arbitrage_engine import ArbitrageEngine, TradeDirection
 
+# Try to import web server (optional)
+try:
+    from web_server import WebDashboardServer, integrate_web_dashboard
+    WEB_DASHBOARD_AVAILABLE = True
+except ImportError:
+    WEB_DASHBOARD_AVAILABLE = False
+    WebDashboardServer = None
+    integrate_web_dashboard = None
+
 # Настройка логирования
 # FileHandler: все уровни (включая DEBUG) - для записи в файл
 # StreamHandler: только INFO и выше - для отображения в консоли
@@ -126,6 +135,9 @@ class NVDAFuturesArbitrageBot:
             'positive_spreads': 0,
             'negative_spreads': 0,
         }
+        
+        # Web dashboard server (initialized later)
+        self.web_dashboard = None
         
     async def initialize(self):
         """Инициализация всех компонентов"""
@@ -1221,6 +1233,16 @@ class NVDAFuturesArbitrageBot:
         self.session_start = time.time()
         self.last_mode_change = time.time()
         
+        # Initialize web dashboard server
+        if WEB_DASHBOARD_AVAILABLE and integrate_web_dashboard:
+            try:
+                self.web_dashboard = integrate_web_dashboard(self, host='0.0.0.0', port=8080)
+                if self.web_dashboard:
+                    await self.web_dashboard.start()
+                    logger.info("🌐 Web Dashboard: http://0.0.0.0:8080")
+            except Exception as e:
+                logger.warning(f"Не удалось запустить web dashboard: {e}")
+        
         try:
             await self.trading_cycle()
         except KeyboardInterrupt:
@@ -1236,6 +1258,13 @@ class NVDAFuturesArbitrageBot:
         """Корректное завершение работы"""
         logger.info("Завершение работы...")
         self.running = False
+        
+        # Stop web dashboard server
+        if self.web_dashboard:
+            try:
+                await self.web_dashboard.stop()
+            except Exception as e:
+                logger.warning(f"Ошибка при остановке web dashboard: {e}")
         
         await self.update_mode_time_stats()
         
