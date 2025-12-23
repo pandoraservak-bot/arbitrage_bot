@@ -143,33 +143,118 @@ class Position:
             'final_pnl': self.final_pnl,
         }
     
+    @staticmethod
+    def _parse_direction(direction_value: object) -> TradeDirection:
+        if isinstance(direction_value, TradeDirection):
+            return direction_value
+
+        direction_str = str(direction_value or "").strip()
+
+        # Поддержка нескольких форматов (на случай старых файлов)
+        normalized = direction_str.replace(" ", "").upper()
+        if direction_str in {"B→H", "B->H", "B_TO_H", "B2H"} or normalized in {"B→H", "B->H", "B_TO_H", "B2H"}:
+            return TradeDirection.B_TO_H
+        if direction_str in {"H→B", "H->B", "H_TO_B", "H2B"} or normalized in {"H→B", "H->B", "H_TO_B", "H2B"}:
+            return TradeDirection.H_TO_B
+
+        # Последний шанс: эвристика по наличию букв
+        if "B" in normalized and "H" in normalized:
+            b_index = normalized.find("B")
+            h_index = normalized.find("H")
+            if 0 <= b_index < h_index:
+                return TradeDirection.B_TO_H
+            if 0 <= h_index < b_index:
+                return TradeDirection.H_TO_B
+
+        logger.warning(f"Unknown direction value in saved position: {direction_value!r}. Defaulting to H→B")
+        return TradeDirection.H_TO_B
+
     @classmethod
     def from_dict(cls, data: Dict) -> 'Position':
-        """Десериализация позиции из словаря"""
-        # Преобразуем строку направления обратно в Enum
-        direction_str = data['direction']
-        direction = TradeDirection.B_TO_H if direction_str == "B→H" else TradeDirection.H_TO_B
-        
+        """Десериализация позиции из словаря.
+
+        Должна быть устойчивой к частично заполненным/старым форматам positions.json.
+        """
+
+        if not isinstance(data, dict):
+            raise TypeError(f"Position.from_dict expected dict, got {type(data)}")
+
+        direction = cls._parse_direction(data.get('direction'))
+
+        entry_time = data.get('entry_time', time.time())
+        try:
+            entry_time = float(entry_time)
+        except Exception:
+            entry_time = time.time()
+
+        entry_spread = data.get('entry_spread', 0.0)
+        try:
+            entry_spread = float(entry_spread)
+        except Exception:
+            entry_spread = 0.0
+
+        exit_target = data.get('exit_target', 0.0)
+        try:
+            exit_target = float(exit_target)
+        except Exception:
+            exit_target = 0.0
+
+        spread_history = data.get('spread_history')
+        if not isinstance(spread_history, list) or not spread_history:
+            spread_history = [entry_spread]
+
+        current_exit_spread = data.get('current_exit_spread')
+        if current_exit_spread is None:
+            # В старых форматах мог не сохраняться текущий выходной спред.
+            # Выбираем безопасное значение, чтобы позиция не закрылась "сама" до первого обновления рынка.
+            if isinstance(spread_history, list) and len(spread_history) > 1:
+                current_exit_spread = spread_history[-1]
+            else:
+                current_exit_spread = exit_target - 1.0
+        try:
+            current_exit_spread = float(current_exit_spread)
+        except Exception:
+            current_exit_spread = exit_target - 1.0
+
+        last_spread_update = data.get('last_spread_update')
+        if last_spread_update is None:
+            last_spread_update = time.time()
+        try:
+            last_spread_update = float(last_spread_update)
+        except Exception:
+            last_spread_update = time.time()
+
+        update_count = data.get('update_count')
+        if update_count is None:
+            update_count = max(len(spread_history) - 1, 0)
+        try:
+            update_count = int(update_count)
+        except Exception:
+            update_count = 0
+
         # Создаем позицию без вызова __post_init__
         position = cls.__new__(cls)
-        position.id = data['id']
+        position.id = str(data.get('id', ''))
         position.direction = direction
-        position.entry_time = data['entry_time']
-        position.contracts = data['contracts']
-        position.entry_prices = data['entry_prices']
-        position.entry_spread = data['entry_spread']
-        position.entry_slippage = data['entry_slippage']
-        position.exit_target = data['exit_target']
-        position.status = data['status']
-        position.current_exit_spread = data['current_exit_spread']
-        position.last_spread_update = data['last_spread_update']
-        position.spread_history = data['spread_history']
-        position.update_count = data['update_count']
-        position.exit_time = data['exit_time']
-        position.exit_reason = data['exit_reason']
-        position.exit_prices = data['exit_prices']
-        position.final_pnl = data['final_pnl']
-        
+        position.entry_time = entry_time
+        try:
+            position.contracts = float(data.get('contracts', 0.0) or 0.0)
+        except Exception:
+            position.contracts = 0.0
+        position.entry_prices = data.get('entry_prices') or {}
+        position.entry_spread = entry_spread
+        position.entry_slippage = data.get('entry_slippage') or {}
+        position.exit_target = exit_target
+        position.status = str(data.get('status', 'open') or 'open').lower()
+        position.current_exit_spread = current_exit_spread
+        position.last_spread_update = last_spread_update
+        position.spread_history = spread_history
+        position.update_count = update_count
+        position.exit_time = data.get('exit_time')
+        position.exit_reason = data.get('exit_reason')
+        position.exit_prices = data.get('exit_prices')
+        position.final_pnl = data.get('final_pnl')
+
         return position
 
 class ArbitrageEngine:
@@ -216,38 +301,102 @@ class ArbitrageEngine:
             logger.error(f"Error saving positions: {e}")
     
     def _load_positions(self):
-        """Загрузка открытых позиций из файла"""
+        """Загрузка открытых позиций из файла."""
         try:
             if not os.path.exists(self.positions_file):
                 logger.info("No saved positions file found - starting fresh")
                 return
-            
-            with open(self.positions_file, 'r') as f:
-                positions_data = json.load(f)
-            
-            # Восстанавливаем позиции
-            restored_positions = []
-            for pos_dict in positions_data.get('positions', []):
+
+            with open(self.positions_file, 'r', encoding='utf-8') as f:
+                raw = json.load(f)
+
+            # Поддержка нескольких форматов файла
+            if isinstance(raw, list):
+                positions_data = {'positions': raw}
+            elif isinstance(raw, dict):
+                if 'positions' in raw:
+                    positions_data = raw
+                # старый формат: один объект позиции без обертки
+                elif {'id', 'direction', 'entry_time'}.issubset(set(raw.keys())):
+                    positions_data = {'positions': [raw]}
+                else:
+                    positions_data = raw
+            else:
+                logger.error(f"Unexpected positions file format: {type(raw)}")
+                return
+
+            raw_positions = positions_data.get('positions', [])
+            if not isinstance(raw_positions, list):
+                logger.error(f"Invalid positions list in {self.positions_file}: {type(raw_positions)}")
+                return
+
+            restored_positions: List[Position] = []
+            for pos_dict in raw_positions:
                 try:
+                    if not isinstance(pos_dict, dict):
+                        logger.error(f"Invalid position entry in {self.positions_file}: {type(pos_dict)}")
+                        continue
+
+                    if str(pos_dict.get('status', 'open')).lower() != 'open':
+                        continue
+
                     position = Position.from_dict(pos_dict)
+                    if str(position.status).lower() != 'open':
+                        continue
+
                     restored_positions.append(position)
-                    logger.info(f"✅ Restored position: {position.id}, "
-                               f"Direction: {position.direction.value}, "
-                               f"Age: {position.get_age_formatted()}, "
-                               f"Entry spread: {position.entry_spread:.3f}%, "
-                               f"Current exit spread: {position.current_exit_spread:.3f}%")
+
+                    logger.info(
+                        f"✅ Restored position: {position.id}, "
+                        f"Direction: {position.direction.value}, "
+                        f"Contracts: {position.contracts}, "
+                        f"Age: {position.get_age_formatted()}, "
+                        f"Entry spread: {position.entry_spread:.3f}%, "
+                        f"Current exit spread: {position.current_exit_spread:.3f}%, "
+                        f"Spread history: {len(position.spread_history)}"
+                    )
                 except Exception as e:
-                    logger.error(f"Error restoring position: {e}")
-            
+                    logger.error(f"Error restoring position from {pos_dict}: {e}", exc_info=True)
+
             self.open_positions = restored_positions
-            self.position_counter = positions_data.get('position_counter', 0)
-            
+
+            # Восстанавливаем счетчик позиций
+            counter = positions_data.get('position_counter')
+            try:
+                counter_int = int(counter) if counter is not None else None
+            except Exception:
+                counter_int = None
+
+            if counter_int is not None:
+                self.position_counter = counter_int
+            else:
+                max_id = -1
+                for pos in restored_positions:
+                    try:
+                        if pos.id.startswith('pos_'):
+                            max_id = max(max_id, int(pos.id.split('_', 1)[1]))
+                    except Exception:
+                        continue
+                self.position_counter = max_id + 1 if max_id >= 0 else len(restored_positions)
+
             if restored_positions:
                 logger.info(f"🔄 Restored {len(restored_positions)} open position(s) from previous session")
                 logger.info(f"   Last saved: {positions_data.get('last_saved', 'unknown')}")
-            
+
+                # Синхронизация/валидация портфеля (paper trading)
+                reconcile = getattr(self.paper_executor, 'reconcile_with_positions', None)
+                if callable(reconcile):
+                    try:
+                        reconcile(restored_positions)
+                    except Exception as e:
+                        logger.warning(f"Portfolio reconcile failed: {e}", exc_info=True)
+            else:
+                logger.info(f"Positions file loaded ({self.positions_file}) - no open positions to restore")
+
+        except json.JSONDecodeError as e:
+            logger.error(f"Positions file is corrupted (JSON decode): {self.positions_file}: {e}")
         except Exception as e:
-            logger.error(f"Error loading positions: {e}")
+            logger.error(f"Error loading positions: {e}", exc_info=True)
     
     def calculate_spreads(self, bitget_data: Dict, hyper_data: Dict, 
                          bitget_slippage: Dict = None, hyper_slippage: Dict = None) -> Dict:
