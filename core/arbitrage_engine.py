@@ -696,9 +696,9 @@ class ArbitrageEngine:
         
         return True
     
-    def monitor_positions(self, bitget_data: Dict, hyper_data: Dict,
-                         bitget_slippage: Dict = None, hyper_slippage: Dict = None):
-        """Мониторинг и закрытие позиций по условиям (только валовый спред)"""
+    async def monitor_positions(self, bitget_data: Dict, hyper_data: Dict,
+                              bitget_slippage: Dict = None, hyper_slippage: Dict = None):
+        """Асинхронный мониторинг и закрытие позиций по условиям (только валовый спред)"""
         current_time = time.time()
         
         # Создаем копию списка для безопасной итерации
@@ -734,15 +734,15 @@ class ArbitrageEngine:
             if position.should_close():
                 logger.info(f"🚀 Closing position {position.id}: "
                            f"Exit spread {current_spread:.3f}% >= target {position.exit_target:.3f}%")
-                self.close_position(position, current_spread, 
+                await self.close_position(position, current_spread, 
                                   f"Exit spread reached: {current_spread:.3f}% >= {position.exit_target:.3f}%")
         
         # Периодически сохраняем позиции (каждые 10 обновлений)
         if should_save and self.open_positions:
             self._save_positions()
     
-    def close_position(self, position: Position, exit_spread: float, reason: str):
-        """Закрытие позиции"""
+    async def close_position(self, position: Position, exit_spread: float, reason: str):
+        """Асинхронное закрытие позиции"""
         # Проверяем, что позиция еще не закрыта
         if position.status != 'open':
             logger.warning(f"Position {position.id} already closed, skipping")
@@ -757,7 +757,7 @@ class ArbitrageEngine:
             buy_order = {'exchange': 'bitget', 'side': 'buy', 'amount': position.contracts}
         
         # Исполнение закрытия
-        exit_result = self.paper_executor.execute_fok_pair_sync(
+        exit_result = await self.paper_executor.execute_fok_pair_async(
             buy_order, sell_order, f"exit_{position.id}"
         )
         
@@ -804,18 +804,18 @@ class ArbitrageEngine:
         # Сохраняем позиции после закрытия
         self._save_positions()
     
-    def force_close_position(self, position: Position, reason: str):
-        """Принудительное закрытие позиции"""
+    async def force_close_position(self, position: Position, reason: str):
+        """Асинхронное принудительное закрытие позиции"""
         logger.warning(f"⚠️ Force closing position {position.id}: {reason}")
         
         # Рассчитываем текущий спред перед закрытием
         current_spread = position.current_exit_spread
-        self.close_position(position, current_spread, f"FORCE: {reason}")
+        await self.close_position(position, current_spread, f"FORCE: {reason}")
     
-    def close_all_positions(self, reason: str = "System shutdown"):
-        """Закрытие всех открытых позиций"""
+    async def close_all_positions(self, reason: str = "System shutdown"):
+        """Асинхронное закрытие всех открытых позиций"""
         for position in self.open_positions[:]:
-            self.force_close_position(position, reason)
+            await self.force_close_position(position, reason)
     
     def calculate_trade_pnl(self, position: Position, exit_result: Dict) -> Dict:
         """Расчет PnL сделки С УЧЕТОМ КОМИССИЙ (комиссии только здесь!)"""

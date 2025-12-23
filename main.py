@@ -172,9 +172,12 @@ class NVDAFuturesArbitrageBot:
         """Инициализация WebSocket соединений"""
         logger.info("Подключение WebSocket...")
         
+        # Получаем текущий event loop для передачи в WebSocket клиенты
+        current_loop = asyncio.get_running_loop()
+        
         # Создание и настройка WebSocket клиентов
-        self.bitget_ws = BitgetWebSocketClient()
-        self.hyper_ws = HyperliquidWebSocketClient()
+        self.bitget_ws = BitgetWebSocketClient(event_loop=current_loop)
+        self.hyper_ws = HyperliquidWebSocketClient(event_loop=current_loop)
         
         # Установка callback для отслеживания отключений
         self.bitget_ws.set_disconnect_callback(self.on_bitget_disconnect)
@@ -561,7 +564,7 @@ class NVDAFuturesArbitrageBot:
         if has_bitget_data and has_hyper_data:
             # Всегда мониторим позиции, если они есть
             if self.arb_engine.has_open_positions():
-                self.arb_engine.monitor_positions(bitget_data, hyper_data, bitget_slippage, hyper_slippage)
+                await self.arb_engine.monitor_positions(bitget_data, hyper_data, bitget_slippage, hyper_slippage)
             else:
                 # Нет позиций - ищем возможности для входа
                 opportunity = self.arb_engine.find_opportunity(
@@ -1271,7 +1274,7 @@ class NVDAFuturesArbitrageBot:
         close_on_shutdown = False
         if close_on_shutdown and self.arb_engine.has_open_positions():
             logger.warning("Закрытие позиций...")
-            self.arb_engine.close_all_positions("Завершение работы")
+            await self.arb_engine.close_all_positions("Завершение работы")
         
         # Сохраняем открытые позиции перед завершением
         if self.arb_engine.has_open_positions():

@@ -172,7 +172,7 @@ class OrderBookAnalyzer:
 class BaseWebSocketClient:
     """Базовый WebSocket клиент с переподключением"""
     
-    def __init__(self, ws_url: str, name: str = "WebSocket"):
+    def __init__(self, ws_url: str, name: str = "WebSocket", event_loop: asyncio.AbstractEventLoop = None):
         self.ws_url = ws_url
         self.name = name
         self.ws = None
@@ -186,6 +186,7 @@ class BaseWebSocketClient:
         self.heartbeat_interval = 30  # интервал heartbeat в секундах
         self.lock = threading.Lock()
         self.on_disconnect_callback = None
+        self._event_loop = event_loop  # Сохраняем event loop для безопасного вызова callback
         
     def start(self):
         """Запуск WebSocket соединения с переподключением"""
@@ -278,22 +279,58 @@ class BaseWebSocketClient:
         # Вызываем callback при отключении
         if self.on_disconnect_callback:
             try:
-                # Пытаемся выполнить callback в основном потоке
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    asyncio.create_task(self.on_disconnect_callback())
+                # Используем сохраненный event loop или пытаемся получить его безопасным способом
+                if self._event_loop is not None and not self._event_loop.is_closed():
+                    # Используем run_coroutine_threadsafe для безопасного запуска из другого потока
+                    future = asyncio.run_coroutine_threadsafe(
+                        self._safe_execute_callback(),
+                        self._event_loop
+                    )
+                    # Не блокируем - callback выполнится в основном event loop
+                    # Можно добавить таймаут если нужно дождаться выполнения
+                    try:
+                        future.result(timeout=5)
+                    except Exception as e:
+                        logger.debug(f"Callback result error (non-critical): {e}")
                 else:
-                    loop.run_until_complete(self.on_disconnect_callback())
+                    # Fallback: если loop не доступен, вызываем callback синхронно
+                    # Это может работать для простых callback, но не для async функций
+                    logger.debug(f"No event loop available, executing callback synchronously")
+                    if asyncio.iscoroutinefunction(self.on_disconnect_callback):
+                        # Создаем новый loop для синхронного выполнения
+                        new_loop = asyncio.new_event_loop()
+                        asyncio.set_event_loop(new_loop)
+                        try:
+                            new_loop.run_until_complete(self.on_disconnect_callback())
+                        finally:
+                            new_loop.close()
+                    else:
+                        self.on_disconnect_callback()
             except RuntimeError as e:
-                if "no running event loop" in str(e):
-                    # Создаем новый event loop
+                if "no running event loop" in str(e).lower():
+                    # Создаем новый event loop как fallback
+                    logger.debug(f"Creating new event loop for callback")
                     new_loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(new_loop)
-                    new_loop.run_until_complete(self.on_disconnect_callback())
+                    try:
+                        if asyncio.iscoroutinefunction(self.on_disconnect_callback):
+                            new_loop.run_until_complete(self.on_disconnect_callback())
+                        else:
+                            self.on_disconnect_callback()
+                    finally:
+                        new_loop.close()
                 else:
                     logger.error(f"Ошибка при вызове callback: {e}")
             except Exception as e:
                 logger.error(f"Ошибка при вызове callback: {e}")
+    
+    async def _safe_execute_callback(self):
+        """Безопасное выполнение callback в контексте event loop"""
+        try:
+            if self.on_disconnect_callback:
+                await self.on_disconnect_callback()
+        except Exception as e:
+            logger.error(f"Error in disconnect callback: {e}")
     
     def is_healthy(self) -> bool:
         """Проверка здоровья соединения"""
