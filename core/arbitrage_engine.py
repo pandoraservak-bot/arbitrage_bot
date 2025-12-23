@@ -977,12 +977,49 @@ class ArbitrageEngine:
         
         logger.info("=" * 60)
     
+    def reload_config(self):
+        """Перечитывание конфига из модуля"""
+        try:
+            import importlib
+            import config
+            importlib.reload(config)
+            self.config = config.TRADING_CONFIG
+            logger.info("Config reloaded successfully")
+            return True
+        except Exception as e:
+            logger.error(f"Error reloading config: {e}")
+            return False
+
+    def update_exit_targets_from_config(self):
+        """Обновление целевых выходных спредов для всех открытых позиций на основе текущего конфига"""
+        if not self.open_positions:
+            return
+        
+        new_exit_target = self.config['MIN_SPREAD_EXIT'] * 100
+        updated_count = 0
+        
+        for position in self.open_positions:
+            if position.status == 'open' and position.exit_target != new_exit_target:
+                old_target = position.exit_target
+                position.exit_target = new_exit_target
+                updated_count += 1
+                logger.info(f"Updated position {position.id}: exit_target {old_target:.3f}% -> {new_exit_target:.3f}%")
+        
+        if updated_count > 0:
+            logger.info(f"✅ Updated exit targets for {updated_count} open position(s) to {new_exit_target:.3f}%")
+            self._save_positions()
+        else:
+            logger.debug("No open positions to update")
+
     async def initialize(self):
         """Инициализация движка"""
         logger.info("Arbitrage Engine initializing...")
         
         # Загружаем сохраненные позиции
         self._load_positions()
+        
+        # Обновляем целевые спреды из конфига
+        self.update_exit_targets_from_config()
         
         logger.info("Arbitrage Engine initialized")
         return True
