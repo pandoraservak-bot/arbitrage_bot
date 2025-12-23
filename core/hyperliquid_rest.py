@@ -118,7 +118,7 @@ class HyperliquidRESTClient:
                     self.update_count += 1
                     
                     # Логируем каждые 100 обновлений
-                    if self.update_count % 100 == 0:
+                    if self.update_count % 500 == 0:  # Увеличили с 100 до 500 - меньше спама
                         logger.info(f"Hyperliquid REST: {self.update_count} обновлений, "
                                    f"цена: {new_data['bid']:.2f}/{new_data['ask']:.2f}")
                 else:

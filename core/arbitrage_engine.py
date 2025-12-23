@@ -329,34 +329,39 @@ class ArbitrageEngine:
                         bitget_slippage: Dict = None, hyper_slippage: Dict = None) -> Optional[Tuple[TradeDirection, Dict]]:
         """Поиск арбитражной возможности для входа с учетом реального проскальзывания (БЕЗ КОМИССИЙ)"""
         if self.open_positions:
+            logger.debug("🔄 Already have open positions, skipping opportunity search")
             return None
         
         # Рассчитываем спреды с учетом реального проскальзывания (БЕЗ КОМИССИЙ)
         spreads = self.calculate_spreads(bitget_data, hyper_data, bitget_slippage, hyper_slippage)
         
+        if not spreads:
+            logger.debug("❌ No spreads calculated - missing market data")
+            return None
+        
         # MIN_SPREAD_ENTER теперь относится к валовому спреду (без комиссий)
-        min_spread = self.config['MIN_SPREAD_ENTER'] * 100
+        min_spread_required = self.config['MIN_SPREAD_ENTER'] * 100
+        # Убрали spam - логируем только при нахождении возможности
         
         for direction, data in spreads.items():
             # Используем валовый спред без комиссий
             gross_spread = data['gross_spread']
             
-            if gross_spread >= min_spread:
-                # Логируем детали проскальзывания
-                slippage_info = data.get('slippage_used', {})
-                logger.info(f"🎯 Opportunity found: {direction.value}, "
-                           f"Gross spread: {gross_spread:.3f}% (no fees), "
-                           f"Min required: {min_spread:.3f}%, "
-                           f"Slippage: {slippage_info}")
-                
+            # Убрали spam - не логируем каждую проверку
+            
+            if gross_spread >= min_spread_required:
                 risk_ok, reason = self.risk_manager.can_open_position(
                     direction, gross_spread, data['buy_price']
                 )
                 if risk_ok:
+                    logger.info(f"✅ Opportunity FOUND: {direction.value}, spread: {gross_spread:.3f}% - READY TO EXECUTE!")
                     return direction, data
                 else:
-                    logger.debug(f"Risk check failed for {direction.value}: {reason}")
+                    logger.warning(f"⚠️ Risk check FAILED for {direction.value}: {reason}")
+            else:
+                logger.debug(f"📉 Spread too low for {direction.value}: {gross_spread:.3f}% < {min_spread_required:.3f}%")
         
+        logger.debug("🔍 No suitable opportunities found in this cycle")
         return None
     
     async def execute_opportunity(self, opportunity: Tuple[TradeDirection, Dict]) -> bool:
@@ -553,20 +558,10 @@ class ArbitrageEngine:
         exit_buy_price = exit_result['buy_order']['price']
         exit_sell_price = exit_result['sell_order']['price']
         
-        logger.info(f"\n=== PnL CALCULATION for {position.id} ===")
-        logger.info(f"Position: {position.direction.value}, Contracts: {contracts}")
-        logger.info(f"Entry prices: buy={entry_buy_price:.4f}, sell={entry_sell_price:.4f}")
-        logger.info(f"Exit prices: buy={exit_buy_price:.4f}, sell={exit_sell_price:.4f}")
-        
         # 1. ВАЛОВАЯ прибыль (без комиссий)
         entry_leg = (entry_sell_price - entry_buy_price) * contracts
         exit_leg = (exit_sell_price - exit_buy_price) * contracts
         gross_pnl = entry_leg + exit_leg
-        
-        logger.info(f"Gross PnL (NO FEES):")
-        logger.info(f"  Entry leg: (${entry_sell_price:.4f} - ${entry_buy_price:.4f}) * {contracts} = ${entry_leg:.4f}")
-        logger.info(f"  Exit leg: (${exit_sell_price:.4f} - ${exit_buy_price:.4f}) * {contracts} = ${exit_leg:.4f}")
-        logger.info(f"  TOTAL GROSS: ${gross_pnl:.4f}")
         
         # 2. РАСЧЕТ КОМИССИЙ (4 ордера)
         fees_config = self.config['FEES']
@@ -589,26 +584,10 @@ class ArbitrageEngine:
         total_fees = entry_buy_fee + entry_sell_fee + exit_buy_fee + exit_sell_fee
         net_pnl = gross_pnl - total_fees
         
-        # 3. Логирование деталей комиссий
-        logger.info(f"\nCOMMISSION BREAKDOWN:")
-        logger.info(f"  Entry Buy Fee: ${entry_buy_fee:.6f}")
-        logger.info(f"  Entry Sell Fee: ${entry_sell_fee:.6f}")
-        logger.info(f"  Exit Buy Fee: ${exit_buy_fee:.6f}")
-        logger.info(f"  Exit Sell Fee: ${exit_sell_fee:.6f}")
-        logger.info(f"  TOTAL FEES: ${total_fees:.6f}")
-        
-        logger.info(f"\nFINAL PnL:")
-        logger.info(f"  Gross PnL: ${gross_pnl:.6f}")
-        logger.info(f"  - Fees: ${total_fees:.6f}")
-        logger.info(f"  NET PnL: ${net_pnl:.6f}")
-        
         if entry_buy_price * contracts > 0:
             return_percent = (net_pnl / (entry_buy_price * contracts)) * 100
-            logger.info(f"  Return: {return_percent:.4f}%")
         else:
             return_percent = 0.0
-        
-        logger.info(f"=== END PnL CALCULATION ===")
         
         return {
             'gross': gross_pnl,

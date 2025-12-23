@@ -1,22 +1,2271 @@
 {
-  "start_time": "2025-12-18 06:02:58.808399",
-  "total_checks": 7657,
-  "total_trades": 0,
-  "bitget_updates": 7489,
-  "hyper_updates": 7654,
+  "start_time": "2025-12-23 08:01:27.226331",
+  "total_checks": 84,
+  "total_trades": 1,
+  "bitget_updates": 84,
+  "hyper_updates": 81,
   "bitget_connections": 0,
   "hyper_connections": 0,
-  "bitget_disconnects": 10,
+  "bitget_disconnects": 0,
   "hyper_disconnects": 0,
-  "mode_changes": 13,
-  "time_in_active": 810.6076319217682,
-  "time_in_partial": 18.226643085479736,
-  "time_in_stopped": 4.318060398101807,
+  "mode_changes": 1,
+  "time_in_active": 68.31678795814514,
+  "time_in_partial": 0,
+  "time_in_stopped": 3.9147675037384033,
+  "max_spread": 0.15832286946553253,
+  "min_spread": 0.15285511518725592,
+  "avg_spread": 0.15476041375360064,
+  "spread_sum": 10.214187307737642,
+  "spread_count": 66,
+  "last_spread": 0.15285511518725592,
+  "last_spread_direction": "H\u2192B",
+  "positive_spreads": 66,
+  "negative_spreads": 0,
   "total_pnl": 0.0,
   "total_fees": 0.0,
-  "total_volume": 0.0,
-  "end_time": "2025-12-18T06:16:55.283873",
-  "runtime_seconds": 832.1563816070557,
+  "total_volume": 293.088,
+  "best_entry_spread": 0.15832286946553253,
+  "best_entry_direction": "H\u2192B",
+  "best_entry_time": "2025-12-23T08:02:03.767675",
+  "best_exit_spread_bh": 0.15285511518725592,
+  "best_exit_spread_hb": -0.18530630041421192,
+  "best_exit_spread_overall": -0.18530630041421192,
+  "best_exit_direction": "H\u2192B",
+  "best_exit_time": "2025-12-23T08:01:31.589223",
+  "best_exit_with_position": false,
+  "entry_spreads_history": [
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466092.2377598
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466094.2469215
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466095.2621706
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466096.2801166
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466097.2972538
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466098.31417
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466099.3343306
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466100.349659
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466101.365901
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466102.384151
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466103.403587
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466104.4214542
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466105.4378874
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466106.4553874
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466107.473292
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466108.4916432
+    },
+    {
+      "spread": 0.158314226443923,
+      "direction": "H\u2192B",
+      "time": 1766466109.509115
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466110.52254
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466111.5399663
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466112.559626
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466113.5775988
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466114.6001215
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466115.6176817
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466116.6373363
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466117.6550047
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466118.6734498
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466119.687535
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466120.7074718
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466121.725899
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466122.747356
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466123.7676742
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466124.7869666
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466125.8050716
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466126.8276384
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466127.8467572
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466128.8664844
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466129.8866022
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466130.902741
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466131.9228137
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466132.9417794
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466133.9629855
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466134.9803915
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466135.9995937
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466137.0186288
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466138.0378788
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466139.0580504
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466140.079588
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466141.098016
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466142.1218119
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466143.140816
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466144.157672
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "H\u2192B",
+      "time": 1766466145.1789496
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466146.1930244
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466147.2137713
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466148.2346823
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466149.2540948
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466150.2685816
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466151.2868207
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466152.3052201
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466153.3256958
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466154.3417857
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466155.3622243
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466156.3766472
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466157.3918579
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466158.4081244
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "H\u2192B",
+      "time": 1766466159.4321043
+    }
+  ],
+  "exit_spreads_history": [
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466091.589209
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466091.5892196
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466092.021192
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466092.0211954
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466092.2377691
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466092.237771
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466092.559516
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466092.5595188
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466093.1005137
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466093.100516
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466094.246927
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466094.246929
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466094.246944
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466094.2469447
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466095.2621772
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466095.2621796
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466095.262197
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466095.262198
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466096.2801206
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466096.280122
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466096.280133
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466096.280134
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466097.2972622
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466097.2972646
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466097.2972991
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466097.297301
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466098.3141751
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466098.314177
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466098.3141901
+    },
+    {
+      "spread": -0.18530630041421192,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466098.3141906
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466099.3343353
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466099.334337
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466099.3343482
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466099.3343494
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466100.3496633
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466100.349665
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466100.349679
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466100.3496802
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466101.3659067
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466101.365909
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466101.3659234
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466101.3659241
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466102.3841558
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466102.3841577
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466102.384171
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466102.3841717
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466103.4035912
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466103.4035923
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466103.4036033
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466103.403604
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466104.4214597
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466104.421462
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466104.4214778
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466104.4214792
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466105.437893
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466105.4378948
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466105.4379086
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466105.43791
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466106.455392
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466106.4553936
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466106.4554057
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466106.4554067
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466107.4732969
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466107.4732985
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466107.473311
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466107.4733136
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466108.491647
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466108.4916484
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466108.4916606
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466108.491661
+    },
+    {
+      "spread": 0.158314226443923,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466109.5091264
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466109.509128
+    },
+    {
+      "spread": 0.158314226443923,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466109.5091445
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466109.5091455
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466110.5225468
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466110.522549
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466110.5225658
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466110.5225706
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466111.5399716
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466111.539974
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466111.5399885
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466111.5399895
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466112.559631
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466112.5596333
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466112.559648
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466112.559649
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466113.577605
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466113.5776072
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466113.577622
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466113.5776231
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466114.6001265
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466114.600128
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466114.6001406
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466114.6001437
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466115.6176877
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466115.6176908
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466115.6177073
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466115.617708
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466116.6373413
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466116.637343
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466116.637356
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466116.6373568
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466117.6550097
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466117.6550117
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466117.6550245
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466117.6550255
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466118.6734545
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466118.6734564
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466118.6734679
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466118.6734707
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466119.6875412
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466119.6875439
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466119.6875615
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466119.6875625
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466120.707478
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466120.70748
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466120.7074938
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466120.7074947
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466121.7259033
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466121.725905
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466121.7259169
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466121.725918
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466122.7473614
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466122.7473636
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466122.74738
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466122.747381
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466123.7676795
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466123.7676816
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466123.767695
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466123.7676983
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466124.7869732
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466124.786975
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466124.7869947
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466124.7869956
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466125.8050761
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466125.805078
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466125.8050902
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466125.805091
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466126.8276436
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466126.8276463
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466126.8276627
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466126.8276634
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466127.846762
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466127.8467638
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466127.8467765
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466127.8467777
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466128.8664901
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466128.8664925
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466128.8665063
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466128.86651
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466129.8866065
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466129.8866081
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466129.8866186
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466129.8866193
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466130.9027462
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466130.9027476
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466130.9027612
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466130.902762
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466131.9228187
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466131.9228203
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466131.922835
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466131.922836
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466132.9417846
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466132.9417865
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466132.9417996
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466132.9418006
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466133.9629908
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466133.962993
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466133.963009
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466133.9630096
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466134.9803975
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466134.9804
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466134.9804173
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466134.9804218
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466135.999598
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466135.9995995
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466135.9996102
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466135.9996107
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466137.0186334
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466137.018635
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466137.0186462
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466137.018647
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466138.0378852
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466138.0378869
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466138.0379024
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466138.0379035
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466139.0580542
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466139.058056
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466139.0580654
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466139.058066
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466140.0795941
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466140.0795963
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466140.0796103
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466140.079611
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466141.09802
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466141.0980213
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466141.0980315
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466141.0980325
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466142.1218202
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466142.1218224
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466142.121842
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466142.1218467
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466143.1408205
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466143.1408222
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466143.1408324
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466143.1408334
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466144.1576772
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466144.157679
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466144.157695
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466144.1576955
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466145.1789553
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466145.1789575
+    },
+    {
+      "spread": 0.15832286946553253,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466145.1789737
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466145.1789746
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466146.1930308
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466146.193033
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466146.1930478
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466146.1930492
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466147.213776
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466147.213778
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466147.2137911
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466147.213792
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466148.2346876
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466148.2346895
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466148.2347026
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466148.2347033
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466149.2541
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466149.2541015
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466149.2541132
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466149.2541144
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466150.2685883
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466150.2685912
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466150.2686064
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466150.268611
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466151.2868276
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466151.2868304
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466151.2868493
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466151.286851
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466152.305226
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466152.305228
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466152.3052433
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466152.3052444
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466153.3257005
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466153.3257027
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466153.3257146
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466153.3257158
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466154.3417916
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466154.341795
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466154.3418117
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466154.3418124
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466155.3622303
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466155.3622327
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466155.3622472
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466155.362248
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466156.376654
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466156.3766565
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466156.3766737
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466156.3766754
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466157.3918629
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466157.3918648
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466157.3918784
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466157.3918793
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466158.408132
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466158.4081345
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466158.4081485
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466158.4081495
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466159.4321096
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466159.432111
+    },
+    {
+      "spread": 0.15285511518725592,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466159.4321244
+    },
+    {
+      "spread": -0.17440592980161318,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766466159.4321272
+    }
+  ],
+  "end_time": "2025-12-23T08:02:50.122496",
+  "runtime_seconds": 78.98102402687073,
   "final_mode": "ACTIVE",
-  "open_positions_at_end": 0
+  "open_positions_at_end": 1,
+  "current_spread_at_end": 0.15285511518725592,
+  "spread_direction_at_end": "H\u2192B",
+  "slippage_info_at_end": {
+    "hyperliquid_buy": 0.0,
+    "bitget_sell": 0.0
+  },
+  "display_mode_used": "compact"
 }

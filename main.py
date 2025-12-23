@@ -16,13 +16,22 @@ from core.paper_executor import PaperTradeExecutor
 from core.arbitrage_engine import ArbitrageEngine, TradeDirection
 
 # Настройка логирования
+# FileHandler: все уровни (включая DEBUG) - для записи в файл
+# StreamHandler: только INFO и выше - для отображения в консоли
+file_handler = logging.FileHandler(LOGGING_CONFIG['LOG_FILE'], encoding='utf-8')
+file_handler.setLevel(logging.DEBUG)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.INFO)
+
+# Форматирование
+formatter = logging.Formatter(LOGGING_CONFIG['LOG_FORMAT'])
+file_handler.setFormatter(formatter)
+stream_handler.setFormatter(formatter)
+
 logging.basicConfig(
-    level=getattr(logging, LOGGING_CONFIG['LOG_LEVEL']),
-    format=LOGGING_CONFIG['LOG_FORMAT'],
-    handlers=[
-        logging.FileHandler(LOGGING_CONFIG['LOG_FILE'], encoding='utf-8'),
-        logging.StreamHandler()
-    ]
+    level=logging.DEBUG,  # Общий уровень - самый низкий, обработчики фильтруют
+    handlers=[file_handler, stream_handler]
 )
 logger = logging.getLogger(__name__)
 
@@ -329,7 +338,14 @@ class NVDAFuturesArbitrageBot:
                     self.best_spreads_session['best_exit_time'] = time.time()
                     self.best_spreads_session['best_exit_with_position'] = False
                     
-                    logger.info(f"🎯 Новый рекордный выходной спред (без позиции): {best_exit_overall:.3f}% ({best_exit_dir.value if best_exit_dir else 'N/A'})")
+                    # Логируем только если спред значительно улучшился (более 10%)
+                    if self.best_spreads_session['best_exit_spread_overall'] != float('inf'):
+                        improvement = ((self.best_spreads_session['best_exit_spread_overall'] - best_exit_overall) /
+                                     abs(self.best_spreads_session['best_exit_spread_overall']) * 100)
+                        if abs(improvement) > 10:
+                            logger.info(f"🎯 Новый рекордный выходной спред (без позиции): {best_exit_overall:.3f}% ({best_exit_dir.value if best_exit_dir else 'N/A'})")
+                    else:
+                        logger.info(f"🎯 Новый рекордный выходной спред (без позиции): {best_exit_overall:.3f}% ({best_exit_dir.value if best_exit_dir else 'N/A'})")
                     
         except Exception as e:
             logger.debug(f"Ошибка расчета выходных спредов: {e}")
@@ -354,7 +370,14 @@ class NVDAFuturesArbitrageBot:
             self.best_spreads_session['best_entry_direction'] = direction.value if direction else None
             self.best_spreads_session['best_entry_time'] = time.time()
             
-            logger.info(f"🎯 Новый рекордный спред для входа: {spread:.3f}% ({direction.value if direction else 'N/A'})")
+            # Логируем только если спред значительно улучшился (более 10%)
+            if self.best_spreads_session['best_entry_spread'] > 0:
+                improvement = ((spread - self.best_spreads_session['best_entry_spread']) /
+                             self.best_spreads_session['best_entry_spread'] * 100)
+                if abs(improvement) > 10:
+                    logger.info(f"🎯 Новый рекордный спред для входа: {spread:.3f}% ({direction.value if direction else 'N/A'})")
+            else:
+                logger.info(f"🎯 Новый рекордный спред для входа: {spread:.3f}% ({direction.value if direction else 'N/A'})")
     
     def update_exit_spread_stats(self, spread: float, direction=None, position_id: str = None, from_position: bool = True):
         """Обновление статистики спредов для выхода"""
@@ -376,11 +399,11 @@ class NVDAFuturesArbitrageBot:
         if direction == TradeDirection.B_TO_H:
             if spread < self.best_spreads_session['best_exit_spread_bh']:
                 self.best_spreads_session['best_exit_spread_bh'] = spread
-                logger.debug(f"Новый рекорд для выхода B→H: {spread:.3f}%")
+                # Убрали spam - логируем только значительные улучшения
         elif direction == TradeDirection.H_TO_B:
             if spread < self.best_spreads_session['best_exit_spread_hb']:
                 self.best_spreads_session['best_exit_spread_hb'] = spread
-                logger.debug(f"Новый рекорд для выхода H→B: {spread:.3f}%")
+                # Убрали spam - логируем только значительные улучшения
         
         # Обновляем абсолютно лучший выходной спред
         if spread < self.best_spreads_session['best_exit_spread_overall']:
@@ -389,10 +412,18 @@ class NVDAFuturesArbitrageBot:
             self.best_spreads_session['best_exit_time'] = time.time()
             self.best_spreads_session['best_exit_with_position'] = from_position
             
-            if from_position and position_id:
-                logger.info(f"🎯 Новый рекордный спред для выхода: {spread:.3f}% (позиция {position_id})")
-            else:
-                logger.info(f"🎯 Новый рекордный выходной спред (рыночный): {spread:.3f}% ({direction.value if direction else 'N/A'})")
+            # Логируем только значительные улучшения (более 10%)
+            should_log = False
+            if self.best_spreads_session['best_exit_spread_overall'] != float('inf'):
+                improvement = ((self.best_spreads_session['best_exit_spread_overall'] - spread) /
+                             abs(self.best_spreads_session['best_exit_spread_overall']) * 100)
+                should_log = abs(improvement) > 10
+            
+            if should_log or self.best_spreads_session['best_exit_spread_overall'] == float('inf'):
+                if from_position and position_id:
+                    logger.info(f"🎯 Новый рекордный спред для выхода: {spread:.3f}% (позиция {position_id})")
+                else:
+                    logger.info(f"🎯 Новый рекордный выходной спред (рыночный): {spread:.3f}% ({direction.value if direction else 'N/A'})")
     
     def update_spread_stats(self, spread: float):
         """Обновление статистики спредов"""
@@ -1208,7 +1239,7 @@ class NVDAFuturesArbitrageBot:
         
         await self.update_mode_time_stats()
         
-        close_on_shutdown = True
+        close_on_shutdown = False
         if close_on_shutdown and self.arb_engine.has_open_positions():
             logger.warning("Закрытие позиций...")
             self.arb_engine.close_all_positions("Завершение работы")
