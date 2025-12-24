@@ -97,7 +97,7 @@ STATS_CONFIG = {
 
 # Настройки отображения
 DISPLAY_CONFIG = {
-    'DISPLAY_MODE': 'compact',           # Варианты: 'compact', 'ultra_compact', 'dashboard'
+    'DISPLAY_MODE': 'dashboard',          # Варианты: 'compact', 'ultra_compact', 'dashboard'
     'SHOW_SLIPPAGE_DETAILS': True,       # Показывать детали проскальзывания
     'SHOW_MARKET_DEPTH': True,           # Показывать глубину рынка
     'MAX_POSITIONS_SHOWN': 3,            # Максимум показываемых позиций
