@@ -604,8 +604,6 @@ class ArbitrageEngine:
             # Используем валовый спред без комиссий
             gross_spread = data['gross_spread']
             
-            # Убрали spam - не логируем каждую проверку
-            
             if gross_spread >= min_spread_required:
                 risk_ok, reason = self.risk_manager.can_open_position(
                     direction, gross_spread, data['buy_price']
@@ -615,10 +613,8 @@ class ArbitrageEngine:
                     return direction, data
                 else:
                     logger.warning(f"⚠️ Risk check FAILED for {direction.value}: {reason}")
-            else:
-                logger.debug(f"📉 Spread too low for {direction.value}: {gross_spread:.3f}% < {min_spread_required:.3f}%")
+            # Не логируем "spread too low" - это создает спам
         
-        logger.debug("🔍 No suitable opportunities found in this cycle")
         return None
     
     async def execute_opportunity(self, opportunity: Tuple[TradeDirection, Dict]) -> bool:
