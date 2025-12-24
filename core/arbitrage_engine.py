@@ -892,6 +892,75 @@ class ArbitrageEngine:
             'total_volume': self.total_volume,
         }
     
+    def get_spread_history(self, limit: int = 100) -> Dict:
+        """Получение истории спредов для графика"""
+        # Возвращаем данные из best_spreads_session для графика
+        entry_spreads = self.best_spreads_session.get('entry_spreads_history', [])
+        exit_spreads = self.best_spreads_session.get('exit_spreads_history', [])
+        
+        # Берем последние N записей
+        recent_entries = entry_spreads[-limit:] if len(entry_spreads) > limit else entry_spreads
+        recent_exits = exit_spreads[-limit:] if len(exit_spreads) > limit else exit_spreads
+        
+        # Строим данные для графика
+        labels = []
+        entry_bh = []
+        entry_hb = []
+        exit_bh = []
+        exit_hb = []
+        timestamps = []
+        
+        for entry in recent_entries:
+            labels.append(entry.get('time_str', datetime.fromtimestamp(entry.get('time', 0)).strftime('%H:%M:%S')) if 'time_str' in entry else datetime.fromtimestamp(entry.get('time', 0)).strftime('%H:%M:%S'))
+            direction = entry.get('direction', '')
+            spread = entry.get('spread', 0)
+            if direction == 'B→H' or direction == 'B_TO_H':
+                entry_bh.append(spread)
+                entry_hb.append(None)
+            elif direction == 'H→B' or direction == 'H_TO_B':
+                entry_hb.append(spread)
+                entry_bh.append(None)
+            else:
+                entry_bh.append(None)
+                entry_hb.append(None)
+            timestamps.append(entry.get('time', 0))
+        
+        for exit_rec in recent_exits:
+            direction = exit_rec.get('direction', '')
+            spread = exit_rec.get('spread', 0)
+            if direction == 'B→H' or direction == 'B_TO_H':
+                exit_bh.append(spread)
+                exit_hb.append(None)
+            elif direction == 'H→B' or direction == 'H_TO_B':
+                exit_hb.append(spread)
+                exit_bh.append(None)
+            else:
+                exit_bh.append(None)
+                exit_hb.append(None)
+        
+        # Заполняем None значения для выравнивания массивов
+        max_len = max(len(entry_bh), len(entry_hb), len(exit_bh), len(exit_hb))
+        while len(entry_bh) < max_len: entry_bh.append(None)
+        while len(entry_hb) < max_len: entry_hb.append(None)
+        while len(exit_bh) < max_len: exit_bh.append(None)
+        while len(exit_hb) < max_len: exit_hb.append(None)
+        while len(labels) < max_len: labels.append(None)
+        
+        return {
+            'labels': [l for l in labels if l is not None],
+            'datasets': {
+                'entry_bh': [v for v in entry_bh if v is not None],
+                'entry_hb': [v for v in entry_hb if v is not None],
+                'exit_bh': [v for v in exit_bh if v is not None],
+                'exit_hb': [v for v in exit_hb if v is not None],
+            },
+            'timestamps': [t for t in timestamps if t > 0],
+            'health': {
+                'bitget': [True] * len([t for t in timestamps if t > 0]),
+                'hyper': [True] * len([t for t in timestamps if t > 0]),
+            }
+        }
+    
     def diagnose_positions(self) -> Dict:
         """Диагностика состояния всех позиций"""
         open_positions = self.get_open_positions()

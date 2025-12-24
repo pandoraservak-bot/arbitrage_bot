@@ -256,7 +256,67 @@ class WebDashboardServer:
             'total_value': total_value,
             'pnl': pnl,
             'positions': positions,
-            'config': self.bot.config
+            'config': self.bot.config,
+            'spread_chart_data': self._get_spread_chart_data()
+        }
+    
+    def _get_spread_chart_data(self) -> Dict:
+        """Получение данных для графика спредов"""
+        try:
+            # Получаем историю спредов из arb_engine или создаем из текущих данных
+            if hasattr(self.bot, 'arb_engine') and hasattr(self.bot.arb_engine, 'get_spread_history'):
+                # Если есть менеджер истории
+                history_data = self.bot.arb_engine.get_spread_history(100)
+                if history_data:
+                    return history_data
+            
+            # Иначе создаем из текущих данных
+            bitget_data = self.bot.bitget_ws.get_latest_data() if self.bot.bitget_ws else None
+            hyper_data = self.bot.hyper_ws.get_latest_data() if self.bot.hyper_ws else None
+            
+            if bitget_data and hyper_data:
+                bitget_slippage = self.bot.bitget_ws.get_estimated_slippage() if self.bot.bitget_ws else None
+                hyper_slippage = self.bot.hyper_ws.get_estimated_slippage() if self.bot.hyper_ws else None
+                
+                spreads = self.bot.arb_engine.calculate_spreads(
+                    bitget_data, hyper_data, bitget_slippage, hyper_slippage
+                )
+                exit_spreads = self.bot.arb_engine.calculate_exit_spread_for_market(
+                    bitget_data, hyper_data, bitget_slippage, hyper_slippage
+                )
+                
+                if spreads and exit_spreads:
+                    now = datetime.now().strftime('%H:%M:%S')
+                    return {
+                        'labels': [now],
+                        'datasets': {
+                            'entry_bh': [spreads.get('B_TO_H', {}).get('gross_spread', 0)],
+                            'entry_hb': [spreads.get('H_TO_B', {}).get('gross_spread', 0)],
+                            'exit_bh': [exit_spreads.get('B_TO_H', 0)],
+                            'exit_hb': [exit_spreads.get('H_TO_B', 0)],
+                        },
+                        'timestamps': [time.time()],
+                        'health': {
+                            'bitget': [self.bot.bitget_healthy],
+                            'hyper': [self.bot.hyper_healthy],
+                        }
+                    }
+        except Exception as e:
+            logger.debug(f"Error getting spread chart data: {e}")
+        
+        return {
+            'labels': [],
+            'datasets': {
+                'entry_bh': [],
+                'entry_hb': [],
+                'exit_bh': [],
+                'exit_hb': [],
+            },
+            'timestamps': [],
+            'health': {
+                'bitget': [],
+                'hyper': [],
+            }
         }
     
     async def send_to_client(self, ws, msg_type, payload):

@@ -137,6 +137,11 @@ class DashboardClient {
         // Update statistics
         this.updateStats(data);
         
+        // Update spread chart
+        if (data.spread_chart_data) {
+            updateSpreadChart(data.spread_chart_data);
+        }
+        
         // Update last update time
         document.getElementById('lastUpdate').textContent = 
             `Last update: ${new Date().toLocaleTimeString()}`;
@@ -488,9 +493,158 @@ class DashboardClient {
 
 // Initialize dashboard when page loads
 let dashboard = null;
+let spreadChart = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     dashboard = new DashboardClient();
+    initSpreadChart();
 });
 
 // Expose for external use
 window.dashboard = dashboard;
+
+function initSpreadChart() {
+    const ctx = document.getElementById('spreadChart');
+    if (!ctx) return;
+    
+    spreadChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [
+                {
+                    label: 'Entry B→H',
+                    data: [],
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 0,
+                    pointHoverRadius: 4
+                },
+                {
+                    label: 'Entry H→B',
+                    data: [],
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 0,
+                    pointHoverRadius: 4
+                },
+                {
+                    label: 'Exit B→H',
+                    data: [],
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 0,
+                    pointHoverRadius: 4
+                },
+                {
+                    label: 'Exit H→B',
+                    data: [],
+                    borderColor: '#f97316',
+                    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 0,
+                    pointHoverRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        color: '#9ca3af',
+                        usePointStyle: true,
+                        pointStyle: 'line',
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                    titleColor: '#f3f4f6',
+                    bodyColor: '#d1d5db',
+                    borderColor: '#374151',
+                    borderWidth: 1,
+                    padding: 10,
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.parsed.y.toFixed(3)}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    display: true,
+                    grid: {
+                        color: 'rgba(55, 65, 81, 0.3)'
+                    },
+                    ticks: {
+                        color: '#6b7280',
+                        maxTicksLimit: 10,
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                y: {
+                    display: true,
+                    grid: {
+                        color: 'rgba(55, 65, 81, 0.3)'
+                    },
+                    ticks: {
+                        color: '#6b7280',
+                        callback: function(value) {
+                            return value.toFixed(2) + '%';
+                        },
+                        font: {
+                            size: 10
+                        }
+                    },
+                    suggestedMin: -0.2,
+                    suggestedMax: 0.2
+                }
+            }
+        }
+    });
+}
+
+function updateSpreadChart(data) {
+    if (!spreadChart) return;
+    
+    const labels = data.labels || [];
+    const datasets = data.datasets || {};
+    
+    spreadChart.data.labels = labels;
+    spreadChart.data.datasets[0].data = datasets.entry_bh || [];
+    spreadChart.data.datasets[1].data = datasets.entry_hb || [];
+    spreadChart.data.datasets[2].data = datasets.exit_bh || [];
+    spreadChart.data.datasets[3].data = datasets.exit_hb || [];
+    
+    spreadChart.update('none');
+}
+
+function changeChartRange() {
+    if (dashboard && dashboard.requestFullUpdate) {
+        dashboard.requestFullUpdate();
+    }
+}

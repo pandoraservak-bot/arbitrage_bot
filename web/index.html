@@ -6,6 +6,7 @@
     <title>NVDA Arbitrage Bot - Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="dashboard">
@@ -221,6 +222,24 @@
                             <div class="stat-value" id="avgSpread">0.000%</div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Spread Chart -->
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h2>📈 Spread History</h2>
+                    <div class="chart-controls">
+                        <select id="chartTimeRange" onchange="changeChartRange()">
+                            <option value="50">50 points</option>
+                            <option value="100" selected>100 points</option>
+                            <option value="200">200 points</option>
+                            <option value="500">500 points</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-content">
+                    <canvas id="spreadChart"></canvas>
                 </div>
             </div>
         </div>

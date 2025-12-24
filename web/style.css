@@ -815,3 +815,33 @@ body {
 .card:nth-child(5) { animation-delay: 0.25s; }
 .card:nth-child(6) { animation-delay: 0.3s; }
 .card:nth-child(7) { animation-delay: 0.35s; }
+.card:nth-child(8) { animation-delay: 0.4s; }
+
+/* Chart Card */
+.chart-card {
+    grid-column: span 2;
+    min-height: 300px;
+}
+
+.chart-controls select {
+    padding: 5px 10px;
+    border-radius: 5px;
+    border: 1px solid #3f3f46;
+    background: #1f2937;
+    color: #e5e7eb;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.chart-controls select:hover {
+    border-color: #6366f1;
+}
+
+.chart-content {
+    padding: 15px;
+    height: 250px;
+}
+
+.chart-content canvas {
+    max-height: 220px;
+}
