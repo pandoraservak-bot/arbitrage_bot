@@ -359,10 +359,11 @@ class BaseWebSocketClient:
 class BitgetWebSocketClient(BaseWebSocketClient):
     """WebSocket клиент для Bitget с расчетом проскальзывания"""
     
-    def __init__(self, symbol="NVDAUSDT", inst_type="USDT-FUTURES"):
+    def __init__(self, symbol="NVDAUSDT", inst_type="USDT-FUTURES", event_loop: asyncio.AbstractEventLoop = None):
         super().__init__(
             ws_url="wss://ws.bitget.com/v2/ws/public",
-            name=f"Bitget({symbol})"
+            name=f"Bitget({symbol})",
+            event_loop=event_loop
         )
         self.symbol = symbol
         self.inst_type = inst_type
@@ -511,10 +512,11 @@ class BitgetWebSocketClient(BaseWebSocketClient):
 class HyperliquidWebSocketClient(BaseWebSocketClient):
     """WebSocket клиент для Hyperliquid с расчетом проскальзывания"""
     
-    def __init__(self, symbol="xyz:NVDA"):
+    def __init__(self, symbol="xyz:NVDA", event_loop: asyncio.AbstractEventLoop = None):
         super().__init__(
             ws_url="wss://api.hyperliquid.xyz/ws",
-            name=f"Hyperliquid({symbol})"
+            name=f"Hyperliquid({symbol})",
+            event_loop=event_loop
         )
         self.symbol = symbol
         self.latest_data = None
