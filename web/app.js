@@ -25,7 +25,7 @@ class ToastNotification {
             <div class="toast-content">
                 <div class="toast-message">${message}</div>
             </div>
-            <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+            <button class="toast-close" data-action="close-toast">&times;</button>
         `;
         
         this.container.appendChild(toast);
@@ -659,7 +659,7 @@ class DashboardClient {
                         </div>
                     </div>
                     <span class="exit-status ${statusClass}">${statusText}</span>
-                    <button class="btn btn-close-position" onclick="closePosition(${pos.id})">❌ Close</button>
+                    <button class="btn btn-close-position" data-action="close-position" data-position-id="${pos.id}">❌ Close</button>
                 </div>
             `;
         }).join('');
@@ -792,6 +792,7 @@ class DashboardClient {
     }
 
     setupEventListeners() {
+        // Keydown listeners
         document.addEventListener('keydown', (e) => {
             if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
@@ -807,6 +808,7 @@ class DashboardClient {
             }
         });
         
+        // Modal overlay click
         const modalOverlay = document.getElementById('modalOverlay');
         if (modalOverlay) {
             modalOverlay.addEventListener('click', (e) => {
@@ -815,6 +817,97 @@ class DashboardClient {
                 }
             });
         }
+
+        // Global click delegation
+        document.addEventListener('click', (e) => {
+            // Bot commands
+            const botCommandBtn = e.target.closest('[data-bot-command]');
+            if (botCommandBtn) {
+                sendBotCommand(botCommandBtn.dataset.botCommand);
+                return;
+            }
+
+            // Refresh
+            if (e.target.closest('[data-action="refresh"]')) {
+                requestFullUpdate();
+                return;
+            }
+
+            // Config updates
+            const configUpdateBtn = e.target.closest('[data-config-update]');
+            if (configUpdateBtn) {
+                updateConfig(configUpdateBtn.dataset.configUpdate);
+                return;
+            }
+
+            // Risk config updates
+            const riskConfigUpdateBtn = e.target.closest('[data-config-risk-update]');
+            if (riskConfigUpdateBtn) {
+                updateRiskConfig(riskConfigUpdateBtn.dataset.configRiskUpdate);
+                return;
+            }
+
+            // Event log clear
+            if (e.target.closest('[data-action="clear-events"]')) {
+                clearEventLog();
+                return;
+            }
+
+            // Trade history controls
+            if (e.target.closest('[data-action="export-trades"]')) {
+                exportTradeHistory();
+                return;
+            }
+            if (e.target.closest('[data-action="clear-trades"]')) {
+                clearTradeHistory();
+                return;
+            }
+
+            // Fullscreen
+            if (e.target.closest('[data-action="toggle-fullscreen"]')) {
+                toggleFullscreen();
+                return;
+            }
+
+            // Modal controls
+            if (e.target.closest('[data-action="close-modal"]')) {
+                closeModal();
+                return;
+            }
+            if (e.target.closest('[data-action="confirm-modal"]')) {
+                confirmModal();
+                return;
+            }
+
+            // Close position
+            const closePosBtn = e.target.closest('[data-action="close-position"]');
+            if (closePosBtn) {
+                closePosition(closePosBtn.dataset.positionId);
+                return;
+            }
+
+            // Close toast
+            const closeToastBtn = e.target.closest('[data-action="close-toast"]');
+            if (closeToastBtn) {
+                closeToastBtn.parentElement.remove();
+                return;
+            }
+        });
+
+        // Global change delegation
+        document.addEventListener('change', (e) => {
+            // Event log filter
+            if (e.target.closest('[data-action="filter-events"]')) {
+                filterEventLog();
+                return;
+            }
+
+            // Chart range
+            if (e.target.closest('[data-action="change-chart-range"]')) {
+                changeChartRange();
+                return;
+            }
+        });
     }
 }
 

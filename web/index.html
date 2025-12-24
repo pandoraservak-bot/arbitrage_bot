@@ -27,11 +27,11 @@
                     <span class="time-value" id="serverTime">--:--:--</span>
                 </div>
                 <div class="bot-controls">
-                    <button class="btn btn-control btn-start" onclick="sendBotCommand('start')" id="btnStart">▶️ START</button>
-                    <button class="btn btn-control btn-pause" onclick="sendBotCommand('pause')" id="btnPause">⏸️ PAUSE</button>
-                    <button class="btn btn-control btn-stop" onclick="sendBotCommand('stop')" id="btnStop">⏹️ STOP</button>
+                    <button class="btn btn-control btn-start" data-bot-command="start" id="btnStart">▶️ START</button>
+                    <button class="btn btn-control btn-pause" data-bot-command="pause" id="btnPause">⏸️ PAUSE</button>
+                    <button class="btn btn-control btn-stop" data-bot-command="stop" id="btnStop">⏹️ STOP</button>
                 </div>
-                <button class="btn btn-refresh" onclick="requestFullUpdate()">🔄 Refresh</button>
+                <button class="btn btn-refresh" data-action="refresh">🔄 Refresh</button>
             </div>
         </header>
 
@@ -135,7 +135,7 @@
                         <label class="config-label">Min Entry Spread (%)</label>
                         <div class="config-input-group">
                             <input type="number" id="minSpreadEnter" step="0.01" min="0.01" max="1.0" class="config-input" />
-                            <button class="btn btn-config" onclick="updateConfig('min_spread_enter')">Update</button>
+                            <button class="btn btn-config" data-config-update="min_spread_enter">Update</button>
                         </div>
                         <span class="config-hint">Range: 0.01 - 1.0</span>
                     </div>
@@ -143,7 +143,7 @@
                         <label class="config-label">Min Exit Spread (%)</label>
                         <div class="config-input-group">
                             <input type="number" id="minSpreadExit" step="0.01" min="-1.0" max="0.01" class="config-input" />
-                            <button class="btn btn-config" onclick="updateConfig('min_spread_exit')">Update</button>
+                            <button class="btn btn-config" data-config-update="min_spread_exit">Update</button>
                         </div>
                         <span class="config-hint">Range: -1.0 - 0.01</span>
                     </div>
@@ -151,7 +151,7 @@
                         <label class="config-label">Max Position Age (hours)</label>
                         <div class="config-input-group">
                             <input type="number" id="maxPositionAge" step="0.5" min="0.5" max="24" class="config-input" />
-                            <button class="btn btn-config" onclick="updateConfig('max_position_age')">Update</button>
+                            <button class="btn btn-config" data-config-update="max_position_age">Update</button>
                         </div>
                         <span class="config-hint">Range: 0.5 - 24</span>
                     </div>
@@ -159,7 +159,7 @@
                         <label class="config-label">Max Concurrent Positions</label>
                         <div class="config-input-group">
                             <input type="number" id="maxConcurrentPos" step="1" min="1" max="10" class="config-input" />
-                            <button class="btn btn-config" onclick="updateConfig('max_concurrent_positions')">Update</button>
+                            <button class="btn btn-config" data-config-update="max_concurrent_positions">Update</button>
                         </div>
                         <span class="config-hint">Range: 1 - 10</span>
                     </div>
@@ -223,7 +223,7 @@
                         <label class="config-label">Daily Loss Limit ($)</label>
                         <div class="config-input-group">
                             <input type="number" id="dailyLossLimit" step="10" min="10" max="10000" class="config-input" />
-                            <button class="btn btn-config" onclick="updateRiskConfig('daily_loss_limit')">Update</button>
+                            <button class="btn btn-config" data-config-risk-update="daily_loss_limit">Update</button>
                         </div>
                         <span class="config-hint">Range: 10 - 10000</span>
                     </div>
@@ -231,7 +231,7 @@
                         <label class="config-label">Max Position Size (NVDA)</label>
                         <div class="config-input-group">
                             <input type="number" id="maxPositionSize" step="0.1" min="0.1" max="100" class="config-input" />
-                            <button class="btn btn-config" onclick="updateRiskConfig('max_position_size')">Update</button>
+                            <button class="btn btn-config" data-config-risk-update="max_position_size">Update</button>
                         </div>
                         <span class="config-hint">Range: 0.1 - 100</span>
                     </div>
@@ -294,13 +294,13 @@
                 <div class="card-header">
                     <h2>📋 Event Log</h2>
                     <div class="event-log-controls">
-                        <select id="eventLogFilter" onchange="filterEventLog()">
+                        <select id="eventLogFilter" data-action="filter-events">
                             <option value="all">All</option>
                             <option value="success">Success</option>
                             <option value="warning">Warning</option>
                             <option value="error">Error</option>
                         </select>
-                        <button class="btn btn-small" onclick="clearEventLog()">Clear</button>
+                        <button class="btn btn-small" data-action="clear-events">Clear</button>
                     </div>
                 </div>
                 <div class="event-log-content">
@@ -342,8 +342,8 @@
                 <div class="card-header">
                     <h2>📊 Trade History</h2>
                     <div class="trade-history-controls">
-                        <button class="btn btn-small" onclick="exportTradeHistory()">Export CSV</button>
-                        <button class="btn btn-small" onclick="clearTradeHistory()">Clear</button>
+                        <button class="btn btn-small" data-action="export-trades">Export CSV</button>
+                        <button class="btn btn-small" data-action="clear-trades">Clear</button>
                     </div>
                 </div>
                 <div class="trade-history-content">
@@ -375,8 +375,8 @@
                 <div class="card-header">
                     <h2>📈 Spread History</h2>
                     <div class="chart-controls">
-                        <button class="btn btn-small" onclick="toggleFullscreen()" id="btnFullscreen">🖥️ Fullscreen</button>
-                        <select id="chartTimeRange" onchange="changeChartRange()">
+                        <button class="btn btn-small" data-action="toggle-fullscreen" id="btnFullscreen">🖥️ Fullscreen</button>
+                        <select id="chartTimeRange" data-action="change-chart-range">
                             <option value="50">50 points</option>
                             <option value="100" selected>100 points</option>
                             <option value="200">200 points</option>
@@ -409,14 +409,14 @@
         <div class="modal" id="modal">
             <div class="modal-header">
                 <h3 id="modalTitle">Confirm Action</h3>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <button class="modal-close" data-action="close-modal">&times;</button>
             </div>
             <div class="modal-body" id="modalBody">
                 Are you sure?
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                <button class="btn btn-primary" id="modalConfirm" onclick="confirmModal()">Confirm</button>
+                <button class="btn btn-secondary" data-action="close-modal">Cancel</button>
+                <button class="btn btn-primary" id="modalConfirm" data-action="confirm-modal">Confirm</button>
             </div>
         </div>
     </div>
