@@ -1,48 +1,47 @@
 @echo off
 chcp 65001 >nul
-title NVDA АРБИТРАЖНЫЙ БОТ
+title NVDA РђСЂР±РёС‚СЂР°Р¶РЅС‹Р№ Р‘РѕС‚
 color 0A
-
 echo ========================================
-echo    NVDA АРБИТРАЖНЫЙ БОТ
+echo    NVDA РђСЂР±РёС‚СЂР°Р¶РЅС‹Р№ Р‘РѕС‚
 echo    Bitget vs Hyperliquid
 echo ========================================
 echo.
 
-:: Проверка Python
+:: РџСЂРѕРІРµСЂРєР° Python
 where python >nul 2>&1
 if errorlevel 1 (
-    echo [ОШИБКА] Python не установлен или не найден в PATH
+    echo [РћРЁРР‘РљРђ] Python РЅРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅ РёР»Рё РЅРµ РґРѕР±Р°РІР»РµРЅ РІ PATH
     pause
     exit /b 1
 )
 
-:: Проверка виртуального окружения
+:: РђРєС‚РёРІР°С†РёСЏ РІРёСЂС‚СѓР°Р»СЊРЅРѕРіРѕ РѕРєСЂСѓР¶РµРЅРёСЏ
 if exist "venv\Scripts\activate.bat" (
-    echo [ИНФО] Активация виртуального окружения...
+    echo [РРќР¤Рћ] РђРєС‚РёРІР°С†РёСЏ РІРёСЂС‚СѓР°Р»СЊРЅРѕРіРѕ РѕРєСЂСѓР¶РµРЅРёСЏ...
     call venv\Scripts\activate.bat
 ) else (
-    echo [ИНФО] Виртуальное окружение не найдено
+    echo [РРќР¤Рћ] Р’РёСЂС‚СѓР°Р»СЊРЅРѕРµ РѕРєСЂСѓР¶РµРЅРёРµ РЅРµ РЅР°Р№РґРµРЅРѕ
 )
 
-:: Проверка зависимостей
+:: РџСЂРѕРІРµСЂРєР° Р·Р°РІРёСЃРёРјРѕСЃС‚РµР№
 echo.
-echo [ИНФО] Проверка зависимостей...
+echo [РРќР¤Рћ] РџСЂРѕРІРµСЂРєР° Р·Р°РІРёСЃРёРјРѕСЃС‚РµР№...
 python -c "import websocket, aiohttp, colorama" 2>nul
 if errorlevel 1 (
-    echo [ИНФО] Установка недостающих зависимостей...
+    echo [РРќР¤Рћ] РЈСЃС‚Р°РЅРѕРІРєР° РѕС‚СЃСѓС‚СЃС‚РІСѓСЋС‰РёС… Р·Р°РІРёСЃРёРјРѕСЃС‚РµР№...
     pip install websocket-client aiohttp colorama python-dotenv pandas numpy -q
     if errorlevel 1 (
-        echo [ОШИБКА] Не удалось установить зависимости
+        echo [РћРЁРР‘РљРђ] РќРµ СѓРґР°Р»РѕСЃСЊ СѓСЃС‚Р°РЅРѕРІРёС‚СЊ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё
         pause
         exit /b 1
     )
-    echo [ИНФО] Зависимости установлены
+    echo [РћРљ] Р—Р°РІРёСЃРёРјРѕСЃС‚Рё СѓСЃС‚Р°РЅРѕРІР»РµРЅС‹
 ) else (
-    echo [ИНФО] Все зависимости установлены
+    echo [РћРљ] Р’СЃРµ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё СѓСЃС‚Р°РЅРѕРІР»РµРЅС‹
 )
 
-:: Создание необходимых папок
+:: РЎРѕР·РґР°РЅРёРµ РґРёСЂРµРєС‚РѕСЂРёР№
 if not exist "data" mkdir data
 if not exist "data\logs" mkdir data\logs
 if not exist "core" mkdir core
@@ -50,44 +49,23 @@ if not exist "utils" mkdir utils
 
 echo.
 echo ========================================
-echo    ВЫБОР РЕЖИМА ОТОБРАЖЕНИЯ
+echo    Р РµР¶РёРј РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ: Dashboard
 echo ========================================
-echo 1. Компактный режим (рекомендуется)
-echo 2. Ультракомпактный режим
-echo 3. Dashboard режим
 echo.
-set /p choice="Выберите режим (1-3, по умолчанию 1): "
-
-:: Обновление конфига с выбранным режимом
-if "%choice%"=="2" (
-    echo Установка ультракомпактного режима...
-    python -c "import json; config=json.load(open('config.py' if 'config.py' in open('config.py').read() else 'config.json', 'r')); config['DISPLAY_CONFIG']['DISPLAY_MODE']='ultra_compact'; json.dump(config, open('config.py' if 'config.py' in open('config.py').read() else 'config.json', 'w'), indent=2)" 2>nul || echo Используется режим по умолчанию
-) else if "%choice%"=="3" (
-    echo Установка dashboard режима...
-    python -c "import json; config=json.load(open('config.py' if 'config.py' in open('config.py').read() else 'config.json', 'r')); config['DISPLAY_CONFIG']['DISPLAY_MODE']='dashboard'; json.dump(config, open('config.py' if 'config.py' in open('config.py').read() else 'config.json', 'w'), indent=2)" 2>nul || echo Используется режим по умолчанию
-) else (
-    echo Используется компактный режим (по умолчанию)
-)
-
+echo РџР°СЂР°РјРµС‚СЂС‹ С‚РѕСЂРіРѕРІР»Рё:
+echo   РњР°РєСЃ. СЂР°Р·РјРµСЂ РїРѕР·РёС†РёРё: 0.02 РєРѕРЅС‚СЂР°РєС‚Р°
+echo   РњР°РєСЃ. СЂР°Р·РјРµСЂ РїРѕР·РёС†РёРё USD: $4.00
+echo   РџРѕСЂРѕРі РІС…РѕРґР°: 0.3%%
+echo   РџРѕСЂРѕРі РІС‹С…РѕРґР°: 0.1%%
+echo   РџСЂРѕСЃРєР°Р»СЊР·С‹РІР°РЅРёРµ: 0.01%%
 echo.
-echo ========================================
-echo    ЗАПУСК БОТА
-echo ========================================
-echo Параметры:
-echo   Макс. позиция: 0.02 контракта
-echo   Макс. дневной убыток: $4.00
-echo   Спред для входа: 0.3%%
-echo   Спред для выхода: 0.1%%
-echo   Проскальзывание: 0.01%%
-echo.
-echo Нажмите Ctrl+C для остановки бота
+echo РќР°Р¶РјРёС‚Рµ Ctrl+C РґР»СЏ РѕСЃС‚Р°РЅРѕРІРєРё Р±РѕС‚Р°
 echo.
 
-:: Запуск бота
+:: Р—Р°РїСѓСЃРє Р±РѕС‚Р°
 python main.py
-
 echo.
 echo ========================================
-echo    БОТ ОСТАНОВЛЕН
+echo    Р‘РѕС‚ РѕСЃС‚Р°РЅРѕРІР»РµРЅ
 echo ========================================
 pause
