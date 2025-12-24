@@ -475,36 +475,47 @@ class DashboardClient {
 
     updateSpread(data) {
         if (!data) return;
-        
+
         const spreads = data.spreads || {};
-        
-        const bhSpread = spreads.b_to_h?.gross_spread;
+
+        // Debug (throttled)
+        const now = Date.now();
+        if (!this._lastSpreadsConsoleLog || now - this._lastSpreadsConsoleLog > 5000) {
+            console.log('[dashboard] updateSpread payload:', { spreads, best_entry_spread: data.best_entry_spread, best_entry_direction: data.best_entry_direction });
+            this._lastSpreadsConsoleLog = now;
+        }
+
+        const bhObj = spreads.b_to_h || spreads.B_TO_H || spreads['B_TO_H'] || spreads['B→H'] || null;
+        const hbObj = spreads.h_to_b || spreads.H_TO_B || spreads['H_TO_B'] || spreads['H→B'] || null;
+
+        const bhSpread = bhObj?.gross_spread;
         if (bhSpread !== undefined) {
             document.getElementById('spreadBH').textContent = `${bhSpread.toFixed(3)}%`;
             this.updateSpreadBar('spreadBarBH', bhSpread);
         }
-        
-        const hbSpread = spreads.h_to_b?.gross_spread;
+
+        const hbSpread = hbObj?.gross_spread;
         if (hbSpread !== undefined) {
             document.getElementById('spreadHB').textContent = `${hbSpread.toFixed(3)}%`;
             this.updateSpreadBar('spreadBarHB', hbSpread);
         }
-        
+
         const bestEntry = data.best_entry_spread;
         const bestDirection = data.best_entry_direction;
-        if (bestEntry !== undefined) {
+        if (bestEntry !== undefined && bestEntry !== null) {
             const bestEl = document.getElementById('bestEntry');
             bestEl.textContent = `${bestEntry.toFixed(3)}%`;
             bestEl.className = `best-value ${bestEntry >= 0.1 ? 'value-positive' : bestEntry > 0 ? 'value-neutral' : 'value-negative'}`;
-            
+
             const dirEl = document.getElementById('bestEntryDirection');
             if (bestDirection) {
-                dirEl.textContent = bestDirection;
+                const dirLabel = bestDirection === 'B_TO_H' ? 'B → H' : bestDirection === 'H_TO_B' ? 'H → B' : bestDirection;
+                dirEl.textContent = dirLabel;
             }
         }
-        
+
         const target = data.config?.MIN_SPREAD_ENTER * 100;
-        if (target) {
+        if (target !== undefined && target !== null) {
             document.getElementById('spreadTarget').textContent = target.toFixed(2);
         }
     }
@@ -529,31 +540,38 @@ class DashboardClient {
 
     updateExitSpreads(data) {
         if (!data) return;
-        
+
         const exitSpreads = data.exit_spreads || {};
-        
-        const bhExit = exitSpreads.b_to_h;
-        const hbExit = exitSpreads.h_to_b;
-        
-        if (bhExit !== undefined) {
+
+        // Debug (throttled)
+        const now = Date.now();
+        if (!this._lastExitSpreadsConsoleLog || now - this._lastExitSpreadsConsoleLog > 5000) {
+            console.log('[dashboard] updateExitSpreads payload:', { exit_spreads: exitSpreads, best_exit_overall: data.best_exit_overall });
+            this._lastExitSpreadsConsoleLog = now;
+        }
+
+        const bhExit = exitSpreads.b_to_h ?? exitSpreads.B_TO_H ?? exitSpreads['B_TO_H'] ?? exitSpreads['B→H'];
+        const hbExit = exitSpreads.h_to_b ?? exitSpreads.H_TO_B ?? exitSpreads['H_TO_B'] ?? exitSpreads['H→B'];
+
+        if (bhExit !== undefined && bhExit !== null) {
             document.getElementById('marketExitBH').textContent = `${bhExit.toFixed(3)}%`;
             document.getElementById('marketExitBH').className = `exit-value ${this.getExitSpreadClass(bhExit)}`;
         }
-        
-        if (hbExit !== undefined) {
+
+        if (hbExit !== undefined && hbExit !== null) {
             document.getElementById('marketExitHB').textContent = `${hbExit.toFixed(3)}%`;
             document.getElementById('marketExitHB').className = `exit-value ${this.getExitSpreadClass(hbExit)}`;
         }
-        
+
         const bestExit = data.best_exit_overall;
-        if (bestExit !== undefined && bestExit !== Infinity) {
+        if (bestExit !== undefined && bestExit !== null) {
             const bestEl = document.getElementById('bestMarketExit');
             bestEl.textContent = `${bestExit.toFixed(3)}%`;
             bestEl.className = `best-value ${this.getExitSpreadClass(bestExit)}`;
         }
-        
+
         const exitTarget = data.config?.MIN_SPREAD_EXIT * 100;
-        if (exitTarget) {
+        if (exitTarget !== undefined && exitTarget !== null) {
             document.getElementById('exitTarget').textContent = Math.abs(exitTarget).toFixed(2);
         }
     }
@@ -629,8 +647,10 @@ class DashboardClient {
         }
         
         positionsList.innerHTML = positions.map(pos => {
-            const dirClass = pos.direction === 'B_TO_H' ? 'b-to-h' : 'h-to-b';
-            const dirLabel = pos.direction === 'B_TO_H' ? 'B → H' : 'H → B';
+            const dirCode = pos.direction || pos.direction_label;
+            const isBtoH = dirCode === 'B_TO_H' || dirCode === 'B→H' || dirCode === 'B->H';
+            const dirClass = isBtoH ? 'b-to-h' : 'h-to-b';
+            const dirLabel = isBtoH ? 'B → H' : 'H → B';
             
             let statusClass = 'normal';
             let statusText = 'Active';

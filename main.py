@@ -667,29 +667,24 @@ class NVDAFuturesArbitrageBot:
         print(f"├{'─'*58}┤")
         
         # ===== ПРОСКАЛЬЗЫВАНИЕ =====
+        bitget_slippage = self.bitget_ws.get_estimated_slippage() if self.bitget_ws else None
+        hyper_slippage = self.hyper_ws.get_estimated_slippage() if self.hyper_ws else None
+
         if self.display_config.get('SHOW_SLIPPAGE_DETAILS', True):
-            bitget_slippage = None
-            hyper_slippage = None
-            
-            if self.bitget_ws:
-                bitget_slippage = self.bitget_ws.get_estimated_slippage()
-            if self.hyper_ws:
-                hyper_slippage = self.hyper_ws.get_estimated_slippage()
-            
             if bitget_slippage:
-                bg_buy = bitget_slippage['buy']*100
-                bg_sell = bitget_slippage['sell']*100
+                bg_buy = bitget_slippage['buy'] * 100
+                bg_sell = bitget_slippage['sell'] * 100
                 print(f"│ Проскальзывание Bitget:  купить:{bg_buy:5.3f}% продать:{bg_sell:5.3f}% │")
             else:
                 print(f"│ Проскальзывание Bitget:  нет данных{' '*25}│")
-            
+
             if hyper_slippage:
-                hl_buy = hyper_slippage['buy']*100
-                hl_sell = hyper_slippage['sell']*100
+                hl_buy = hyper_slippage['buy'] * 100
+                hl_sell = hyper_slippage['sell'] * 100
                 print(f"│ Проскальзывание Hyper:   купить:{hl_buy:5.3f}% продать:{hl_sell:5.3f}% │")
             else:
                 print(f"│ Проскальзывание Hyper:   нет данных{' '*25}│")
-            
+
             print(f"├{'─'*58}┤")
         
         # ===== ТЕКУЩИЕ ВАЛОВЫЕ СПРЕДЫ ДЛЯ ВХОДА =====
@@ -1006,7 +1001,7 @@ class NVDAFuturesArbitrageBot:
                 bitget_slippage = self.bitget_ws.get_estimated_slippage() if self.bitget_ws else None
                 hyper_slippage = self.hyper_ws.get_estimated_slippage() if self.hyper_ws else None
                 
-                exit_spreads = self.arb_engine.calculate_exit_spreads_for_market(
+                exit_spreads = self.arb_engine.calculate_exit_spread_for_market(
                     bitget_data, hyper_data, bitget_slippage, hyper_slippage
                 )
                 
@@ -1162,7 +1157,7 @@ class NVDAFuturesArbitrageBot:
                 bitget_slippage = self.bitget_ws.get_estimated_slippage() if self.bitget_ws else None
                 hyper_slippage = self.hyper_ws.get_estimated_slippage() if self.hyper_ws else None
                 
-                exit_spreads = self.arb_engine.calculate_exit_spreads_for_market(
+                exit_spreads = self.arb_engine.calculate_exit_spread_for_market(
                     bitget_data, hyper_data, bitget_slippage, hyper_slippage
                 )
                 

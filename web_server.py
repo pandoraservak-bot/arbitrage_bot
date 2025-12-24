@@ -3,9 +3,10 @@
 import asyncio
 import json
 import logging
+import math
 from pathlib import Path
 from datetime import datetime
-from typing import Dict
+from typing import Dict, Optional, Any
 import time
 
 try:
@@ -64,7 +65,28 @@ class WebDashboardServer:
         
         # Web directory path
         self.web_dir = Path(__file__).parent / "web"
-    
+
+    @staticmethod
+    def _normalize_direction_code(direction: Any) -> Optional[str]:
+        """Normalize direction value coming from enums/strings to 'B_TO_H' / 'H_TO_B'."""
+        if direction is None:
+            return None
+
+        if hasattr(direction, 'name'):
+            name = str(getattr(direction, 'name') or '').strip().upper()
+            if name in {'B_TO_H', 'H_TO_B'}:
+                return name
+
+        raw = str(direction).strip()
+        normalized = raw.replace(' ', '').upper()
+
+        if raw in {'B→H', 'B->H', 'B_TO_H', 'B2H'} or normalized in {'B→H', 'B->H', 'B_TO_H', 'B2H'}:
+            return 'B_TO_H'
+        if raw in {'H→B', 'H->B', 'H_TO_B', 'H2B'} or normalized in {'H→B', 'H->B', 'H_TO_B', 'H2B'}:
+            return 'H_TO_B'
+
+        return None
+
     def setup_routes(self):
         """Setup HTTP and WebSocket routes"""
         if web is None:
@@ -359,7 +381,9 @@ class WebDashboardServer:
                     mode = 'partial'
         
         # Collect spreads
-        spreads = {}
+        spreads: Dict[str, Dict[str, float]] = {}
+        exit_spreads: Dict[str, float] = {}
+
         bitget_ws = getattr(self.bot, 'bitget_ws', None)
         hyper_ws = getattr(self.bot, 'hyper_ws', None)
         arb_engine = getattr(self.bot, 'arb_engine', None)
@@ -369,44 +393,49 @@ class WebDashboardServer:
                 bitget_data = bitget_ws.get_latest_data() if hasattr(bitget_ws, 'get_latest_data') else None
                 hyper_data = hyper_ws.get_latest_data() if hasattr(hyper_ws, 'get_latest_data') else None
 
-                if bitget_data and hyper_data and hasattr(arb_engine, 'calculate_spreads'):
+                if bitget_data and hyper_data:
                     bitget_slippage = bitget_ws.get_estimated_slippage() if hasattr(bitget_ws, 'get_estimated_slippage') else None
                     hyper_slippage = hyper_ws.get_estimated_slippage() if hasattr(hyper_ws, 'get_estimated_slippage') else None
 
-                    calc_spreads = arb_engine.calculate_spreads(
-                        bitget_data, hyper_data, bitget_slippage, hyper_slippage
-                    )
+                    if hasattr(arb_engine, 'calculate_spreads'):
+                        calc_spreads = arb_engine.calculate_spreads(
+                            bitget_data, hyper_data, bitget_slippage, hyper_slippage
+                        )
 
-                    if calc_spreads:
-                        for direction, spread_data in calc_spreads.items():
-                            dir_key = direction.value if hasattr(direction, 'value') else str(direction)
-                            spreads[dir_key] = {
-                                'gross_spread': spread_data.get('gross_spread', 0)
-                            }
+                        if calc_spreads:
+                            for direction, spread_data in calc_spreads.items():
+                                code = self._normalize_direction_code(direction)
+                                if not code:
+                                    continue
+
+                                entry_payload = {
+                                    'gross_spread': float(spread_data.get('gross_spread', 0) or 0)
+                                }
+                                spreads[code] = entry_payload
+                                spreads[code.lower()] = entry_payload
+
+                    if hasattr(arb_engine, 'calculate_exit_spread_for_market'):
+                        exit_calc = arb_engine.calculate_exit_spread_for_market(
+                            bitget_data, hyper_data, bitget_slippage, hyper_slippage
+                        )
+
+                        if exit_calc:
+                            for direction, spread in exit_calc.items():
+                                code = self._normalize_direction_code(direction)
+                                if not code:
+                                    continue
+
+                                value = float(spread or 0)
+                                exit_spreads[code] = value
+                                exit_spreads[code.lower()] = value
+
+            logger.debug(
+                "collect_dashboard_data(): spreads=%s exit_spreads=%s",
+                {k: v.get('gross_spread') for k, v in spreads.items() if k in {'B_TO_H', 'H_TO_B'}},
+                {k: v for k, v in exit_spreads.items() if k in {'B_TO_H', 'H_TO_B'}},
+            )
         except Exception as e:
-            logger.debug(f"Error calculating spreads: {e}")
-
-        # Exit spreads
-        exit_spreads = {}
-        try:
-            if bitget_ws and hyper_ws and arb_engine:
-                bitget_data = bitget_ws.get_latest_data() if hasattr(bitget_ws, 'get_latest_data') else None
-                hyper_data = hyper_ws.get_latest_data() if hasattr(hyper_ws, 'get_latest_data') else None
-
-                if bitget_data and hyper_data and hasattr(arb_engine, 'calculate_exit_spread_for_market'):
-                    bitget_slippage = bitget_ws.get_estimated_slippage() if hasattr(bitget_ws, 'get_estimated_slippage') else None
-                    hyper_slippage = hyper_ws.get_estimated_slippage() if hasattr(hyper_ws, 'get_estimated_slippage') else None
-
-                    exit_calc = arb_engine.calculate_exit_spread_for_market(
-                        bitget_data, hyper_data, bitget_slippage, hyper_slippage
-                    )
-
-                    if exit_calc:
-                        for direction, spread in exit_calc.items():
-                            dir_key = direction.value if hasattr(direction, 'value') else str(direction)
-                            exit_spreads[dir_key] = spread
-        except Exception as e:
-            logger.debug(f"Error calculating exit spreads: {e}")
+            logger.debug(f"collect_dashboard_data(): error calculating spreads: {e}", exc_info=True)
 
         # Portfolio
         portfolio = {}
@@ -432,10 +461,16 @@ class WebDashboardServer:
         try:
             open_positions = arb_engine.get_open_positions() if arb_engine and hasattr(arb_engine, 'get_open_positions') else []
             for pos in open_positions:
+                direction_obj = getattr(pos, 'direction', None)
+                direction_code = self._normalize_direction_code(direction_obj)
+                direction_label = getattr(direction_obj, 'value', None)
+
                 positions.append({
                     'id': pos.id,
-                    'direction': pos.direction.value if hasattr(pos.direction, 'value') else str(pos.direction),
+                    'direction': direction_code or str(direction_obj),
+                    'direction_label': direction_label,
                     'exit_spread': pos.current_exit_spread,
+                    'current_exit_spread': pos.current_exit_spread,
                     'exit_target': pos.exit_target,
                     'age': pos.get_age_formatted() if hasattr(pos, 'get_age_formatted') else '--',
                     'should_close': pos.should_close() if hasattr(pos, 'should_close') else False
@@ -468,6 +503,30 @@ class WebDashboardServer:
         session_stats = getattr(self.bot, 'session_stats', {})
         bot_config = getattr(self.bot, 'config', {})
 
+        best_entry_spread = 0.0
+        best_entry_direction = None
+        best_entry_time = None
+        best_exit_overall = None
+        best_exit_direction = None
+        best_exit_time = None
+
+        if isinstance(best_spreads_session, dict):
+            best_entry_spread = float(best_spreads_session.get('best_entry_spread', 0) or 0)
+            best_entry_direction = self._normalize_direction_code(best_spreads_session.get('best_entry_direction'))
+            best_entry_time = best_spreads_session.get('best_entry_time')
+
+            raw_best_exit_overall = best_spreads_session.get('best_exit_spread_overall')
+            try:
+                raw_best_exit_overall = float(raw_best_exit_overall)
+            except Exception:
+                raw_best_exit_overall = None
+
+            if raw_best_exit_overall is not None and math.isfinite(raw_best_exit_overall):
+                best_exit_overall = raw_best_exit_overall
+
+            best_exit_direction = self._normalize_direction_code(best_spreads_session.get('best_exit_direction'))
+            best_exit_time = best_spreads_session.get('best_exit_time')
+
         return {
             'timestamp': datetime.now().strftime('%H:%M:%S'),
             'runtime': runtime,
@@ -481,12 +540,12 @@ class WebDashboardServer:
             'hyper_data': hyper_ws.get_latest_data() if hyper_ws and hasattr(hyper_ws, 'get_latest_data') else None,
             'spreads': spreads,
             'exit_spreads': exit_spreads,
-            'best_entry_spread': best_spreads_session.get('best_entry_spread', 0) if isinstance(best_spreads_session, dict) else 0,
-            'best_entry_direction': best_spreads_session.get('best_entry_direction') if isinstance(best_spreads_session, dict) else None,
-            'best_entry_time': best_spreads_session.get('best_entry_time') if isinstance(best_spreads_session, dict) else None,
-            'best_exit_overall': best_spreads_session.get('best_exit_spread_overall', float('inf')) if isinstance(best_spreads_session, dict) else float('inf'),
-            'best_exit_direction': best_spreads_session.get('best_exit_direction') if isinstance(best_spreads_session, dict) else None,
-            'best_exit_time': best_spreads_session.get('best_exit_time') if isinstance(best_spreads_session, dict) else None,
+            'best_entry_spread': best_entry_spread,
+            'best_entry_direction': best_entry_direction,
+            'best_entry_time': best_entry_time,
+            'best_exit_overall': best_exit_overall,
+            'best_exit_direction': best_exit_direction,
+            'best_exit_time': best_exit_time,
             'portfolio': portfolio,
             'total_value': total_value,
             'pnl': pnl,
@@ -530,14 +589,36 @@ class WebDashboardServer:
                 ) if hasattr(arb_engine, 'calculate_exit_spread_for_market') else {}
 
                 if spreads and exit_spreads:
+                    entry_bh = 0.0
+                    entry_hb = 0.0
+                    for direction, spread_data in spreads.items():
+                        code = self._normalize_direction_code(direction)
+                        if not code or not isinstance(spread_data, dict):
+                            continue
+                        if code == 'B_TO_H':
+                            entry_bh = float(spread_data.get('gross_spread', 0) or 0)
+                        elif code == 'H_TO_B':
+                            entry_hb = float(spread_data.get('gross_spread', 0) or 0)
+
+                    exit_bh = 0.0
+                    exit_hb = 0.0
+                    for direction, spread_value in exit_spreads.items():
+                        code = self._normalize_direction_code(direction)
+                        if not code:
+                            continue
+                        if code == 'B_TO_H':
+                            exit_bh = float(spread_value or 0)
+                        elif code == 'H_TO_B':
+                            exit_hb = float(spread_value or 0)
+
                     now = datetime.now().strftime('%H:%M:%S')
                     return {
                         'labels': [now],
                         'datasets': {
-                            'entry_bh': [spreads.get('B_TO_H', {}).get('gross_spread', 0)],
-                            'entry_hb': [spreads.get('H_TO_B', {}).get('gross_spread', 0)],
-                            'exit_bh': [exit_spreads.get('B_TO_H', 0)],
-                            'exit_hb': [exit_spreads.get('H_TO_B', 0)],
+                            'entry_bh': [entry_bh],
+                            'entry_hb': [entry_hb],
+                            'exit_bh': [exit_bh],
+                            'exit_hb': [exit_hb],
                         },
                         'timestamps': [time.time()],
                         'health': {
@@ -604,6 +685,10 @@ class WebDashboardServer:
             try:
                 if self.ws_clients:
                     payload = self.collect_dashboard_data()
+                    logger.debug(
+                        "_periodic_updates(): broadcasting full_update to %s client(s)",
+                        len(self.ws_clients),
+                    )
                     await self.broadcast('full_update', payload)
                 await asyncio.sleep(1.0)  # Update every second
             except asyncio.CancelledError:
@@ -648,7 +733,7 @@ class WebDashboardServer:
 
     async def handle_api_spreads(self, request):
         """API endpoint for spreads"""
-        spreads = {}
+        spreads: Dict[str, Dict] = {}
         try:
             bitget_ws = getattr(self.bot, 'bitget_ws', None)
             hyper_ws = getattr(self.bot, 'hyper_ws', None)
@@ -659,11 +744,17 @@ class WebDashboardServer:
                 hyper_data = hyper_ws.get_latest_data() if hasattr(hyper_ws, 'get_latest_data') else None
 
                 if bitget_data and hyper_data and hasattr(arb_engine, 'calculate_spreads'):
-                    calc_spreads = arb_engine.calculate_spreads(bitget_data, hyper_data)
+                    bitget_slippage = bitget_ws.get_estimated_slippage() if hasattr(bitget_ws, 'get_estimated_slippage') else None
+                    hyper_slippage = hyper_ws.get_estimated_slippage() if hasattr(hyper_ws, 'get_estimated_slippage') else None
+
+                    calc_spreads = arb_engine.calculate_spreads(bitget_data, hyper_data, bitget_slippage, hyper_slippage)
                     if calc_spreads:
                         for direction, spread_data in calc_spreads.items():
-                            dir_key = direction.value if hasattr(direction, 'value') else str(direction)
-                            spreads[dir_key] = spread_data
+                            code = self._normalize_direction_code(direction)
+                            if not code:
+                                continue
+                            spreads[code] = spread_data
+                            spreads[code.lower()] = spread_data
         except Exception as e:
             return web.json_response({'error': str(e)}, status=500)
 
@@ -676,9 +767,11 @@ class WebDashboardServer:
             arb_engine = getattr(self.bot, 'arb_engine', None)
             open_positions = arb_engine.get_open_positions() if arb_engine and hasattr(arb_engine, 'get_open_positions') else []
             for pos in open_positions:
+                direction_obj = getattr(pos, 'direction', None)
                 positions.append({
                     'id': pos.id,
-                    'direction': pos.direction.value if hasattr(pos.direction, 'value') else str(pos.direction),
+                    'direction': self._normalize_direction_code(direction_obj) or str(direction_obj),
+                    'direction_label': getattr(direction_obj, 'value', None),
                     'size': getattr(pos, 'size', 0),
                     'entry_price': pos.entry_prices if hasattr(pos, 'entry_prices') else {},
                     'current_exit_spread': pos.current_exit_spread,

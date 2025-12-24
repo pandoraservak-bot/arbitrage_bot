@@ -398,28 +398,52 @@ class ArbitrageEngine:
         except Exception as e:
             logger.error(f"Error loading positions: {e}", exc_info=True)
     
-    def calculate_spreads(self, bitget_data: Dict, hyper_data: Dict, 
+    def calculate_spreads(self, bitget_data: Dict, hyper_data: Dict,
                          bitget_slippage: Dict = None, hyper_slippage: Dict = None) -> Dict:
         """Расчет спредов в обе стороны (только для входа) - ВАЛОВЫЙ СПРЕД БЕЗ КОМИССИЙ"""
+        logger.debug(
+            "calculate_spreads() called: has_bitget=%s has_hyper=%s",
+            bool(bitget_data),
+            bool(hyper_data),
+        )
+
         if not all([bitget_data, hyper_data]):
+            logger.debug("calculate_spreads(): missing market data")
             return {}
-        
+
+        if not isinstance(bitget_data, dict) or not isinstance(hyper_data, dict):
+            logger.debug(
+                "calculate_spreads(): invalid input types bitget=%s hyper=%s",
+                type(bitget_data),
+                type(hyper_data),
+            )
+            return {}
+
         # Проверяем наличие необходимых полей
         if 'bid' not in bitget_data or 'ask' not in bitget_data:
+            logger.debug("calculate_spreads(): bitget missing bid/ask keys=%s", list(bitget_data.keys()))
             return {}
-        
+
         if 'bid' not in hyper_data or 'ask' not in hyper_data:
+            logger.debug("calculate_spreads(): hyperliquid missing bid/ask keys=%s", list(hyper_data.keys()))
             return {}
-        
+
         bg_bid = bitget_data['bid']
         bg_ask = bitget_data['ask']
         hl_bid = hyper_data['bid']
         hl_ask = hyper_data['ask']
-        
+
         # Проверка на нулевые цены
         if bg_bid == 0 or bg_ask == 0 or hl_bid == 0 or hl_ask == 0:
+            logger.debug(
+                "calculate_spreads(): zero price(s) bg_bid=%s bg_ask=%s hl_bid=%s hl_ask=%s",
+                bg_bid,
+                bg_ask,
+                hl_bid,
+                hl_ask,
+            )
             return {}
-        
+
         # Используем расчетное проскальзывание или берем из конфига
         if bitget_slippage:
             bg_buy_slippage = bitget_slippage.get('buy', self.config['MARKET_SLIPPAGE'])
@@ -427,7 +451,7 @@ class ArbitrageEngine:
         else:
             bg_buy_slippage = self.config['MARKET_SLIPPAGE']
             bg_sell_slippage = self.config['MARKET_SLIPPAGE']
-        
+
         if hyper_slippage:
             hl_buy_slippage = hyper_slippage.get('buy', self.config['MARKET_SLIPPAGE'])
             hl_sell_slippage = hyper_slippage.get('sell', self.config['MARKET_SLIPPAGE'])
@@ -444,8 +468,8 @@ class ArbitrageEngine:
         buy_price_hb = hl_ask * (1 + hl_buy_slippage)  # Покупаем на Hyperliquid с проскальзыванием
         sell_price_hb = bg_bid * (1 - bg_sell_slippage)  # Продаем на Bitget с проскальзыванием
         gross_spread_hb = (sell_price_hb / buy_price_hb - 1) * 100  # Положительный = хороший для входа
-        
-        return {
+
+        result = {
             TradeDirection.B_TO_H: {
                 'gross_spread': gross_spread_bh,  # Положительный = хороший для входа
                 'buy_price': buy_price_bh,
@@ -477,21 +501,67 @@ class ArbitrageEngine:
                 }
             }
         }
+
+        logger.debug(
+            "calculate_spreads() result: B_TO_H=%+.6f%% H_TO_B=%+.6f%%",
+            gross_spread_bh,
+            gross_spread_hb,
+        )
+
+        return result
     
     def calculate_exit_spread_for_market(self, bitget_data: Dict, hyper_data: Dict,
                                         bitget_slippage: Dict = None, hyper_slippage: Dict = None) -> Dict:
         """Расчет выходных спредов для рынка (даже без позиций) - ВАЛОВЫЙ СПРЕД БЕЗ КОМИССИЙ"""
-        
+
+        logger.debug(
+            "calculate_exit_spread_for_market() called: has_bitget=%s has_hyper=%s",
+            bool(bitget_data),
+            bool(hyper_data),
+        )
+
         if not bitget_data or not hyper_data:
+            logger.debug("calculate_exit_spread_for_market(): missing market data")
             return {}
-        
+
+        if not isinstance(bitget_data, dict) or not isinstance(hyper_data, dict):
+            logger.debug(
+                "calculate_exit_spread_for_market(): invalid input types bitget=%s hyper=%s",
+                type(bitget_data),
+                type(hyper_data),
+            )
+            return {}
+
         # Проверяем наличие необходимых полей
         if 'bid' not in bitget_data or 'ask' not in bitget_data:
+            logger.debug(
+                "calculate_exit_spread_for_market(): bitget missing bid/ask keys=%s",
+                list(bitget_data.keys()),
+            )
             return {}
-            
+
         if 'bid' not in hyper_data or 'ask' not in hyper_data:
+            logger.debug(
+                "calculate_exit_spread_for_market(): hyperliquid missing bid/ask keys=%s",
+                list(hyper_data.keys()),
+            )
             return {}
-        
+
+        bg_bid = bitget_data['bid']
+        bg_ask = bitget_data['ask']
+        hl_bid = hyper_data['bid']
+        hl_ask = hyper_data['ask']
+
+        if bg_bid == 0 or bg_ask == 0 or hl_bid == 0 or hl_ask == 0:
+            logger.debug(
+                "calculate_exit_spread_for_market(): zero price(s) bg_bid=%s bg_ask=%s hl_bid=%s hl_ask=%s",
+                bg_bid,
+                bg_ask,
+                hl_bid,
+                hl_ask,
+            )
+            return {}
+
         # Используем расчетное проскальзывание или берем из конфига
         if bitget_slippage:
             bg_buy_slippage = bitget_slippage.get('buy', self.config['MARKET_SLIPPAGE'])
@@ -525,10 +595,18 @@ class ArbitrageEngine:
         if exit_buy_price_hb > 0:
             exit_spread_hb = (exit_sell_price_hb / exit_buy_price_hb - 1) * 100
         
-        return {
+        result = {
             TradeDirection.B_TO_H: exit_spread_bh,
             TradeDirection.H_TO_B: exit_spread_hb
         }
+
+        logger.debug(
+            "calculate_exit_spread_for_market() result: B_TO_H=%+.6f%% H_TO_B=%+.6f%%",
+            exit_spread_bh,
+            exit_spread_hb,
+        )
+
+        return result
     
     def calculate_exit_spread(self, position: Position, bitget_data: Dict, hyper_data: Dict,
                              bitget_slippage: Dict = None, hyper_slippage: Dict = None) -> float:
