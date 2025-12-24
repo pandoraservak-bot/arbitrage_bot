@@ -706,11 +706,8 @@ class ArbitrageEngine:
             if position.status != 'open' or position not in self.open_positions:
                 continue
             
-            # Проверка времени удержания (только для логирования)
+            # Время удержания (только для мониторинга/логов)
             hold_time = current_time - position.entry_time
-            if hold_time > self.config['MAX_HOLD_TIME']:
-                logger.warning(f"Position {position.id} exceeded max hold time: {hold_time:.1f}s")
-                # Не закрываем принудительно, только логируем
             
             # Расчет текущего спреда для выхода (ВАЛОВЫЙ БЕЗ КОМИССИЙ)
             current_spread = self.calculate_exit_spread(position, bitget_data, hyper_data,
@@ -991,19 +988,15 @@ class ArbitrageEngine:
             # Проверяем проблемы
             issues = []
             
-            # 1. Позиция слишком старая
-            if pos.get_age_seconds() > 3600:  # Более часа
-                issues.append(f"Position too old: {pos.get_age_formatted()}")
-            
-            # 2. Спред давно не обновлялся
+            # 1. Спред давно не обновлялся
             if time.time() - pos.last_spread_update > 60:  # Более минута
                 issues.append(f"Spread not updated for {time.time() - pos.last_spread_update:.0f}s")
             
-            # 3. Позиция должна закрыться, но не закрывается
+            # 2. Позиция должна закрыться, но не закрывается
             if pos.should_close():
                 issues.append(f"Should close (exit_spread={pos.current_exit_spread:.3f}% >= target={pos.exit_target:.3f}%)")
             
-            # 4. Мало обновлений спреда
+            # 3. Мало обновлений спреда
             if pos.update_count < 5 and pos.get_age_seconds() > 300:  # 5 минут
                 issues.append(f"Few spread updates: {pos.update_count} in {pos.get_age_formatted()}")
             

@@ -60,7 +60,6 @@ TRADING_CONFIG = {
     },
     
     # Лимиты
-    'MAX_HOLD_TIME': 12000,                # 2 минуты максимум (только для логирования)
     'POSITION_CHECK_INTERVAL': 0.5,      # Проверка позиций каждые 0.5с
     'MAIN_LOOP_INTERVAL': 0.1,           # 100мс основной цикл
     
