@@ -1,4 +1,202 @@
-// NVDA Arbitrage Bot - Web Dashboard Client
+// NVDA Arbitrage Bot - Web Dashboard Client v2.0
+
+// Global State
+let modalCallback = null;
+let lastUpdateTime = Date.now();
+const tradeHistory = [];
+const eventLog = [];
+const MAX_TRADE_HISTORY = 100;
+const MAX_EVENT_LOG = 200;
+
+// Toast Notification System
+class ToastNotification {
+    constructor() {
+        this.container = document.getElementById('toastContainer');
+    }
+
+    show(message, type = 'success', duration = 5000) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        
+        const icon = type === 'success' ? '✓' : type === 'warning' ? '⚠️' : '❌';
+        
+        toast.innerHTML = `
+            <span class="toast-icon">${icon}</span>
+            <div class="toast-content">
+                <div class="toast-message">${message}</div>
+            </div>
+            <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+        `;
+        
+        this.container.appendChild(toast);
+        
+        if (duration > 0) {
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, duration);
+        }
+    }
+
+    success(message) {
+        this.show(message, 'success', 5000);
+    }
+
+    warning(message) {
+        this.show(message, 'warning', 7000);
+    }
+
+    error(message) {
+        this.show(message, 'error', 10000);
+    }
+}
+
+// Event Logger
+class EventLogger {
+    constructor() {
+        this.events = [];
+        this.container = document.getElementById('eventLogList');
+        this.filter = 'all';
+    }
+
+    addEvent(message, type = 'success') {
+        const event = {
+            message,
+            type,
+            timestamp: new Date()
+        };
+        
+        this.events.unshift(event);
+        
+        if (this.events.length > MAX_EVENT_LOG) {
+            this.events = this.events.slice(0, MAX_EVENT_LOG);
+        }
+        
+        this.render();
+        
+        const logContent = this.container.closest('.event-log-content');
+        if (logContent) {
+            logContent.scrollTop = 0;
+        }
+    }
+
+    render() {
+        const filtered = this.filter === 'all' 
+            ? this.events 
+            : this.events.filter(e => e.type === this.filter);
+        
+        if (filtered.length === 0) {
+            this.container.innerHTML = '<div class="no-events">No events yet</div>';
+            return;
+        }
+        
+        this.container.innerHTML = filtered.map(event => {
+            const icon = event.type === 'success' ? '✓' : event.type === 'warning' ? '⚠️' : '❌';
+            const time = event.timestamp.toLocaleTimeString();
+            
+            return `
+                <div class="event-log-item ${event.type}">
+                    <span class="event-icon">${icon}</span>
+                    <div class="event-content">
+                        <div class="event-message">${event.message}</div>
+                        <div class="event-time">${time}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    setFilter(filter) {
+        this.filter = filter;
+        this.render();
+    }
+
+    clear() {
+        this.events = [];
+        this.render();
+    }
+}
+
+// Trade History Manager
+class TradeHistoryManager {
+    constructor() {
+        this.trades = [];
+        this.tbody = document.getElementById('tradeHistoryBody');
+    }
+
+    addTrade(trade) {
+        this.trades.unshift(trade);
+        
+        if (this.trades.length > MAX_TRADE_HISTORY) {
+            this.trades = this.trades.slice(0, MAX_TRADE_HISTORY);
+        }
+        
+        this.render();
+    }
+
+    render() {
+        if (this.trades.length === 0) {
+            this.tbody.innerHTML = '<tr><td colspan="7" class="no-trades">No completed trades</td></tr>';
+            return;
+        }
+        
+        this.tbody.innerHTML = this.trades.map(trade => {
+            const profitClass = trade.profit >= 0 ? 'trade-profit-positive' : 'trade-profit-negative';
+            const profitSign = trade.profit >= 0 ? '+' : '';
+            
+            return `
+                <tr>
+                    <td>#${trade.id}</td>
+                    <td>${trade.direction}</td>
+                    <td>${trade.entry_spread}%</td>
+                    <td>${trade.exit_spread}%</td>
+                    <td class="${profitClass}">${profitSign}$${trade.profit.toFixed(2)}</td>
+                    <td>${trade.duration}</td>
+                    <td>${trade.time}</td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    exportCSV() {
+        if (this.trades.length === 0) {
+            toast.warning('No trades to export');
+            return;
+        }
+        
+        const headers = ['ID', 'Direction', 'Entry Spread', 'Exit Spread', 'Profit', 'Duration', 'Time'];
+        const rows = this.trades.map(t => [
+            t.id,
+            t.direction,
+            t.entry_spread,
+            t.exit_spread,
+            t.profit.toFixed(2),
+            t.duration,
+            t.time
+        ]);
+        
+        let csv = headers.join(',') + '\n';
+        csv += rows.map(r => r.join(',')).join('\n');
+        
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `trade_history_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        toast.success('Trade history exported');
+    }
+
+    clear() {
+        this.trades = [];
+        this.render();
+    }
+}
+
+// Dashboard Client
 class DashboardClient {
     constructor() {
         this.ws = null;
@@ -7,6 +205,10 @@ class DashboardClient {
         this.reconnectDelay = 1000;
         this.updateInterval = null;
         this.isConnected = false;
+        this.lastUpdateTimestamp = Date.now();
+        this.wsUptimeStart = Date.now();
+        this.wsDowntime = 0;
+        this.lastDisconnectTime = null;
         
         this.init();
     }
@@ -14,6 +216,7 @@ class DashboardClient {
     init() {
         this.connect();
         this.setupEventListeners();
+        this.startStatusUpdater();
     }
 
     connect() {
@@ -30,12 +233,21 @@ class DashboardClient {
             this.reconnectAttempts = 0;
             this.updateModeBadge('connected');
             this.requestFullUpdate();
+            
+            if (this.lastDisconnectTime) {
+                const downtime = Date.now() - this.lastDisconnectTime;
+                this.wsDowntime += downtime;
+                this.lastDisconnectTime = null;
+            }
+            
+            eventLogger.addEvent('WebSocket connected', 'success');
         };
         
         this.ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
                 this.handleMessage(data);
+                this.lastUpdateTimestamp = Date.now();
             } catch (e) {
                 console.error('Error parsing message:', e);
             }
@@ -45,6 +257,8 @@ class DashboardClient {
             console.log('WebSocket disconnected');
             this.isConnected = false;
             this.updateModeBadge('disconnected');
+            this.lastDisconnectTime = Date.now();
+            eventLogger.addEvent('WebSocket disconnected', 'error');
             this.attemptReconnect();
         };
         
@@ -64,6 +278,7 @@ class DashboardClient {
         } else {
             console.error('Max reconnection attempts reached');
             this.updateModeBadge('failed');
+            eventLogger.addEvent('Connection failed - max retries reached', 'error');
         }
     }
 
@@ -94,55 +309,65 @@ class DashboardClient {
             case 'exit_spreads':
                 this.updateExitSpreads(data.payload);
                 break;
+            case 'command_result':
+                this.handleCommandResult(data);
+                break;
+            case 'event':
+                this.handleEvent(data);
+                break;
             case 'pong':
-                // Server acknowledged our ping
                 break;
             default:
                 console.log('Unknown message type:', type);
         }
     }
 
+    handleCommandResult(data) {
+        if (data.success) {
+            toast.success(data.message || 'Command successful');
+            if (data.event_type) {
+                eventLogger.addEvent(data.message, 'success');
+            }
+        } else {
+            toast.error(data.error || 'Command failed');
+            eventLogger.addEvent(data.error || 'Command failed', 'error');
+        }
+    }
+
+    handleEvent(data) {
+        eventLogger.addEvent(data.message, data.event_type || 'success');
+        
+        if (data.event_type === 'warning') {
+            toast.warning(data.message);
+        } else if (data.event_type === 'error') {
+            toast.error(data.message);
+        }
+    }
+
     renderFullUpdate(data) {
         if (!data) return;
         
-        // Update runtime
         this.updateRuntime(data.runtime);
         
-        // Update server time
         if (data.timestamp) {
             document.getElementById('serverTime').textContent = data.timestamp;
         }
         
-        // Update status bar
         this.updateStatus(data);
-        
-        // Update prices
         this.updatePrices(data);
-        
-        // Update spreads
         this.updateSpread(data);
-        
-        // Update exit spreads
         this.updateExitSpreads(data);
-        
-        // Update records
         this.updateRecords(data);
-        
-        // Update portfolio
         this.updatePortfolio(data);
-        
-        // Update positions
         this.updatePositions(data);
-        
-        // Update statistics
         this.updateStats(data);
+        this.updateConfig(data);
+        this.updateRiskStatus(data);
         
-        // Update spread chart
         if (data.spread_chart_data) {
             updateSpreadChart(data.spread_chart_data);
         }
         
-        // Update last update time
         document.getElementById('lastUpdate').textContent = 
             `Last update: ${new Date().toLocaleTimeString()}`;
     }
@@ -150,11 +375,9 @@ class DashboardClient {
     updateStatus(data) {
         if (!data) return;
         
-        // Trading mode
         const mode = data.trading_mode || 'STOPPED';
         this.updateModeBadge(mode.toLowerCase());
         
-        // Connection status
         const bitgetHealthy = data.bitget_healthy || false;
         const hyperHealthy = data.hyper_healthy || false;
         
@@ -164,7 +387,14 @@ class DashboardClient {
         bitgetDot.className = `status-dot ${bitgetHealthy ? 'healthy' : 'unhealthy'}`;
         hyperDot.className = `status-dot ${hyperHealthy ? 'healthy' : 'unhealthy'}`;
         
-        // Trade counts
+        if (data.bitget_latency !== undefined) {
+            document.getElementById('bitgetLatency').textContent = `${data.bitget_latency}ms`;
+        }
+        
+        if (data.hyper_latency !== undefined) {
+            document.getElementById('hyperLatency').textContent = `${data.hyper_latency}ms`;
+        }
+        
         document.getElementById('totalTrades').textContent = 
             (data.session_stats?.total_trades || 0).toLocaleString();
         document.getElementById('totalChecks').textContent = 
@@ -196,6 +426,7 @@ class DashboardClient {
                 badge.classList.add('partial');
                 break;
             case 'stopped':
+            case 'paused':
                 badge.textContent = '● STOPPED';
                 badge.classList.add('stopped');
                 break;
@@ -224,7 +455,6 @@ class DashboardClient {
         const bitget = data.bitget_data || {};
         const hyper = data.hyper_data || {};
         
-        // Bitget
         if (bitget.bid && bitget.ask) {
             const avgPrice = (bitget.bid + bitget.ask) / 2;
             document.getElementById('bitgetPrice').textContent = `$${avgPrice.toFixed(2)}`;
@@ -232,7 +462,6 @@ class DashboardClient {
             document.getElementById('bitgetAsk').textContent = `$${bitget.ask.toFixed(2)}`;
         }
         
-        // Hyperliquid
         if (hyper.bid && hyper.ask) {
             const avgPrice = (hyper.bid + hyper.ask) / 2;
             document.getElementById('hyperPrice').textContent = `$${avgPrice.toFixed(2)}`;
@@ -246,21 +475,18 @@ class DashboardClient {
         
         const spreads = data.spreads || {};
         
-        // B -> H spread
         const bhSpread = spreads.b_to_h?.gross_spread;
         if (bhSpread !== undefined) {
             document.getElementById('spreadBH').textContent = `${bhSpread.toFixed(3)}%`;
             this.updateSpreadBar('spreadBarBH', bhSpread);
         }
         
-        // H -> B spread
         const hbSpread = spreads.h_to_b?.gross_spread;
         if (hbSpread !== undefined) {
             document.getElementById('spreadHB').textContent = `${hbSpread.toFixed(3)}%`;
             this.updateSpreadBar('spreadBarHB', hbSpread);
         }
         
-        // Best entry
         const bestEntry = data.best_entry_spread;
         const bestDirection = data.best_entry_direction;
         if (bestEntry !== undefined) {
@@ -274,7 +500,6 @@ class DashboardClient {
             }
         }
         
-        // Target
         const target = data.config?.MIN_SPREAD_ENTER * 100;
         if (target) {
             document.getElementById('spreadTarget').textContent = target.toFixed(2);
@@ -317,7 +542,6 @@ class DashboardClient {
             document.getElementById('marketExitHB').className = `exit-value ${this.getExitSpreadClass(hbExit)}`;
         }
         
-        // Best market exit
         const bestExit = data.best_exit_overall;
         if (bestExit !== undefined && bestExit !== Infinity) {
             const bestEl = document.getElementById('bestMarketExit');
@@ -325,7 +549,6 @@ class DashboardClient {
             bestEl.className = `best-value ${this.getExitSpreadClass(bestExit)}`;
         }
         
-        // Exit target
         const exitTarget = data.config?.MIN_SPREAD_EXIT * 100;
         if (exitTarget) {
             document.getElementById('exitTarget').textContent = Math.abs(exitTarget).toFixed(2);
@@ -341,7 +564,6 @@ class DashboardClient {
     updateRecords(data) {
         if (!data) return;
         
-        // Best entry record
         const bestEntry = data.best_entry_spread;
         if (bestEntry !== undefined && bestEntry > 0) {
             document.getElementById('bestEntryRecord').textContent = `${bestEntry.toFixed(3)}%`;
@@ -356,7 +578,6 @@ class DashboardClient {
             document.getElementById('bestEntryTime').textContent = '---';
         }
         
-        // Best exit record
         const bestExit = data.best_exit_overall;
         if (bestExit !== undefined && bestExit !== Infinity) {
             document.getElementById('bestExitRecord').textContent = `${bestExit.toFixed(3)}%`;
@@ -382,7 +603,6 @@ class DashboardClient {
         document.getElementById('portfolioUSDT').textContent = `$${usdt.toFixed(2)}`;
         document.getElementById('portfolioNVDA').textContent = nvda.toFixed(4);
         
-        // Total value and PnL
         const totalValue = data.total_value || 0;
         const pnl = data.pnl || 0;
         
@@ -439,6 +659,7 @@ class DashboardClient {
                         </div>
                     </div>
                     <span class="exit-status ${statusClass}">${statusText}</span>
+                    <button class="btn btn-close-position" onclick="closePosition(${pos.id})">❌ Close</button>
                 </div>
             `;
         }).join('');
@@ -450,19 +671,101 @@ class DashboardClient {
         const stats = data.session_stats || {};
         const runtime = data.runtime || 1;
         
-        // Time percentages
         const activePct = (stats.time_in_active || 0) / runtime * 100;
         const partialPct = (stats.time_in_partial || 0) / runtime * 100;
         
         document.getElementById('activeTime').textContent = `${activePct.toFixed(1)}%`;
         document.getElementById('partialTime').textContent = `${partialPct.toFixed(1)}%`;
         
-        // Spread stats
         const maxSpread = stats.max_spread || 0;
         const avgSpread = stats.avg_spread || 0;
         
         document.getElementById('maxSpread').textContent = `${maxSpread.toFixed(3)}%`;
         document.getElementById('avgSpread').textContent = `${avgSpread.toFixed(3)}%`;
+    }
+
+    updateConfig(data) {
+        if (!data || !data.config) return;
+        
+        const config = data.config;
+        
+        if (config.MIN_SPREAD_ENTER !== undefined) {
+            const input = document.getElementById('minSpreadEnter');
+            if (input && !input.matches(':focus')) {
+                input.value = (config.MIN_SPREAD_ENTER * 100).toFixed(2);
+            }
+        }
+        
+        if (config.MIN_SPREAD_EXIT !== undefined) {
+            const input = document.getElementById('minSpreadExit');
+            if (input && !input.matches(':focus')) {
+                input.value = (config.MIN_SPREAD_EXIT * 100).toFixed(2);
+            }
+        }
+        
+        if (config.MAX_POSITION_AGE_HOURS !== undefined) {
+            const input = document.getElementById('maxPositionAge');
+            if (input && !input.matches(':focus')) {
+                input.value = config.MAX_POSITION_AGE_HOURS;
+            }
+        }
+        
+        if (config.MAX_CONCURRENT_POSITIONS !== undefined) {
+            const input = document.getElementById('maxConcurrentPos');
+            if (input && !input.matches(':focus')) {
+                input.value = config.MAX_CONCURRENT_POSITIONS;
+            }
+        }
+        
+        if (config.DAILY_LOSS_LIMIT !== undefined) {
+            const input = document.getElementById('dailyLossLimit');
+            if (input && !input.matches(':focus')) {
+                input.value = config.DAILY_LOSS_LIMIT;
+            }
+        }
+        
+        if (config.MAX_POSITION_SIZE !== undefined) {
+            const input = document.getElementById('maxPositionSize');
+            if (input && !input.matches(':focus')) {
+                input.value = config.MAX_POSITION_SIZE;
+            }
+        }
+    }
+
+    updateRiskStatus(data) {
+        if (!data) return;
+        
+        const dailyLoss = data.daily_loss || 0;
+        const dailyLimit = data.config?.DAILY_LOSS_LIMIT || 1000;
+        
+        document.getElementById('currentDailyLoss').textContent = `$${Math.abs(dailyLoss).toFixed(2)}`;
+        
+        const pct = Math.min((Math.abs(dailyLoss) / dailyLimit) * 100, 100);
+        const bar = document.getElementById('riskProgressBar');
+        bar.style.width = `${pct}%`;
+    }
+
+    startStatusUpdater() {
+        setInterval(() => {
+            const now = Date.now();
+            const elapsed = (now - this.lastUpdateTimestamp) / 1000;
+            const lastUpdateEl = document.getElementById('lastUpdateStatus');
+            if (lastUpdateEl) {
+                if (elapsed < 60) {
+                    lastUpdateEl.textContent = `${elapsed.toFixed(1)}s ago`;
+                } else {
+                    lastUpdateEl.textContent = `${(elapsed / 60).toFixed(1)}m ago`;
+                }
+            }
+            
+            const totalTime = now - this.wsUptimeStart;
+            const activeTime = totalTime - this.wsDowntime - (this.lastDisconnectTime ? (now - this.lastDisconnectTime) : 0);
+            const uptime = (activeTime / totalTime) * 100;
+            const uptimeEl = document.getElementById('wsUptime');
+            if (uptimeEl) {
+                uptimeEl.textContent = `${uptime.toFixed(1)}%`;
+            }
+        }, 1000);
     }
 
     formatTimeAgo(timestamp) {
@@ -480,29 +783,62 @@ class DashboardClient {
         }
     }
 
+    sendCommand(type, payload) {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(JSON.stringify({ type, ...payload }));
+        } else {
+            toast.error('Not connected to server');
+        }
+    }
+
     setupEventListeners() {
-        // Keyboard shortcut for refresh
         document.addEventListener('keydown', (e) => {
             if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
                 e.preventDefault();
                 this.requestFullUpdate();
             }
+            
+            if (e.key === 'Escape') {
+                closeModal();
+                const chartCard = document.getElementById('chartCard');
+                if (chartCard && chartCard.classList.contains('fullscreen')) {
+                    toggleFullscreen();
+                }
+            }
         });
+        
+        const modalOverlay = document.getElementById('modalOverlay');
+        if (modalOverlay) {
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+        }
     }
 }
 
-// Initialize dashboard when page loads
+// Initialize globals
 let dashboard = null;
 let spreadChart = null;
+let toast = null;
+let eventLogger = null;
+let tradeHistoryManager = null;
 
 document.addEventListener('DOMContentLoaded', () => {
+    toast = new ToastNotification();
+    eventLogger = new EventLogger();
+    tradeHistoryManager = new TradeHistoryManager();
     dashboard = new DashboardClient();
     initSpreadChart();
+    
+    eventLogger.addEvent('Dashboard initialized', 'success');
 });
 
 // Expose for external use
 window.dashboard = dashboard;
 
+// Chart initialization with zoom plugin
 function initSpreadChart() {
     const ctx = document.getElementById('spreadChart');
     if (!ctx) return;
@@ -573,9 +909,7 @@ function initSpreadChart() {
                         color: '#9ca3af',
                         usePointStyle: true,
                         pointStyle: 'line',
-                        font: {
-                            size: 11
-                        }
+                        font: { size: 11 }
                     }
                 },
                 tooltip: {
@@ -590,35 +924,42 @@ function initSpreadChart() {
                             return `${context.dataset.label}: ${context.parsed.y.toFixed(3)}%`;
                         }
                     }
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'x'
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                        },
+                        pinch: {
+                            enabled: true
+                        },
+                        mode: 'x',
+                    }
                 }
             },
             scales: {
                 x: {
                     display: true,
-                    grid: {
-                        color: 'rgba(55, 65, 81, 0.3)'
-                    },
+                    grid: { color: 'rgba(55, 65, 81, 0.3)' },
                     ticks: {
                         color: '#6b7280',
                         maxTicksLimit: 10,
-                        font: {
-                            size: 10
-                        }
+                        font: { size: 10 }
                     }
                 },
                 y: {
                     display: true,
-                    grid: {
-                        color: 'rgba(55, 65, 81, 0.3)'
-                    },
+                    grid: { color: 'rgba(55, 65, 81, 0.3)' },
                     ticks: {
                         color: '#6b7280',
                         callback: function(value) {
                             return value.toFixed(2) + '%';
                         },
-                        font: {
-                            size: 10
-                        }
+                        font: { size: 10 }
                     },
                     suggestedMin: -0.2,
                     suggestedMax: 0.2
@@ -646,5 +987,193 @@ function updateSpreadChart(data) {
 function changeChartRange() {
     if (dashboard && dashboard.requestFullUpdate) {
         dashboard.requestFullUpdate();
+    }
+}
+
+// Fullscreen chart
+function toggleFullscreen() {
+    const chartCard = document.getElementById('chartCard');
+    const btn = document.getElementById('btnFullscreen');
+    
+    if (!chartCard.classList.contains('fullscreen')) {
+        chartCard.classList.add('fullscreen');
+        btn.textContent = '🗙 Exit Fullscreen';
+        if (spreadChart) {
+            spreadChart.resize();
+        }
+        eventLogger.addEvent('Chart fullscreen enabled', 'success');
+    } else {
+        chartCard.classList.remove('fullscreen');
+        btn.textContent = '🖥️ Fullscreen';
+        if (spreadChart) {
+            spreadChart.resize();
+        }
+        eventLogger.addEvent('Chart fullscreen disabled', 'success');
+    }
+}
+
+// Bot commands
+function sendBotCommand(command) {
+    const btn = document.getElementById(`btn${command.charAt(0).toUpperCase() + command.slice(1)}`);
+    if (btn) {
+        btn.disabled = true;
+        btn.classList.add('loading');
+    }
+    
+    dashboard.sendCommand('bot_command', { command });
+    
+    setTimeout(() => {
+        if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('loading');
+        }
+    }, 2000);
+}
+
+// Config updates
+function updateConfig(field) {
+    let value, payload;
+    
+    switch (field) {
+        case 'min_spread_enter':
+            value = parseFloat(document.getElementById('minSpreadEnter').value);
+            if (isNaN(value) || value < 0.01 || value > 1.0) {
+                toast.error('Min Entry Spread must be between 0.01 and 1.0');
+                return;
+            }
+            payload = { MIN_SPREAD_ENTER: value / 100 };
+            break;
+        case 'min_spread_exit':
+            value = parseFloat(document.getElementById('minSpreadExit').value);
+            if (isNaN(value) || value < -1.0 || value > 0.01) {
+                toast.error('Min Exit Spread must be between -1.0 and 0.01');
+                return;
+            }
+            payload = { MIN_SPREAD_EXIT: value / 100 };
+            break;
+        case 'max_position_age':
+            value = parseFloat(document.getElementById('maxPositionAge').value);
+            if (isNaN(value) || value < 0.5 || value > 24) {
+                toast.error('Max Position Age must be between 0.5 and 24 hours');
+                return;
+            }
+            payload = { MAX_POSITION_AGE_HOURS: value };
+            break;
+        case 'max_concurrent_positions':
+            value = parseInt(document.getElementById('maxConcurrentPos').value);
+            if (isNaN(value) || value < 1 || value > 10) {
+                toast.error('Max Concurrent Positions must be between 1 and 10');
+                return;
+            }
+            payload = { MAX_CONCURRENT_POSITIONS: value };
+            break;
+    }
+    
+    dashboard.sendCommand('update_config', { config: payload });
+}
+
+// Risk config updates
+function updateRiskConfig(field) {
+    let value, payload;
+    
+    switch (field) {
+        case 'daily_loss_limit':
+            value = parseFloat(document.getElementById('dailyLossLimit').value);
+            if (isNaN(value) || value < 10 || value > 10000) {
+                toast.error('Daily Loss Limit must be between 10 and 10000');
+                return;
+            }
+            payload = { DAILY_LOSS_LIMIT: value };
+            break;
+        case 'max_position_size':
+            value = parseFloat(document.getElementById('maxPositionSize').value);
+            if (isNaN(value) || value < 0.1 || value > 100) {
+                toast.error('Max Position Size must be between 0.1 and 100');
+                return;
+            }
+            payload = { MAX_POSITION_SIZE: value };
+            break;
+    }
+    
+    dashboard.sendCommand('update_risk_config', { config: payload });
+}
+
+// Position management
+function closePosition(positionId) {
+    showModal(
+        'Close Position',
+        `Are you sure you want to close position #${positionId}?`,
+        () => {
+            dashboard.sendCommand('close_position', { position_id: positionId });
+            eventLogger.addEvent(`Position #${positionId} close requested`, 'warning');
+        }
+    );
+}
+
+// Trade history
+function exportTradeHistory() {
+    tradeHistoryManager.exportCSV();
+}
+
+function clearTradeHistory() {
+    showModal(
+        'Clear Trade History',
+        'Are you sure you want to clear all trade history? This cannot be undone.',
+        () => {
+            tradeHistoryManager.clear();
+            toast.success('Trade history cleared');
+            eventLogger.addEvent('Trade history cleared', 'warning');
+        }
+    );
+}
+
+// Event log
+function filterEventLog() {
+    const filter = document.getElementById('eventLogFilter').value;
+    eventLogger.setFilter(filter);
+}
+
+function clearEventLog() {
+    showModal(
+        'Clear Event Log',
+        'Are you sure you want to clear all events?',
+        () => {
+            eventLogger.clear();
+            toast.success('Event log cleared');
+        }
+    );
+}
+
+// Modal functions
+function showModal(title, body, onConfirm) {
+    const overlay = document.getElementById('modalOverlay');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    
+    modalTitle.textContent = title;
+    modalBody.textContent = body;
+    modalCallback = onConfirm;
+    
+    overlay.classList.add('active');
+}
+
+function closeModal() {
+    const overlay = document.getElementById('modalOverlay');
+    overlay.classList.remove('active');
+    modalCallback = null;
+}
+
+function confirmModal() {
+    if (modalCallback) {
+        modalCallback();
+    }
+    closeModal();
+}
+
+function requestFullUpdate() {
+    if (dashboard) {
+        dashboard.requestFullUpdate();
+        toast.success('Refresh requested');
     }
 }
