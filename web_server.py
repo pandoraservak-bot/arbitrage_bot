@@ -17,6 +17,28 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+# Content Security Policy Middleware
+@web.middleware
+async def csp_middleware(request, handler):
+    """Add Content Security Policy headers to all responses"""
+    response = await handler(request)
+    
+    # CSP policy configuration
+    csp_policy = (
+        "default-src 'self'; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "img-src 'self' data:; "
+        "font-src 'self' https://fonts.gstatic.com; "
+        "connect-src 'self' ws: wss:; "
+        "frame-ancestors 'none'"
+    )
+    
+    response.headers['Content-Security-Policy'] = csp_policy
+    
+    return response
+
+
 class DateTimeEncoder(json.JSONEncoder):
     """JSON encoder that handles datetime objects"""
     def default(self, obj):
@@ -48,7 +70,8 @@ class WebDashboardServer:
         if web is None:
             return
         
-        self.app = web.Application()
+        # Create application with CSP middleware
+        self.app = web.Application(middlewares=[csp_middleware])
         
         # Static files
         self.app.router.add_static('/static', self.web_dir)
