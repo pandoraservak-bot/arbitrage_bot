@@ -16,6 +16,16 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+class DateTimeEncoder(json.JSONEncoder):
+    """JSON encoder that handles datetime objects"""
+    def default(self, obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()
+        if hasattr(obj, 'isoformat'):
+            return obj.isoformat()
+        return super().default(obj)
+
+
 class WebDashboardServer:
     """Web Dashboard Server with real-time WebSocket updates"""
     
@@ -253,14 +263,14 @@ class WebDashboardServer:
         """Send message to a specific WebSocket client"""
         if not ws.closed:
             try:
-                message = json.dumps({'type': msg_type, 'payload': payload})
+                message = json.dumps({'type': msg_type, 'payload': payload}, cls=DateTimeEncoder)
                 await ws.send_str(message)
             except Exception as e:
                 logger.error(f"Error sending to client: {e}")
     
     async def broadcast(self, msg_type, payload):
         """Broadcast message to all connected clients"""
-        message = json.dumps({'type': msg_type, 'payload': payload})
+        message = json.dumps({'type': msg_type, 'payload': payload}, cls=DateTimeEncoder)
         
         disconnected = set()
         for ws in self.ws_clients:
