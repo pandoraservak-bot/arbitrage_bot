@@ -87,6 +87,23 @@ class MockArbitrageEngine:
     
     def has_open_positions(self):
         return False
+    
+    def get_spread_history(self, limit: int = 100):
+        """Mock spread history for testing"""
+        return {
+            'labels': [],
+            'datasets': {
+                'entry_bh': [],
+                'entry_hb': [],
+                'exit_bh': [],
+                'exit_hb': [],
+            },
+            'timestamps': [],
+            'health': {
+                'bitget': [],
+                'hyper': [],
+            }
+        }
 
 
 class MockPaperExecutor:

@@ -70,7 +70,7 @@ class NVDAFuturesArbitrageBot:
         # Инициализация компонентов
         self.risk_manager = RiskManager()
         self.paper_executor = PaperTradeExecutor()
-        self.arb_engine = ArbitrageEngine(self.risk_manager, self.paper_executor)
+        self.arb_engine = ArbitrageEngine(self.risk_manager, self.paper_executor, self)
         
         # WebSocket клиенты
         self.bitget_ws = None
