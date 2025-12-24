@@ -177,12 +177,16 @@ class WebDashboardServer:
     async def close_position(self, position_id):
         """Close a specific position"""
         try:
-            positions = self.bot.arb_engine.get_open_positions()
+            arb_engine = getattr(self.bot, 'arb_engine', None)
+            if not arb_engine or not hasattr(arb_engine, 'get_open_positions'):
+                return False
+
+            positions = arb_engine.get_open_positions()
             for pos in positions:
                 if pos.id == position_id:
                     # Execute close logic
-                    if hasattr(self.bot, 'arb_engine'):
-                        await self.bot.arb_engine.close_position(pos)
+                    if hasattr(arb_engine, 'close_position'):
+                        await arb_engine.close_position(pos)
                         return True
             return False
         except Exception as e:
@@ -225,55 +229,56 @@ class WebDashboardServer:
         try:
             # Validate and update configuration
             updated_fields = []
-            
+            bot_config = getattr(self.bot, 'config', {})
+
             if 'MIN_SPREAD_ENTER' in config:
                 value = float(config['MIN_SPREAD_ENTER'])
                 if 0.0001 <= value <= 0.01:  # 0.01% to 1.0%
-                    if hasattr(self.bot, 'config'):
-                        self.bot.config['MIN_SPREAD_ENTER'] = value
+                    if isinstance(bot_config, dict):
+                        bot_config['MIN_SPREAD_ENTER'] = value
                     updated_fields.append(f"MIN_SPREAD_ENTER={value*100:.2f}%")
                 else:
                     return {
                         'success': False,
                         'error': 'MIN_SPREAD_ENTER must be between 0.01% and 1.0%'
                     }
-            
+
             if 'MIN_SPREAD_EXIT' in config:
                 value = float(config['MIN_SPREAD_EXIT'])
                 if -0.01 <= value <= 0.0001:  # -1.0% to 0.01%
-                    if hasattr(self.bot, 'config'):
-                        self.bot.config['MIN_SPREAD_EXIT'] = value
+                    if isinstance(bot_config, dict):
+                        bot_config['MIN_SPREAD_EXIT'] = value
                     updated_fields.append(f"MIN_SPREAD_EXIT={value*100:.2f}%")
                 else:
                     return {
                         'success': False,
                         'error': 'MIN_SPREAD_EXIT must be between -1.0% and 0.01%'
                     }
-            
+
             if 'MAX_POSITION_AGE_HOURS' in config:
                 value = float(config['MAX_POSITION_AGE_HOURS'])
                 if 0.5 <= value <= 24:
-                    if hasattr(self.bot, 'config'):
-                        self.bot.config['MAX_POSITION_AGE_HOURS'] = value
+                    if isinstance(bot_config, dict):
+                        bot_config['MAX_POSITION_AGE_HOURS'] = value
                     updated_fields.append(f"MAX_POSITION_AGE_HOURS={value}")
                 else:
                     return {
                         'success': False,
                         'error': 'MAX_POSITION_AGE_HOURS must be between 0.5 and 24'
                     }
-            
+
             if 'MAX_CONCURRENT_POSITIONS' in config:
                 value = int(config['MAX_CONCURRENT_POSITIONS'])
                 if 1 <= value <= 10:
-                    if hasattr(self.bot, 'config'):
-                        self.bot.config['MAX_CONCURRENT_POSITIONS'] = value
+                    if isinstance(bot_config, dict):
+                        bot_config['MAX_CONCURRENT_POSITIONS'] = value
                     updated_fields.append(f"MAX_CONCURRENT_POSITIONS={value}")
                 else:
                     return {
                         'success': False,
                         'error': 'MAX_CONCURRENT_POSITIONS must be between 1 and 10'
                     }
-            
+
             if updated_fields:
                 return {
                     'success': True,
@@ -295,31 +300,32 @@ class WebDashboardServer:
         """Handle risk management configuration updates"""
         try:
             updated_fields = []
-            
+            bot_config = getattr(self.bot, 'config', {})
+
             if 'DAILY_LOSS_LIMIT' in config:
                 value = float(config['DAILY_LOSS_LIMIT'])
                 if 10 <= value <= 10000:
-                    if hasattr(self.bot, 'config'):
-                        self.bot.config['DAILY_LOSS_LIMIT'] = value
+                    if isinstance(bot_config, dict):
+                        bot_config['DAILY_LOSS_LIMIT'] = value
                     updated_fields.append(f"DAILY_LOSS_LIMIT=${value}")
                 else:
                     return {
                         'success': False,
                         'error': 'DAILY_LOSS_LIMIT must be between 10 and 10000'
                     }
-            
+
             if 'MAX_POSITION_SIZE' in config:
                 value = float(config['MAX_POSITION_SIZE'])
                 if 0.1 <= value <= 100:
-                    if hasattr(self.bot, 'config'):
-                        self.bot.config['MAX_POSITION_SIZE'] = value
+                    if isinstance(bot_config, dict):
+                        bot_config['MAX_POSITION_SIZE'] = value
                     updated_fields.append(f"MAX_POSITION_SIZE={value}")
                 else:
                     return {
                         'success': False,
                         'error': 'MAX_POSITION_SIZE must be between 0.1 and 100'
                     }
-            
+
             if updated_fields:
                 return {
                     'success': True,
@@ -339,30 +345,38 @@ class WebDashboardServer:
     
     def collect_dashboard_data(self):
         """Collect all data needed for dashboard display"""
-        runtime = time.time() - self.bot.session_start
-        
+        session_start = getattr(self.bot, 'session_start', time.time())
+        runtime = time.time() - session_start
+
         # Trading mode
         mode = 'stopped'
-        if self.bot.trading_mode.value == 'ACTIVE':
-            mode = 'active'
-        elif self.bot.trading_mode.value == 'PARTIAL':
-            mode = 'partial'
+        trading_mode = getattr(self.bot, 'trading_mode', None)
+        if trading_mode:
+            if hasattr(trading_mode, 'value'):
+                if trading_mode.value == 'ACTIVE':
+                    mode = 'active'
+                elif trading_mode.value == 'PARTIAL':
+                    mode = 'partial'
         
         # Collect spreads
         spreads = {}
+        bitget_ws = getattr(self.bot, 'bitget_ws', None)
+        hyper_ws = getattr(self.bot, 'hyper_ws', None)
+        arb_engine = getattr(self.bot, 'arb_engine', None)
+
         try:
-            if self.bot.bitget_ws and self.bot.hyper_ws:
-                bitget_data = self.bot.bitget_ws.get_latest_data()
-                hyper_data = self.bot.hyper_ws.get_latest_data()
-                
-                if bitget_data and hyper_data:
-                    bitget_slippage = self.bot.bitget_ws.get_estimated_slippage() if self.bot.bitget_ws else None
-                    hyper_slippage = self.bot.hyper_ws.get_estimated_slippage() if self.bot.hyper_ws else None
-                    
-                    calc_spreads = self.bot.arb_engine.calculate_spreads(
+            if bitget_ws and hyper_ws and arb_engine:
+                bitget_data = bitget_ws.get_latest_data() if hasattr(bitget_ws, 'get_latest_data') else None
+                hyper_data = hyper_ws.get_latest_data() if hasattr(hyper_ws, 'get_latest_data') else None
+
+                if bitget_data and hyper_data and hasattr(arb_engine, 'calculate_spreads'):
+                    bitget_slippage = bitget_ws.get_estimated_slippage() if hasattr(bitget_ws, 'get_estimated_slippage') else None
+                    hyper_slippage = hyper_ws.get_estimated_slippage() if hasattr(hyper_ws, 'get_estimated_slippage') else None
+
+                    calc_spreads = arb_engine.calculate_spreads(
                         bitget_data, hyper_data, bitget_slippage, hyper_slippage
                     )
-                    
+
                     if calc_spreads:
                         for direction, spread_data in calc_spreads.items():
                             dir_key = direction.value if hasattr(direction, 'value') else str(direction)
@@ -371,37 +385,40 @@ class WebDashboardServer:
                             }
         except Exception as e:
             logger.debug(f"Error calculating spreads: {e}")
-        
+
         # Exit spreads
         exit_spreads = {}
         try:
-            if self.bot.bitget_ws and self.bot.hyper_ws:
-                bitget_data = self.bot.bitget_ws.get_latest_data()
-                hyper_data = self.bot.hyper_ws.get_latest_data()
-                
-                if bitget_data and hyper_data:
-                    bitget_slippage = self.bot.bitget_ws.get_estimated_slippage() if self.bot.bitget_ws else None
-                    hyper_slippage = self.bot.hyper_ws.get_estimated_slippage() if self.bot.hyper_ws else None
-                    
-                    exit_calc = self.bot.arb_engine.calculate_exit_spread_for_market(
+            if bitget_ws and hyper_ws and arb_engine:
+                bitget_data = bitget_ws.get_latest_data() if hasattr(bitget_ws, 'get_latest_data') else None
+                hyper_data = hyper_ws.get_latest_data() if hasattr(hyper_ws, 'get_latest_data') else None
+
+                if bitget_data and hyper_data and hasattr(arb_engine, 'calculate_exit_spread_for_market'):
+                    bitget_slippage = bitget_ws.get_estimated_slippage() if hasattr(bitget_ws, 'get_estimated_slippage') else None
+                    hyper_slippage = hyper_ws.get_estimated_slippage() if hasattr(hyper_ws, 'get_estimated_slippage') else None
+
+                    exit_calc = arb_engine.calculate_exit_spread_for_market(
                         bitget_data, hyper_data, bitget_slippage, hyper_slippage
                     )
-                    
+
                     if exit_calc:
                         for direction, spread in exit_calc.items():
                             dir_key = direction.value if hasattr(direction, 'value') else str(direction)
                             exit_spreads[dir_key] = spread
         except Exception as e:
             logger.debug(f"Error calculating exit spreads: {e}")
-        
+
         # Portfolio
-        portfolio = self.bot.paper_executor.get_portfolio() if hasattr(self.bot, 'paper_executor') else {}
-        
+        portfolio = {}
+        paper_executor = getattr(self.bot, 'paper_executor', None)
+        if paper_executor and hasattr(paper_executor, 'get_portfolio'):
+            portfolio = paper_executor.get_portfolio()
+
         # Total value and PnL
         total_value = 0
         pnl = 0
         try:
-            bitget_data = self.bot.bitget_ws.get_latest_data() if self.bot.bitget_ws else None
+            bitget_data = bitget_ws.get_latest_data() if bitget_ws and hasattr(bitget_ws, 'get_latest_data') else None
             usdt = portfolio.get('USDT', 0)
             nvda = portfolio.get('NVDA', 0)
             price = bitget_data.get('bid', 170) if bitget_data else 170
@@ -409,11 +426,11 @@ class WebDashboardServer:
             pnl = total_value - 1000.0
         except Exception:
             pass
-        
+
         # Positions
         positions = []
         try:
-            open_positions = self.bot.arb_engine.get_open_positions() if hasattr(self.bot, 'arb_engine') else []
+            open_positions = arb_engine.get_open_positions() if arb_engine and hasattr(arb_engine, 'get_open_positions') else []
             for pos in open_positions:
                 positions.append({
                     'id': pos.id,
@@ -425,51 +442,57 @@ class WebDashboardServer:
                 })
         except Exception:
             pass
-        
+
         # Calculate latency (mock values, can be enhanced with real measurements)
         bitget_latency = 0
         hyper_latency = 0
         try:
-            if hasattr(self.bot.bitget_ws, 'last_message_time') and self.bot.bitget_ws.last_message_time:
-                bitget_latency = int((time.time() - self.bot.bitget_ws.last_message_time) * 1000)
-            if hasattr(self.bot.hyper_ws, 'last_message_time') and self.bot.hyper_ws.last_message_time:
-                hyper_latency = int((time.time() - self.bot.hyper_ws.last_message_time) * 1000)
+            if bitget_ws and hasattr(bitget_ws, 'last_message_time') and bitget_ws.last_message_time:
+                bitget_latency = int((time.time() - bitget_ws.last_message_time) * 1000)
+            if hyper_ws and hasattr(hyper_ws, 'last_message_time') and hyper_ws.last_message_time:
+                hyper_latency = int((time.time() - hyper_ws.last_message_time) * 1000)
         except Exception:
             pass
         
         # Get daily loss
         daily_loss = 0
         try:
-            if hasattr(self.bot, 'risk_manager') and hasattr(self.bot.risk_manager, 'daily_loss'):
-                daily_loss = self.bot.risk_manager.daily_loss
+            risk_manager = getattr(self.bot, 'risk_manager', None)
+            if risk_manager and hasattr(risk_manager, 'daily_loss'):
+                daily_loss = risk_manager.daily_loss
         except Exception:
             pass
-        
+
+        # Get best spreads session data safely
+        best_spreads_session = getattr(self.bot, 'best_spreads_session', {})
+        session_stats = getattr(self.bot, 'session_stats', {})
+        bot_config = getattr(self.bot, 'config', {})
+
         return {
             'timestamp': datetime.now().strftime('%H:%M:%S'),
             'runtime': runtime,
             'trading_mode': mode,
-            'bitget_healthy': self.bot.bitget_healthy,
-            'hyper_healthy': self.bot.hyper_healthy,
+            'bitget_healthy': getattr(self.bot, 'bitget_healthy', False),
+            'hyper_healthy': getattr(self.bot, 'hyper_healthy', False),
             'bitget_latency': max(0, min(bitget_latency, 999)),  # Cap at 999ms
             'hyper_latency': max(0, min(hyper_latency, 999)),
-            'session_stats': self.bot.session_stats,
-            'bitget_data': self.bot.bitget_ws.get_latest_data() if self.bot.bitget_ws else None,
-            'hyper_data': self.bot.hyper_ws.get_latest_data() if self.bot.hyper_ws else None,
+            'session_stats': session_stats,
+            'bitget_data': bitget_ws.get_latest_data() if bitget_ws and hasattr(bitget_ws, 'get_latest_data') else None,
+            'hyper_data': hyper_ws.get_latest_data() if hyper_ws and hasattr(hyper_ws, 'get_latest_data') else None,
             'spreads': spreads,
             'exit_spreads': exit_spreads,
-            'best_entry_spread': self.bot.best_spreads_session.get('best_entry_spread', 0),
-            'best_entry_direction': self.bot.best_spreads_session.get('best_entry_direction'),
-            'best_entry_time': self.bot.best_spreads_session.get('best_entry_time'),
-            'best_exit_overall': self.bot.best_spreads_session.get('best_exit_spread_overall', float('inf')),
-            'best_exit_direction': self.bot.best_spreads_session.get('best_exit_direction'),
-            'best_exit_time': self.bot.best_spreads_session.get('best_exit_time'),
+            'best_entry_spread': best_spreads_session.get('best_entry_spread', 0) if isinstance(best_spreads_session, dict) else 0,
+            'best_entry_direction': best_spreads_session.get('best_entry_direction') if isinstance(best_spreads_session, dict) else None,
+            'best_entry_time': best_spreads_session.get('best_entry_time') if isinstance(best_spreads_session, dict) else None,
+            'best_exit_overall': best_spreads_session.get('best_exit_spread_overall', float('inf')) if isinstance(best_spreads_session, dict) else float('inf'),
+            'best_exit_direction': best_spreads_session.get('best_exit_direction') if isinstance(best_spreads_session, dict) else None,
+            'best_exit_time': best_spreads_session.get('best_exit_time') if isinstance(best_spreads_session, dict) else None,
             'portfolio': portfolio,
             'total_value': total_value,
             'pnl': pnl,
             'daily_loss': daily_loss,
             'positions': positions,
-            'config': self.bot.config,
+            'config': bot_config,
             'spread_chart_data': self._get_spread_chart_data()
         }
     
@@ -482,22 +505,30 @@ class WebDashboardServer:
                 history_data = self.bot.arb_engine.get_spread_history(100)
                 if history_data:
                     return history_data
-            
+
             # Иначе создаем из текущих данных
-            bitget_data = self.bot.bitget_ws.get_latest_data() if self.bot.bitget_ws else None
-            hyper_data = self.bot.hyper_ws.get_latest_data() if self.bot.hyper_ws else None
-            
+            bitget_ws = getattr(self.bot, 'bitget_ws', None)
+            hyper_ws = getattr(self.bot, 'hyper_ws', None)
+            arb_engine = getattr(self.bot, 'arb_engine', None)
+
+            if not bitget_ws or not hyper_ws or not arb_engine:
+                return self._empty_chart_data()
+
+            bitget_data = bitget_ws.get_latest_data() if hasattr(bitget_ws, 'get_latest_data') else None
+            hyper_data = hyper_ws.get_latest_data() if hasattr(hyper_ws, 'get_latest_data') else None
+
             if bitget_data and hyper_data:
-                bitget_slippage = self.bot.bitget_ws.get_estimated_slippage() if self.bot.bitget_ws else None
-                hyper_slippage = self.bot.hyper_ws.get_estimated_slippage() if self.bot.hyper_ws else None
-                
-                spreads = self.bot.arb_engine.calculate_spreads(
+                bitget_slippage = bitget_ws.get_estimated_slippage() if hasattr(bitget_ws, 'get_estimated_slippage') else None
+                hyper_slippage = hyper_ws.get_estimated_slippage() if hasattr(hyper_ws, 'get_estimated_slippage') else None
+
+                spreads = arb_engine.calculate_spreads(
                     bitget_data, hyper_data, bitget_slippage, hyper_slippage
-                )
-                exit_spreads = self.bot.arb_engine.calculate_exit_spread_for_market(
+                ) if hasattr(arb_engine, 'calculate_spreads') else {}
+
+                exit_spreads = arb_engine.calculate_exit_spread_for_market(
                     bitget_data, hyper_data, bitget_slippage, hyper_slippage
-                )
-                
+                ) if hasattr(arb_engine, 'calculate_exit_spread_for_market') else {}
+
                 if spreads and exit_spreads:
                     now = datetime.now().strftime('%H:%M:%S')
                     return {
@@ -510,13 +541,17 @@ class WebDashboardServer:
                         },
                         'timestamps': [time.time()],
                         'health': {
-                            'bitget': [self.bot.bitget_healthy],
-                            'hyper': [self.bot.hyper_healthy],
+                            'bitget': [getattr(self.bot, 'bitget_healthy', False)],
+                            'hyper': [getattr(self.bot, 'hyper_healthy', False)],
                         }
                     }
         except Exception as e:
             logger.debug(f"Error getting spread chart data: {e}")
-        
+
+        return self._empty_chart_data()
+
+    def _empty_chart_data(self) -> Dict:
+        """Return empty chart data structure"""
         return {
             'labels': [],
             'datasets': {
@@ -610,37 +645,42 @@ class WebDashboardServer:
         """API endpoint for status"""
         data = self.collect_dashboard_data()
         return web.json_response({'status': 'ok', 'data': data})
-    
+
     async def handle_api_spreads(self, request):
         """API endpoint for spreads"""
         spreads = {}
         try:
-            if self.bot.bitget_ws and self.bot.hyper_ws:
-                bitget_data = self.bot.bitget_ws.get_latest_data()
-                hyper_data = self.bot.hyper_ws.get_latest_data()
-                
-                if bitget_data and hyper_data:
-                    calc_spreads = self.bot.arb_engine.calculate_spreads(bitget_data, hyper_data)
+            bitget_ws = getattr(self.bot, 'bitget_ws', None)
+            hyper_ws = getattr(self.bot, 'hyper_ws', None)
+            arb_engine = getattr(self.bot, 'arb_engine', None)
+
+            if bitget_ws and hyper_ws and arb_engine:
+                bitget_data = bitget_ws.get_latest_data() if hasattr(bitget_ws, 'get_latest_data') else None
+                hyper_data = hyper_ws.get_latest_data() if hasattr(hyper_ws, 'get_latest_data') else None
+
+                if bitget_data and hyper_data and hasattr(arb_engine, 'calculate_spreads'):
+                    calc_spreads = arb_engine.calculate_spreads(bitget_data, hyper_data)
                     if calc_spreads:
                         for direction, spread_data in calc_spreads.items():
                             dir_key = direction.value if hasattr(direction, 'value') else str(direction)
                             spreads[dir_key] = spread_data
         except Exception as e:
             return web.json_response({'error': str(e)}, status=500)
-        
+
         return web.json_response({'spreads': spreads})
-    
+
     async def handle_api_positions(self, request):
         """API endpoint for positions"""
         positions = []
         try:
-            open_positions = self.bot.arb_engine.get_open_positions() if hasattr(self.bot, 'arb_engine') else []
+            arb_engine = getattr(self.bot, 'arb_engine', None)
+            open_positions = arb_engine.get_open_positions() if arb_engine and hasattr(arb_engine, 'get_open_positions') else []
             for pos in open_positions:
                 positions.append({
                     'id': pos.id,
                     'direction': pos.direction.value if hasattr(pos.direction, 'value') else str(pos.direction),
-                    'size': pos.size,
-                    'entry_price': pos.entry_price,
+                    'size': getattr(pos, 'size', 0),
+                    'entry_price': pos.entry_prices if hasattr(pos, 'entry_prices') else {},
                     'current_exit_spread': pos.current_exit_spread,
                     'exit_target': pos.exit_target,
                     'age': pos.get_age_formatted() if hasattr(pos, 'get_age_formatted') else None,
@@ -653,12 +693,24 @@ class WebDashboardServer:
     
     async def handle_api_portfolio(self, request):
         """API endpoint for portfolio"""
-        portfolio = self.bot.paper_executor.get_portfolio() if hasattr(self.bot, 'paper_executor') else {}
+        portfolio = {}
+        try:
+            paper_executor = getattr(self.bot, 'paper_executor', None)
+            if paper_executor and hasattr(paper_executor, 'get_portfolio'):
+                portfolio = paper_executor.get_portfolio()
+        except Exception as e:
+            return web.json_response({'error': str(e)}, status=500)
+
         return web.json_response({'portfolio': portfolio})
-    
+
     async def handle_api_stats(self, request):
         """API endpoint for session stats"""
-        return web.json_response({'session_stats': self.bot.session_stats})
+        session_stats = getattr(self.bot, 'session_stats', {})
+        best_spreads_session = getattr(self.bot, 'best_spreads_session', {})
+        return web.json_response({
+            'session_stats': session_stats,
+            'best_spreads_session': best_spreads_session
+        })
 
 
 def integrate_web_dashboard(bot, host='0.0.0.0', port=8080):
