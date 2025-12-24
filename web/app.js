@@ -8,6 +8,9 @@ const eventLog = [];
 const MAX_TRADE_HISTORY = 100;
 const MAX_EVENT_LOG = 200;
 
+// Target editing state
+let currentTargetType = null;
+
 // Toast Notification System
 class ToastNotification {
     constructor() {
@@ -817,6 +820,30 @@ class DashboardClient {
                 }
             });
         }
+        
+        // Target modal overlay click
+        const targetModalOverlay = document.getElementById('targetModalOverlay');
+        if (targetModalOverlay) {
+            targetModalOverlay.addEventListener('click', (e) => {
+                if (e.target === targetModalOverlay) {
+                    closeTargetModal();
+                }
+            });
+        }
+        
+        // Target input Enter key handler
+        const targetInput = document.getElementById('targetEditInput');
+        if (targetInput) {
+            targetInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    confirmTargetModal();
+                }
+                if (e.key === 'Escape') {
+                    closeTargetModal();
+                }
+            });
+        }
 
         // Global click delegation
         document.addEventListener('click', (e) => {
@@ -876,6 +903,22 @@ class DashboardClient {
             }
             if (e.target.closest('[data-action="confirm-modal"]')) {
                 confirmModal();
+                return;
+            }
+            
+            // Target edit modal controls
+            if (e.target.closest('[data-action="edit-target"]')) {
+                const targetBtn = e.target.closest('[data-action="edit-target"]');
+                const targetType = targetBtn.dataset.targetType;
+                openTargetModal(targetType);
+                return;
+            }
+            if (e.target.closest('[data-action="close-target-modal"]')) {
+                closeTargetModal();
+                return;
+            }
+            if (e.target.closest('[data-action="confirm-target-modal"]')) {
+                confirmTargetModal();
                 return;
             }
 
@@ -1269,4 +1312,82 @@ function requestFullUpdate() {
         dashboard.requestFullUpdate();
         toast.success('Refresh requested');
     }
+}
+
+// Target editing functions
+function openTargetModal(targetType) {
+    const overlay = document.getElementById('targetModalOverlay');
+    const input = document.getElementById('targetEditInput');
+    const title = document.getElementById('targetModalTitle');
+    const description = document.getElementById('targetModalDescription');
+    const hint = document.getElementById('targetModalHint');
+    
+    currentTargetType = targetType;
+    
+    let currentValue;
+    if (targetType === 'entry') {
+        const span = document.getElementById('spreadTarget');
+        currentValue = parseFloat(span.textContent) || 0.10;
+        title.textContent = 'Edit Entry Target';
+        description.textContent = 'Enter new entry spread target (minimum required spread):';
+        hint.textContent = 'Range: 0.01 - 5.00%';
+        input.min = 0.01;
+        input.max = 5.00;
+        input.step = 0.01;
+    } else if (targetType === 'exit') {
+        const span = document.getElementById('exitTarget');
+        currentValue = parseFloat(span.textContent) || 0.05;
+        title.textContent = 'Edit Exit Target';
+        description.textContent = 'Enter new exit spread target (maximum allowed spread):';
+        hint.textContent = 'Range: 0.01 - 5.00%';
+        input.min = 0.01;
+        input.max = 5.00;
+        input.step = 0.01;
+    }
+    
+    input.value = currentValue.toFixed(2);
+    overlay.classList.add('active');
+    
+    // Focus and select the input
+    setTimeout(() => {
+        input.focus();
+        input.select();
+    }, 100);
+}
+
+function closeTargetModal() {
+    const overlay = document.getElementById('targetModalOverlay');
+    overlay.classList.remove('active');
+    currentTargetType = null;
+}
+
+function confirmTargetModal() {
+    if (!currentTargetType) return;
+    
+    const input = document.getElementById('targetEditInput');
+    const value = parseFloat(input.value);
+    
+    if (isNaN(value) || value < 0.01 || value > 5.00) {
+        toast.error('Target value must be between 0.01 and 5.00%');
+        return;
+    }
+    
+    let payload;
+    if (currentTargetType === 'entry') {
+        payload = { MIN_SPREAD_ENTER: value / 100 };
+        // Update local display immediately
+        document.getElementById('spreadTarget').textContent = value.toFixed(2);
+        toast.success(`Entry target updated to ${value.toFixed(2)}%`);
+    } else if (currentTargetType === 'exit') {
+        payload = { MIN_SPREAD_EXIT: -(value / 100) };
+        // Update local display immediately
+        document.getElementById('exitTarget').textContent = value.toFixed(2);
+        toast.success(`Exit target updated to ${value.toFixed(2)}%`);
+    }
+    
+    // Send to server
+    dashboard.sendCommand('update_config', { config: payload });
+    eventLogger.addEvent(`${currentTargetType.charAt(0).toUpperCase() + currentTargetType.slice(1)} target updated to ${value.toFixed(2)}%`, 'success');
+    
+    closeTargetModal();
 }
