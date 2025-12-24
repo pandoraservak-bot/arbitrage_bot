@@ -251,7 +251,7 @@ class WebDashboardServer:
     
     async def send_to_client(self, ws, msg_type, payload):
         """Send message to a specific WebSocket client"""
-        if ws.ready == WSMsgType.OPEN:
+        if not ws.closed:
             try:
                 message = json.dumps({'type': msg_type, 'payload': payload})
                 await ws.send_str(message)
@@ -264,7 +264,7 @@ class WebDashboardServer:
         
         disconnected = set()
         for ws in self.ws_clients:
-            if ws.ready == WSMsgType.OPEN:
+            if not ws.closed:
                 try:
                     await ws.send_str(message)
                 except Exception as e:
