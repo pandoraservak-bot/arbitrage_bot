@@ -43,11 +43,60 @@ class PaperTradeExecutor:
         """Загрузка состояния портфеля"""
         try:
             if os.path.exists(self.portfolio_file):
-                with open(self.portfolio_file, 'r') as f:
+                with open(self.portfolio_file, 'r', encoding='utf-8') as f:
                     self.portfolio = json.load(f)
                 logger.info(f"Portfolio loaded: USDT=${self.portfolio.get('USDT', 0):.2f}")
         except Exception as e:
             logger.warning(f"Error loading portfolio: {e}")
+
+    def reconcile_with_positions(self, positions: List[object]):
+        """Проверка консистентности портфеля относительно восстановленных позиций.
+
+        Paper-портфель в текущей реализации агрегирован (без раздельного учета по биржам),
+        поэтому он не может в точности отражать арбитражные позиции. Здесь выполняем
+        только валидацию и логирование.
+        """
+
+        try:
+            count = len(positions)
+        except Exception:
+            count = 0
+
+        if count <= 0:
+            return
+
+        usdt = float(self.portfolio.get('USDT', 0.0) or 0.0)
+        nvda = float(self.portfolio.get('NVDA', 0.0) or 0.0)
+
+        logger.info(
+            f"📁 Portfolio on restore: USDT=${usdt:.2f}, NVDA={nvda:.6f}. "
+            f"Restored open positions: {count}"
+        )
+
+        # В нашей модели вход/выход исполняются как buy+sell одинакового объема, поэтому NVDA обычно ≈ 0
+        if abs(nvda) > 1e-8:
+            logger.warning(
+                f"Portfolio NVDA balance is not zero ({nvda:.6f}) while positions are open. "
+                f"This may indicate previous incomplete paper execution or file mismatch."
+            )
+
+        # Оценка минимального требуемого USDT для закрытия (приближенно)
+        max_fee = max(self.config.get('FEES', {}).values() or [0.0])
+        estimated_close_usdt = 0.0
+        for pos in positions:
+            try:
+                contracts = float(getattr(pos, 'contracts', 0.0) or 0.0)
+                entry_prices = getattr(pos, 'entry_prices', {}) or {}
+                ref_price = float(entry_prices.get('buy') or entry_prices.get('sell') or 171.0)
+                estimated_close_usdt += contracts * ref_price * (1 + max_fee)
+            except Exception:
+                continue
+
+        if estimated_close_usdt > 0 and usdt < estimated_close_usdt:
+            logger.warning(
+                f"Portfolio USDT (${usdt:.2f}) may be insufficient to close restored positions "
+                f"(estimated need ${estimated_close_usdt:.2f})."
+            )
     
     def _calculate_fee(self, exchange: str, volume: float) -> float:
         """Расчет комиссии"""
@@ -186,30 +235,16 @@ class PaperTradeExecutor:
         
         return trade_result
     
-    def execute_fok_pair_sync(self, buy_order: Dict, sell_order: Dict, tag: str = "") -> Dict:
-        """Синхронная версия исполнения FOK пары"""
-        logger.debug(f"Executing FOK pair sync: {tag}, buy: {buy_order}, sell: {sell_order}")
+    async def execute_fok_pair_async(self, buy_order: Dict, sell_order: Dict, tag: str = "") -> Dict:
+        """Асинхронное исполнение FOK пары ордеров"""
+        logger.debug(f"Executing FOK pair async: {tag}, buy: {buy_order}, sell: {sell_order}")
         
         try:
-            # Пробуем получить текущий event loop
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                # Если loop запущен, создаем Future и ждем ее
-                future = asyncio.run_coroutine_threadsafe(
-                    self.execute_fok_pair(buy_order, sell_order, tag),
-                    loop
-                )
-                result = future.result(timeout=10)  # Таймаут 10 секунд
-                logger.debug(f"FOK pair sync completed: {tag}, success: {result.get('success', False)}")
-                return result
-            else:
-                # Loop не запущен, запускаем новый
-                logger.debug(f"Starting new event loop for FOK pair: {tag}")
-                result = asyncio.run(self.execute_fok_pair(buy_order, sell_order, tag))
-                logger.debug(f"FOK pair sync completed: {tag}, success: {result.get('success', False)}")
-                return result
+            result = await self.execute_fok_pair(buy_order, sell_order, tag)
+            logger.debug(f"FOK pair async completed: {tag}, success: {result.get('success', False)}")
+            return result
         except Exception as e:
-            logger.error(f"Error executing FOK pair sync {tag}: {e}", exc_info=True)
+            logger.error(f"Error executing FOK pair async {tag}: {e}", exc_info=True)
             return {
                 'success': False,
                 'error': str(e),

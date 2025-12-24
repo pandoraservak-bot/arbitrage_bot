@@ -15,14 +15,32 @@ from core.risk_manager import RiskManager
 from core.paper_executor import PaperTradeExecutor
 from core.arbitrage_engine import ArbitrageEngine, TradeDirection
 
+# Try to import web server (optional)
+try:
+    from web_server import WebDashboardServer, integrate_web_dashboard
+    WEB_DASHBOARD_AVAILABLE = True
+except ImportError:
+    WEB_DASHBOARD_AVAILABLE = False
+    WebDashboardServer = None
+    integrate_web_dashboard = None
+
 # Настройка логирования
+# FileHandler: все уровни (включая DEBUG) - для записи в файл
+# StreamHandler: только INFO и выше - для отображения в консоли
+file_handler = logging.FileHandler(LOGGING_CONFIG['LOG_FILE'], encoding='utf-8')
+file_handler.setLevel(logging.DEBUG)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.INFO)
+
+# Форматирование
+formatter = logging.Formatter(LOGGING_CONFIG['LOG_FORMAT'])
+file_handler.setFormatter(formatter)
+stream_handler.setFormatter(formatter)
+
 logging.basicConfig(
-    level=getattr(logging, LOGGING_CONFIG['LOG_LEVEL']),
-    format=LOGGING_CONFIG['LOG_FORMAT'],
-    handlers=[
-        logging.FileHandler(LOGGING_CONFIG['LOG_FILE'], encoding='utf-8'),
-        logging.StreamHandler()
-    ]
+    level=logging.DEBUG,  # Общий уровень - самый низкий, обработчики фильтруют
+    handlers=[file_handler, stream_handler]
 )
 logger = logging.getLogger(__name__)
 
@@ -118,6 +136,9 @@ class NVDAFuturesArbitrageBot:
             'negative_spreads': 0,
         }
         
+        # Web dashboard server (initialized later)
+        self.web_dashboard = None
+        
     async def initialize(self):
         """Инициализация всех компонентов"""
         logger.info("=" * 60)
@@ -151,9 +172,12 @@ class NVDAFuturesArbitrageBot:
         """Инициализация WebSocket соединений"""
         logger.info("Подключение WebSocket...")
         
+        # Получаем текущий event loop для передачи в WebSocket клиенты
+        current_loop = asyncio.get_running_loop()
+        
         # Создание и настройка WebSocket клиентов
-        self.bitget_ws = BitgetWebSocketClient()
-        self.hyper_ws = HyperliquidWebSocketClient()
+        self.bitget_ws = BitgetWebSocketClient(event_loop=current_loop)
+        self.hyper_ws = HyperliquidWebSocketClient(event_loop=current_loop)
         
         # Установка callback для отслеживания отключений
         self.bitget_ws.set_disconnect_callback(self.on_bitget_disconnect)
@@ -329,7 +353,14 @@ class NVDAFuturesArbitrageBot:
                     self.best_spreads_session['best_exit_time'] = time.time()
                     self.best_spreads_session['best_exit_with_position'] = False
                     
-                    logger.info(f"🎯 Новый рекордный выходной спред (без позиции): {best_exit_overall:.3f}% ({best_exit_dir.value if best_exit_dir else 'N/A'})")
+                    # Логируем только если спред значительно улучшился (более 10%)
+                    if self.best_spreads_session['best_exit_spread_overall'] != float('inf'):
+                        improvement = ((self.best_spreads_session['best_exit_spread_overall'] - best_exit_overall) /
+                                     abs(self.best_spreads_session['best_exit_spread_overall']) * 100)
+                        if abs(improvement) > 10:
+                            logger.info(f"🎯 Новый рекордный выходной спред (без позиции): {best_exit_overall:.3f}% ({best_exit_dir.value if best_exit_dir else 'N/A'})")
+                    else:
+                        logger.info(f"🎯 Новый рекордный выходной спред (без позиции): {best_exit_overall:.3f}% ({best_exit_dir.value if best_exit_dir else 'N/A'})")
                     
         except Exception as e:
             logger.debug(f"Ошибка расчета выходных спредов: {e}")
@@ -354,7 +385,14 @@ class NVDAFuturesArbitrageBot:
             self.best_spreads_session['best_entry_direction'] = direction.value if direction else None
             self.best_spreads_session['best_entry_time'] = time.time()
             
-            logger.info(f"🎯 Новый рекордный спред для входа: {spread:.3f}% ({direction.value if direction else 'N/A'})")
+            # Логируем только если спред значительно улучшился (более 10%)
+            if self.best_spreads_session['best_entry_spread'] > 0:
+                improvement = ((spread - self.best_spreads_session['best_entry_spread']) /
+                             self.best_spreads_session['best_entry_spread'] * 100)
+                if abs(improvement) > 10:
+                    logger.info(f"🎯 Новый рекордный спред для входа: {spread:.3f}% ({direction.value if direction else 'N/A'})")
+            else:
+                logger.info(f"🎯 Новый рекордный спред для входа: {spread:.3f}% ({direction.value if direction else 'N/A'})")
     
     def update_exit_spread_stats(self, spread: float, direction=None, position_id: str = None, from_position: bool = True):
         """Обновление статистики спредов для выхода"""
@@ -376,11 +414,11 @@ class NVDAFuturesArbitrageBot:
         if direction == TradeDirection.B_TO_H:
             if spread < self.best_spreads_session['best_exit_spread_bh']:
                 self.best_spreads_session['best_exit_spread_bh'] = spread
-                logger.debug(f"Новый рекорд для выхода B→H: {spread:.3f}%")
+                # Убрали spam - логируем только значительные улучшения
         elif direction == TradeDirection.H_TO_B:
             if spread < self.best_spreads_session['best_exit_spread_hb']:
                 self.best_spreads_session['best_exit_spread_hb'] = spread
-                logger.debug(f"Новый рекорд для выхода H→B: {spread:.3f}%")
+                # Убрали spam - логируем только значительные улучшения
         
         # Обновляем абсолютно лучший выходной спред
         if spread < self.best_spreads_session['best_exit_spread_overall']:
@@ -389,10 +427,18 @@ class NVDAFuturesArbitrageBot:
             self.best_spreads_session['best_exit_time'] = time.time()
             self.best_spreads_session['best_exit_with_position'] = from_position
             
-            if from_position and position_id:
-                logger.info(f"🎯 Новый рекордный спред для выхода: {spread:.3f}% (позиция {position_id})")
-            else:
-                logger.info(f"🎯 Новый рекордный выходной спред (рыночный): {spread:.3f}% ({direction.value if direction else 'N/A'})")
+            # Логируем только значительные улучшения (более 10%)
+            should_log = False
+            if self.best_spreads_session['best_exit_spread_overall'] != float('inf'):
+                improvement = ((self.best_spreads_session['best_exit_spread_overall'] - spread) /
+                             abs(self.best_spreads_session['best_exit_spread_overall']) * 100)
+                should_log = abs(improvement) > 10
+            
+            if should_log or self.best_spreads_session['best_exit_spread_overall'] == float('inf'):
+                if from_position and position_id:
+                    logger.info(f"🎯 Новый рекордный спред для выхода: {spread:.3f}% (позиция {position_id})")
+                else:
+                    logger.info(f"🎯 Новый рекордный выходной спред (рыночный): {spread:.3f}% ({direction.value if direction else 'N/A'})")
     
     def update_spread_stats(self, spread: float):
         """Обновление статистики спредов"""
@@ -518,7 +564,7 @@ class NVDAFuturesArbitrageBot:
         if has_bitget_data and has_hyper_data:
             # Всегда мониторим позиции, если они есть
             if self.arb_engine.has_open_positions():
-                self.arb_engine.monitor_positions(bitget_data, hyper_data, bitget_slippage, hyper_slippage)
+                await self.arb_engine.monitor_positions(bitget_data, hyper_data, bitget_slippage, hyper_slippage)
             else:
                 # Нет позиций - ищем возможности для входа
                 opportunity = self.arb_engine.find_opportunity(
@@ -1190,6 +1236,16 @@ class NVDAFuturesArbitrageBot:
         self.session_start = time.time()
         self.last_mode_change = time.time()
         
+        # Initialize web dashboard server
+        if WEB_DASHBOARD_AVAILABLE and integrate_web_dashboard:
+            try:
+                self.web_dashboard = integrate_web_dashboard(self, host='0.0.0.0', port=8080)
+                if self.web_dashboard:
+                    await self.web_dashboard.start()
+                    logger.info("🌐 Web Dashboard: http://0.0.0.0:8080")
+            except Exception as e:
+                logger.warning(f"Не удалось запустить web dashboard: {e}")
+        
         try:
             await self.trading_cycle()
         except KeyboardInterrupt:
@@ -1206,12 +1262,24 @@ class NVDAFuturesArbitrageBot:
         logger.info("Завершение работы...")
         self.running = False
         
+        # Stop web dashboard server
+        if self.web_dashboard:
+            try:
+                await self.web_dashboard.stop()
+            except Exception as e:
+                logger.warning(f"Ошибка при остановке web dashboard: {e}")
+        
         await self.update_mode_time_stats()
         
-        close_on_shutdown = True
+        close_on_shutdown = False
         if close_on_shutdown and self.arb_engine.has_open_positions():
             logger.warning("Закрытие позиций...")
-            self.arb_engine.close_all_positions("Завершение работы")
+            await self.arb_engine.close_all_positions("Завершение работы")
+        
+        # Сохраняем открытые позиции перед завершением
+        if self.arb_engine.has_open_positions():
+            logger.info(f"Сохранение {len(self.arb_engine.get_open_positions())} открытых позиций...")
+            self.arb_engine._save_positions()
         
         if self.bitget_ws:
             self.bitget_ws.disconnect()

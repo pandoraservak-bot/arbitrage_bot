@@ -1,22 +1,615 @@
 {
-  "start_time": "2025-12-18 06:02:58.808399",
-  "total_checks": 7657,
+  "start_time": "2025-12-24 00:30:55.686333",
+  "total_checks": 121,
   "total_trades": 0,
-  "bitget_updates": 7489,
-  "hyper_updates": 7654,
+  "bitget_updates": 121,
+  "hyper_updates": 119,
   "bitget_connections": 0,
   "hyper_connections": 0,
-  "bitget_disconnects": 10,
+  "bitget_disconnects": 0,
   "hyper_disconnects": 0,
-  "mode_changes": 13,
-  "time_in_active": 810.6076319217682,
-  "time_in_partial": 18.226643085479736,
-  "time_in_stopped": 4.318060398101807,
+  "mode_changes": 1,
+  "time_in_active": 12.161425352096558,
+  "time_in_partial": 0,
+  "time_in_stopped": 3.207416296005249,
+  "max_spread": 0.04241781548250945,
+  "min_spread": 0.04241781548250945,
+  "avg_spread": 0.04241781548250945,
+  "spread_sum": 0.5090137857901134,
+  "spread_count": 12,
+  "last_spread": 0.04241781548250945,
+  "last_spread_direction": "H\u2192B",
+  "positive_spreads": 12,
+  "negative_spreads": 0,
   "total_pnl": 0.0,
   "total_fees": 0.0,
   "total_volume": 0.0,
-  "end_time": "2025-12-18T06:16:55.283873",
-  "runtime_seconds": 832.1563816070557,
+  "best_entry_spread": 0.04241781548250945,
+  "best_entry_direction": "H\u2192B",
+  "best_entry_time": "2025-12-24T00:30:59.901595",
+  "best_exit_spread_bh": 0.04241781548250945,
+  "best_exit_spread_hb": -0.10067825349724391,
+  "best_exit_spread_overall": -0.10067825349724391,
+  "best_exit_direction": "H\u2192B",
+  "best_exit_time": "2025-12-24T00:30:59.096205",
+  "best_exit_with_position": false,
+  "entry_spreads_history": [
+    {
+      "spread": 0.04241781548250945,
+      "direction": "H\u2192B",
+      "time": 1766536259.9015923
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "H\u2192B",
+      "time": 1766536260.9085999
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "H\u2192B",
+      "time": 1766536261.927237
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "H\u2192B",
+      "time": 1766536262.933961
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "H\u2192B",
+      "time": 1766536263.9528656
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "H\u2192B",
+      "time": 1766536264.9595516
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "H\u2192B",
+      "time": 1766536265.979762
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "H\u2192B",
+      "time": 1766536266.9872892
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "H\u2192B",
+      "time": 1766536268.0064878
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "H\u2192B",
+      "time": 1766536269.0130165
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "H\u2192B",
+      "time": 1766536270.033045
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "H\u2192B",
+      "time": 1766536271.039403
+    }
+  ],
+  "exit_spreads_history": [
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536259.0961943
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536259.096204
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536259.5994918
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536259.5994961
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536259.901604
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536259.9016097
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536260.103027
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536260.103036
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536260.606362
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536260.6063666
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536260.9086094
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536260.9086118
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536261.1219623
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536261.1219652
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536261.6251316
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536261.6251342
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536261.9272454
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536261.9272475
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536262.12857
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536262.1285737
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536262.631807
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536262.6318107
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536262.9339738
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536262.9339771
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536263.1477034
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536263.1477056
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536263.650777
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536263.650781
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536263.9528747
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536263.9528778
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536264.15428
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536264.154283
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536264.6573844
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536264.6573873
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536264.95956
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536264.9595625
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536265.1746657
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536265.1746688
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536265.6777575
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536265.6777596
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536265.9797692
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536265.9797723
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536266.181089
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536266.1810918
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536266.6853216
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536266.6853251
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536266.9872963
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536266.9872983
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536267.2013469
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536267.2013493
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536267.7045414
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536267.7045443
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536268.0064962
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536268.006499
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536268.2077115
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536268.2077146
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536268.7111769
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536268.7111804
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536269.013023
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536269.013025
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536269.2265093
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536269.226513
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536269.731091
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536269.7310948
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536270.033052
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536270.033055
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536270.2342556
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536270.2342582
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536270.7373786
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536270.7373815
+    },
+    {
+      "spread": 0.04241781548250945,
+      "direction": "B\u2192H",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536271.0394094
+    },
+    {
+      "spread": -0.10067825349724391,
+      "direction": "H\u2192B",
+      "position_id": null,
+      "from_position": false,
+      "time": 1766536271.0394115
+    }
+  ],
+  "end_time": "2025-12-24T00:31:11.338109",
+  "runtime_seconds": 12.44405198097229,
   "final_mode": "ACTIVE",
-  "open_positions_at_end": 0
+  "open_positions_at_end": 0,
+  "current_spread_at_end": 0.04241781548250945,
+  "spread_direction_at_end": "H\u2192B",
+  "slippage_info_at_end": {
+    "hyperliquid_buy": 0.0,
+    "bitget_sell": 0.0
+  },
+  "display_mode_used": "compact"
 }

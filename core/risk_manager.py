@@ -56,10 +56,11 @@ class RiskManager:
     
     def can_open_position(self, direction: str, spread: float, price: float) -> Tuple[bool, str]:
         """Проверка возможности открытия позиции"""
-        logger.debug(f"Risk check: {direction}, spread={spread:.3f}%, price={price:.2f}")
+        # Убрали spam - не логируем каждый риск-чек, только проблемы
         
         # Проверка дневного лимита убытков
         if self.daily_stats['daily_limit_exceeded']:
+            logger.warning(f"❌ Daily loss limit exceeded")
             return False, "Daily loss limit exceeded"
         
         current_daily_loss = self.daily_stats['total_loss'] + self.session_loss
@@ -67,24 +68,31 @@ class RiskManager:
         if abs(current_daily_loss) >= self.config['MAX_DAILY_LOSS']:
             self.daily_stats['daily_limit_exceeded'] = True
             self._save_daily_stats()
+            logger.warning(f"❌ Daily loss limit reached: ${abs(current_daily_loss):.2f} >= ${self.config['MAX_DAILY_LOSS']}")
             return False, "Daily loss limit reached"
         
-        # Проверка минимального спреда - берем из конфига
-        min_spread = self.config.get('MIN_SPREAD_ENTER', 0.0015) * 100
-        if spread < min_spread:
-            return False, f"Spread too low: {spread:.3f}% < {min_spread:.3f}%"
+        # Проверка минимального спреда - ИСПРАВЛЕНО: получаем из TRADING_CONFIG
+        from config import TRADING_CONFIG
+        min_spread_from_config = TRADING_CONFIG['MIN_SPREAD_ENTER']
+        min_spread_percent = min_spread_from_config * 100
+        
+        if spread < min_spread_percent:
+            logger.warning(f"❌ Spread too low: {spread:.3f}% < {min_spread_percent:.3f}% (config: {min_spread_from_config})")
+            return False, f"Spread too low: {spread:.3f}% < {min_spread_percent:.3f}%"
         
         # Проверка максимального размера позиции
         max_contracts = self.config['MAX_POSITION_CONTRACTS']
         if max_contracts <= 0:
+            logger.warning(f"❌ Max position size is zero or negative: {max_contracts}")
             return False, "Max position size is zero or negative"
         
         # Проверка максимальной стоимости позиции
         position_value = price * max_contracts
         if position_value > self.config['MAX_POSITION_USD']:
+            logger.warning(f"❌ Position value too high: ${position_value:.2f} > ${self.config['MAX_POSITION_USD']}")
             return False, f"Position value ${position_value:.2f} > ${self.config['MAX_POSITION_USD']}"
         
-        logger.debug(f"Risk check result: OK")
+        # Убрали spam - не логируем каждый успешный риск-чек
         return True, "OK"
     
     def calculate_position_size(self, price: float, spread: float) -> Dict:
