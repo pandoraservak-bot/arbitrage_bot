@@ -96,75 +96,31 @@
                 </div>
             </div>
 
-            <!-- Spreads Analysis Card (merged Entry + Exit) -->
-            <div class="card spreads-analysis-card">
+            <!-- Spread Card -->
+            <div class="card spread-card">
                 <div class="card-header">
-                    <h2>📈 Spreads Analysis</h2>
+                    <h2>📈 Entry Spreads (Gross)</h2>
+                    <span class="target-badge">Target: ≥<span id="spreadTarget">0.10</span>%</span>
                 </div>
-                <div class="spreads-analysis-content">
-                    <!-- Entry Spreads Column -->
-                    <div class="spreads-column entry-column">
-                        <div class="spreads-column-header">
-                            <span class="column-title">Entry Spreads</span>
-                            <button class="target-btn" data-target-type="entry" data-action="edit-target" title="Click to edit target">
-                                Target: ≥<span id="spreadTarget">0.10</span>%
-                            </button>
-                        </div>
-                        <div class="spreads-directions">
-                            <div class="spread-direction">
-                                <span class="direction-indicator bh">B → H</span>
-                                <div class="spread-info">
-                                    <span class="spread-value" id="spreadBH">---</span>
-                                    <div class="spread-bar">
-                                        <div class="spread-bar-fill" id="spreadBarBH" style="width: 0%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="spread-direction">
-                                <span class="direction-indicator hb">H → B</span>
-                                <div class="spread-info">
-                                    <span class="spread-value" id="spreadHB">---</span>
-                                    <div class="spread-bar">
-                                        <div class="spread-bar-fill" id="spreadBarHB" style="width: 0%"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="spreads-best">
-                            <span class="best-label">Best Entry:</span>
-                            <span class="best-value" id="bestEntry">---</span>
-                            <span class="best-direction" id="bestEntryDirection">---</span>
+                <div class="spread-content">
+                    <div class="spread-direction">
+                        <div class="spread-label">B → H</div>
+                        <div class="spread-value" id="spreadBH">---</div>
+                        <div class="spread-bar">
+                            <div class="spread-bar-fill" id="spreadBarBH" style="width: 0%"></div>
                         </div>
                     </div>
-                    
-                    <div class="spreads-divider"></div>
-                    
-                    <!-- Exit Spreads Column -->
-                    <div class="spreads-column exit-column">
-                        <div class="spreads-column-header">
-                            <span class="column-title">Exit Spreads</span>
-                            <button class="target-btn" data-target-type="exit" data-action="edit-target" title="Click to edit target">
-                                Target: ≤<span id="exitTarget">0.05</span>%
-                            </button>
+                    <div class="spread-direction">
+                        <div class="spread-label">H → B</div>
+                        <div class="spread-value" id="spreadHB">---</div>
+                        <div class="spread-bar">
+                            <div class="spread-bar-fill" id="spreadBarHB" style="width: 0%"></div>
                         </div>
-                        <div class="spreads-directions">
-                            <div class="spread-direction">
-                                <span class="direction-indicator bh">B → H</span>
-                                <div class="spread-info">
-                                    <span class="spread-value" id="marketExitBH">---</span>
-                                </div>
-                            </div>
-                            <div class="spread-direction">
-                                <span class="direction-indicator hb">H → B</span>
-                                <div class="spread-info">
-                                    <span class="spread-value" id="marketExitHB">---</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="spreads-best exit-best">
-                            <span class="best-label">Best Exit:</span>
-                            <span class="best-value" id="bestMarketExit">---</span>
-                        </div>
+                    </div>
+                    <div class="spread-best">
+                        <span class="best-label">Best Entry:</span>
+                        <span class="best-value" id="bestEntry">---</span>
+                        <span class="best-direction" id="bestEntryDirection">---</span>
                     </div>
                 </div>
             </div>
@@ -231,6 +187,28 @@
                             <div class="record-value" id="bestExitRecord">---</div>
                             <div class="record-meta" id="bestExitTime">---</div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exit Spreads (Market) -->
+            <div class="card market-exit-card">
+                <div class="card-header">
+                    <h2>💰 Market Exit Spreads</h2>
+                    <span class="target-badge">Target: ≤<span id="exitTarget">0.05</span>%</span>
+                </div>
+                <div class="market-exit-content">
+                    <div class="market-exit-item">
+                        <div class="direction-badge">B → H</div>
+                        <div class="exit-value" id="marketExitBH">---</div>
+                    </div>
+                    <div class="market-exit-item">
+                        <div class="direction-badge">H → B</div>
+                        <div class="exit-value" id="marketExitHB">---</div>
+                    </div>
+                    <div class="market-exit-best">
+                        <span>Best Market Exit:</span>
+                        <span class="best-value" id="bestMarketExit">---</span>
                     </div>
                 </div>
             </div>
@@ -439,30 +417,6 @@
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-action="close-modal">Cancel</button>
                 <button class="btn btn-primary" id="modalConfirm" data-action="confirm-modal">Confirm</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Target Edit Modal -->
-    <div class="modal-overlay" id="targetModalOverlay">
-        <div class="modal target-modal" id="targetModal">
-            <div class="modal-header">
-                <h3 id="targetModalTitle">Edit Target</h3>
-                <button class="modal-close" data-action="close-target-modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="target-edit-form">
-                    <p id="targetModalDescription">Enter new target value:</p>
-                    <div class="target-input-group">
-                        <input type="number" id="targetEditInput" class="target-input" step="0.01" min="0.01" max="5.00" />
-                        <span class="target-input-suffix">%</span>
-                    </div>
-                    <p class="target-hint" id="targetModalHint">Range: 0.01 - 5.00%</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-action="close-target-modal">Cancel</button>
-                <button class="btn btn-primary" id="targetModalConfirm" data-action="confirm-target-modal">Save</button>
             </div>
         </div>
     </div>
