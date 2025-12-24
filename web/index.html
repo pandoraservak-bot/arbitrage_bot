@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 </head>
 <body>
     <div class="dashboard">
@@ -25,6 +26,11 @@
                     <span class="time-label">Server Time</span>
                     <span class="time-value" id="serverTime">--:--:--</span>
                 </div>
+                <div class="bot-controls">
+                    <button class="btn btn-control btn-start" onclick="sendBotCommand('start')" id="btnStart">▶️ START</button>
+                    <button class="btn btn-control btn-pause" onclick="sendBotCommand('pause')" id="btnPause">⏸️ PAUSE</button>
+                    <button class="btn btn-control btn-stop" onclick="sendBotCommand('stop')" id="btnStop">⏹️ STOP</button>
+                </div>
                 <button class="btn btn-refresh" onclick="requestFullUpdate()">🔄 Refresh</button>
             </div>
         </header>
@@ -34,10 +40,12 @@
             <div class="status-item" id="connectionStatus">
                 <span class="status-dot" id="bitgetDot"></span>
                 <span class="status-text">Bitget</span>
+                <span class="status-latency" id="bitgetLatency">--ms</span>
             </div>
             <div class="status-item" id="connectionStatusHyper">
                 <span class="status-dot" id="hyperDot"></span>
                 <span class="status-text">Hyperliquid</span>
+                <span class="status-latency" id="hyperLatency">--ms</span>
             </div>
             <div class="status-item">
                 <span class="status-label">Trades</span>
@@ -46,6 +54,14 @@
             <div class="status-item">
                 <span class="status-label">Checks</span>
                 <span class="status-value" id="totalChecks">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">WS Uptime</span>
+                <span class="status-value" id="wsUptime">--.--%</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Last Update</span>
+                <span class="status-value" id="lastUpdateStatus">--s ago</span>
             </div>
         </div>
 
@@ -109,6 +125,47 @@
                 </div>
             </div>
 
+            <!-- Bot Configuration Card -->
+            <div class="card config-card">
+                <div class="card-header">
+                    <h2>⚙️ Bot Configuration</h2>
+                </div>
+                <div class="config-content">
+                    <div class="config-item">
+                        <label class="config-label">Min Entry Spread (%)</label>
+                        <div class="config-input-group">
+                            <input type="number" id="minSpreadEnter" step="0.01" min="0.01" max="1.0" class="config-input" />
+                            <button class="btn btn-config" onclick="updateConfig('min_spread_enter')">Update</button>
+                        </div>
+                        <span class="config-hint">Range: 0.01 - 1.0</span>
+                    </div>
+                    <div class="config-item">
+                        <label class="config-label">Min Exit Spread (%)</label>
+                        <div class="config-input-group">
+                            <input type="number" id="minSpreadExit" step="0.01" min="-1.0" max="0.01" class="config-input" />
+                            <button class="btn btn-config" onclick="updateConfig('min_spread_exit')">Update</button>
+                        </div>
+                        <span class="config-hint">Range: -1.0 - 0.01</span>
+                    </div>
+                    <div class="config-item">
+                        <label class="config-label">Max Position Age (hours)</label>
+                        <div class="config-input-group">
+                            <input type="number" id="maxPositionAge" step="0.5" min="0.5" max="24" class="config-input" />
+                            <button class="btn btn-config" onclick="updateConfig('max_position_age')">Update</button>
+                        </div>
+                        <span class="config-hint">Range: 0.5 - 24</span>
+                    </div>
+                    <div class="config-item">
+                        <label class="config-label">Max Concurrent Positions</label>
+                        <div class="config-input-group">
+                            <input type="number" id="maxConcurrentPos" step="1" min="1" max="10" class="config-input" />
+                            <button class="btn btn-config" onclick="updateConfig('max_concurrent_positions')">Update</button>
+                        </div>
+                        <span class="config-hint">Range: 1 - 10</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Session Records -->
             <div class="card records-card">
                 <div class="card-header">
@@ -156,6 +213,40 @@
                 </div>
             </div>
 
+            <!-- Risk Management Card -->
+            <div class="card risk-card">
+                <div class="card-header">
+                    <h2>🛡️ Risk Management</h2>
+                </div>
+                <div class="risk-content">
+                    <div class="config-item">
+                        <label class="config-label">Daily Loss Limit ($)</label>
+                        <div class="config-input-group">
+                            <input type="number" id="dailyLossLimit" step="10" min="10" max="10000" class="config-input" />
+                            <button class="btn btn-config" onclick="updateRiskConfig('daily_loss_limit')">Update</button>
+                        </div>
+                        <span class="config-hint">Range: 10 - 10000</span>
+                    </div>
+                    <div class="config-item">
+                        <label class="config-label">Max Position Size (NVDA)</label>
+                        <div class="config-input-group">
+                            <input type="number" id="maxPositionSize" step="0.1" min="0.1" max="100" class="config-input" />
+                            <button class="btn btn-config" onclick="updateRiskConfig('max_position_size')">Update</button>
+                        </div>
+                        <span class="config-hint">Range: 0.1 - 100</span>
+                    </div>
+                    <div class="risk-status">
+                        <div class="risk-status-item">
+                            <span class="risk-label">Current Daily Loss:</span>
+                            <span class="risk-value" id="currentDailyLoss">$0.00</span>
+                        </div>
+                        <div class="risk-progress">
+                            <div class="risk-progress-bar" id="riskProgressBar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Portfolio Card -->
             <div class="card portfolio-card">
                 <div class="card-header">
@@ -198,6 +289,27 @@
                 </div>
             </div>
 
+            <!-- Event Log Card -->
+            <div class="card event-log-card">
+                <div class="card-header">
+                    <h2>📋 Event Log</h2>
+                    <div class="event-log-controls">
+                        <select id="eventLogFilter" onchange="filterEventLog()">
+                            <option value="all">All</option>
+                            <option value="success">Success</option>
+                            <option value="warning">Warning</option>
+                            <option value="error">Error</option>
+                        </select>
+                        <button class="btn btn-small" onclick="clearEventLog()">Clear</button>
+                    </div>
+                </div>
+                <div class="event-log-content">
+                    <div class="event-log-list" id="eventLogList">
+                        <div class="no-events">No events yet</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Statistics -->
             <div class="card stats-card">
                 <div class="card-header">
@@ -225,11 +337,45 @@
                 </div>
             </div>
 
+            <!-- Trade History Card -->
+            <div class="card trade-history-card">
+                <div class="card-header">
+                    <h2>📊 Trade History</h2>
+                    <div class="trade-history-controls">
+                        <button class="btn btn-small" onclick="exportTradeHistory()">Export CSV</button>
+                        <button class="btn btn-small" onclick="clearTradeHistory()">Clear</button>
+                    </div>
+                </div>
+                <div class="trade-history-content">
+                    <div class="trade-history-table-wrapper">
+                        <table class="trade-history-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Direction</th>
+                                    <th>Entry</th>
+                                    <th>Exit</th>
+                                    <th>Profit</th>
+                                    <th>Duration</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tradeHistoryBody">
+                                <tr>
+                                    <td colspan="7" class="no-trades">No completed trades</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
             <!-- Spread Chart -->
-            <div class="card chart-card">
+            <div class="card chart-card" id="chartCard">
                 <div class="card-header">
                     <h2>📈 Spread History</h2>
                     <div class="chart-controls">
+                        <button class="btn btn-small" onclick="toggleFullscreen()" id="btnFullscreen">🖥️ Fullscreen</button>
                         <select id="chartTimeRange" onchange="changeChartRange()">
                             <option value="50">50 points</option>
                             <option value="100" selected>100 points</option>
@@ -250,9 +396,29 @@
                 <span id="lastUpdate">Last update: ---</span>
             </div>
             <div class="footer-right">
-                <span>Ctrl+C to stop bot | Web Dashboard v1.0</span>
+                <span>Ctrl+C to stop bot | Web Dashboard v2.0</span>
             </div>
         </footer>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Modal Container -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Confirm Action</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                Are you sure?
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" id="modalConfirm" onclick="confirmModal()">Confirm</button>
+            </div>
+        </div>
     </div>
 
     <script src="/static/app.js"></script>
