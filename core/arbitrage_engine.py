@@ -258,9 +258,10 @@ class Position:
         return position
 
 class ArbitrageEngine:
-    def __init__(self, risk_manager, paper_executor):
+    def __init__(self, risk_manager, paper_executor, bot=None):
         self.risk_manager = risk_manager
         self.paper_executor = paper_executor
+        self.bot = bot  # Ссылка на NVDAFuturesArbitrageBot для доступа к best_spreads_session
         self.config = TRADING_CONFIG
         
         # Callback для обновления статистики лучших спредов
@@ -969,9 +970,17 @@ class ArbitrageEngine:
     
     def get_spread_history(self, limit: int = 100) -> Dict:
         """Получение истории спредов для графика"""
-        # Возвращаем данные из best_spreads_session для графика
-        entry_spreads = self.best_spreads_session.get('entry_spreads_history', [])
-        exit_spreads = self.best_spreads_session.get('exit_spreads_history', [])
+        # Получаем best_spreads_session из bot
+        best_spreads_session = {}
+        if self.bot and hasattr(self.bot, 'best_spreads_session'):
+            best_spreads_session = self.bot.best_spreads_session
+        elif hasattr(self, 'best_spreads_session'):
+            # Fallback: если атрибут определён напрямую
+            best_spreads_session = self.best_spreads_session
+        
+        # Безопасное получение истории
+        entry_spreads = best_spreads_session.get('entry_spreads_history', []) if isinstance(best_spreads_session, dict) else []
+        exit_spreads = best_spreads_session.get('exit_spreads_history', []) if isinstance(best_spreads_session, dict) else []
         
         # Берем последние N записей
         recent_entries = entry_spreads[-limit:] if len(entry_spreads) > limit else entry_spreads
