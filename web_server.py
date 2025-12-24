@@ -5,6 +5,7 @@ import json
 import logging
 from pathlib import Path
 from datetime import datetime
+from typing import Dict
 import time
 
 try:
@@ -119,13 +120,32 @@ class WebDashboardServer:
             position_id = data.get('position_id')
             if position_id:
                 success = await self.close_position(position_id)
-                await self.send_to_client(ws, 'close_result', {
-                    'position_id': position_id,
-                    'success': success
+                await self.send_to_client(ws, 'command_result', {
+                    'success': success,
+                    'message': f'Position #{position_id} closed successfully' if success else f'Failed to close position #{position_id}',
+                    'error': None if success else 'Position not found or could not be closed'
                 })
         
+        elif msg_type == 'bot_command':
+            # Handle bot control commands (start/pause/stop)
+            command = data.get('command', '').lower()
+            result = await self.handle_bot_command(command)
+            await self.send_to_client(ws, 'command_result', result)
+        
+        elif msg_type == 'update_config':
+            # Update bot configuration
+            config = data.get('config', {})
+            result = await self.handle_config_update(config)
+            await self.send_to_client(ws, 'command_result', result)
+        
+        elif msg_type == 'update_risk_config':
+            # Update risk management configuration
+            config = data.get('config', {})
+            result = await self.handle_risk_config_update(config)
+            await self.send_to_client(ws, 'command_result', result)
+        
         elif msg_type == 'toggle_trading':
-            # Toggle trading mode
+            # Toggle trading mode (legacy support)
             self.bot.trading_enabled = not getattr(self.bot, 'trading_enabled', True)
             await self.send_to_client(ws, 'trading_status', {
                 'enabled': getattr(self.bot, 'trading_enabled', True)
@@ -145,6 +165,154 @@ class WebDashboardServer:
         except Exception as e:
             logger.error(f"Error closing position {position_id}: {e}")
             return False
+    
+    async def handle_bot_command(self, command):
+        """Handle bot control commands (start/pause/stop)"""
+        try:
+            if command == 'start':
+                # Logic to start/resume the bot
+                if hasattr(self.bot, 'trading_enabled'):
+                    self.bot.trading_enabled = True
+                return {
+                    'success': True,
+                    'message': 'Bot started successfully'
+                }
+            elif command == 'pause' or command == 'stop':
+                # Logic to pause/stop the bot
+                if hasattr(self.bot, 'trading_enabled'):
+                    self.bot.trading_enabled = False
+                return {
+                    'success': True,
+                    'message': f'Bot {command}ped successfully'
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': f'Unknown command: {command}'
+                }
+        except Exception as e:
+            logger.error(f"Error handling bot command {command}: {e}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    async def handle_config_update(self, config):
+        """Handle configuration updates"""
+        try:
+            # Validate and update configuration
+            updated_fields = []
+            
+            if 'MIN_SPREAD_ENTER' in config:
+                value = float(config['MIN_SPREAD_ENTER'])
+                if 0.0001 <= value <= 0.01:  # 0.01% to 1.0%
+                    if hasattr(self.bot, 'config'):
+                        self.bot.config['MIN_SPREAD_ENTER'] = value
+                    updated_fields.append(f"MIN_SPREAD_ENTER={value*100:.2f}%")
+                else:
+                    return {
+                        'success': False,
+                        'error': 'MIN_SPREAD_ENTER must be between 0.01% and 1.0%'
+                    }
+            
+            if 'MIN_SPREAD_EXIT' in config:
+                value = float(config['MIN_SPREAD_EXIT'])
+                if -0.01 <= value <= 0.0001:  # -1.0% to 0.01%
+                    if hasattr(self.bot, 'config'):
+                        self.bot.config['MIN_SPREAD_EXIT'] = value
+                    updated_fields.append(f"MIN_SPREAD_EXIT={value*100:.2f}%")
+                else:
+                    return {
+                        'success': False,
+                        'error': 'MIN_SPREAD_EXIT must be between -1.0% and 0.01%'
+                    }
+            
+            if 'MAX_POSITION_AGE_HOURS' in config:
+                value = float(config['MAX_POSITION_AGE_HOURS'])
+                if 0.5 <= value <= 24:
+                    if hasattr(self.bot, 'config'):
+                        self.bot.config['MAX_POSITION_AGE_HOURS'] = value
+                    updated_fields.append(f"MAX_POSITION_AGE_HOURS={value}")
+                else:
+                    return {
+                        'success': False,
+                        'error': 'MAX_POSITION_AGE_HOURS must be between 0.5 and 24'
+                    }
+            
+            if 'MAX_CONCURRENT_POSITIONS' in config:
+                value = int(config['MAX_CONCURRENT_POSITIONS'])
+                if 1 <= value <= 10:
+                    if hasattr(self.bot, 'config'):
+                        self.bot.config['MAX_CONCURRENT_POSITIONS'] = value
+                    updated_fields.append(f"MAX_CONCURRENT_POSITIONS={value}")
+                else:
+                    return {
+                        'success': False,
+                        'error': 'MAX_CONCURRENT_POSITIONS must be between 1 and 10'
+                    }
+            
+            if updated_fields:
+                return {
+                    'success': True,
+                    'message': f'Configuration updated: {", ".join(updated_fields)}'
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': 'No valid configuration fields provided'
+                }
+        except Exception as e:
+            logger.error(f"Error updating configuration: {e}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
+    
+    async def handle_risk_config_update(self, config):
+        """Handle risk management configuration updates"""
+        try:
+            updated_fields = []
+            
+            if 'DAILY_LOSS_LIMIT' in config:
+                value = float(config['DAILY_LOSS_LIMIT'])
+                if 10 <= value <= 10000:
+                    if hasattr(self.bot, 'config'):
+                        self.bot.config['DAILY_LOSS_LIMIT'] = value
+                    updated_fields.append(f"DAILY_LOSS_LIMIT=${value}")
+                else:
+                    return {
+                        'success': False,
+                        'error': 'DAILY_LOSS_LIMIT must be between 10 and 10000'
+                    }
+            
+            if 'MAX_POSITION_SIZE' in config:
+                value = float(config['MAX_POSITION_SIZE'])
+                if 0.1 <= value <= 100:
+                    if hasattr(self.bot, 'config'):
+                        self.bot.config['MAX_POSITION_SIZE'] = value
+                    updated_fields.append(f"MAX_POSITION_SIZE={value}")
+                else:
+                    return {
+                        'success': False,
+                        'error': 'MAX_POSITION_SIZE must be between 0.1 and 100'
+                    }
+            
+            if updated_fields:
+                return {
+                    'success': True,
+                    'message': f'Risk configuration updated: {", ".join(updated_fields)}'
+                }
+            else:
+                return {
+                    'success': False,
+                    'error': 'No valid risk configuration fields provided'
+                }
+        except Exception as e:
+            logger.error(f"Error updating risk configuration: {e}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
     
     def collect_dashboard_data(self):
         """Collect all data needed for dashboard display"""
@@ -235,12 +403,33 @@ class WebDashboardServer:
         except Exception:
             pass
         
+        # Calculate latency (mock values, can be enhanced with real measurements)
+        bitget_latency = 0
+        hyper_latency = 0
+        try:
+            if hasattr(self.bot.bitget_ws, 'last_message_time') and self.bot.bitget_ws.last_message_time:
+                bitget_latency = int((time.time() - self.bot.bitget_ws.last_message_time) * 1000)
+            if hasattr(self.bot.hyper_ws, 'last_message_time') and self.bot.hyper_ws.last_message_time:
+                hyper_latency = int((time.time() - self.bot.hyper_ws.last_message_time) * 1000)
+        except Exception:
+            pass
+        
+        # Get daily loss
+        daily_loss = 0
+        try:
+            if hasattr(self.bot, 'risk_manager') and hasattr(self.bot.risk_manager, 'daily_loss'):
+                daily_loss = self.bot.risk_manager.daily_loss
+        except Exception:
+            pass
+        
         return {
             'timestamp': datetime.now().strftime('%H:%M:%S'),
             'runtime': runtime,
             'trading_mode': mode,
             'bitget_healthy': self.bot.bitget_healthy,
             'hyper_healthy': self.bot.hyper_healthy,
+            'bitget_latency': max(0, min(bitget_latency, 999)),  # Cap at 999ms
+            'hyper_latency': max(0, min(hyper_latency, 999)),
             'session_stats': self.bot.session_stats,
             'bitget_data': self.bot.bitget_ws.get_latest_data() if self.bot.bitget_ws else None,
             'hyper_data': self.bot.hyper_ws.get_latest_data() if self.bot.hyper_ws else None,
@@ -255,6 +444,7 @@ class WebDashboardServer:
             'portfolio': portfolio,
             'total_value': total_value,
             'pnl': pnl,
+            'daily_loss': daily_loss,
             'positions': positions,
             'config': self.bot.config,
             'spread_chart_data': self._get_spread_chart_data()
