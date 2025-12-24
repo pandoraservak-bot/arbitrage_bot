@@ -408,99 +408,180 @@ body {
     font-weight: 600;
 }
 
-/* Spread Card */
-.spread-card {
+/* Spreads Analysis Card (merged Entry + Exit) */
+.spreads-analysis-card {
     grid-column: span 2;
 }
 
-.spread-content {
+.spreads-analysis-content {
+    display: flex;
     padding: 18px;
+    gap: 0;
+}
+
+.spreads-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.spreads-column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.column-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.entry-column .column-title {
+    color: #34d399;
+}
+
+.exit-column .column-title {
+    color: #f87171;
+}
+
+.target-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.target-btn:hover {
+    background: rgba(99, 102, 241, 0.25);
+    border-color: rgba(99, 102, 241, 0.4);
+    transform: scale(1.02);
+}
+
+.target-btn:active {
+    transform: scale(0.98);
+}
+
+.spreads-divider {
+    width: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 15px;
+}
+
+.spreads-directions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .spread-direction {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 12px;
+    gap: 12px;
 }
 
-.spread-label {
-    width: 50px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #9ca3af;
+.direction-indicator {
+    width: 55px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-align: center;
 }
 
-.spread-value {
-    width: 80px;
+.direction-indicator.bh {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+
+.direction-indicator.hb {
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+}
+
+.spread-info {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.spreads-column .spread-value {
+    width: 70px;
     font-size: 1.1rem;
     font-weight: 600;
     font-family: 'SF Mono', 'Fira Code', monospace;
     text-align: right;
 }
 
-.spread-bar {
+.spreads-column .spread-bar {
     flex: 1;
-    height: 8px;
+    height: 6px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
+    border-radius: 3px;
     overflow: hidden;
 }
 
-.spread-bar-fill {
+.spreads-column .spread-bar-fill {
     height: 100%;
-    border-radius: 4px;
+    border-radius: 3px;
     transition: width 0.3s ease, background 0.3s ease;
-    background: linear-gradient(90deg, #10b981, #34d399);
 }
 
-.spread-bar-fill.good {
-    background: linear-gradient(90deg, #10b981, #34d399);
-}
-
-.spread-bar-fill.low {
-    background: linear-gradient(90deg, #f59e0b, #fbbf24);
-}
-
-.spread-bar-fill.negative {
-    background: linear-gradient(90deg, #ef4444, #f87171);
-}
-
-.spread-best {
+.spreads-best {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding-top: 12px;
+    gap: 8px;
+    padding-top: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.best-label {
-    color: #6b7280;
-    font-size: 0.85rem;
+.spreads-best .best-label {
+    font-size: 0.8rem;
 }
 
-.best-value {
-    font-size: 1.2rem;
-    font-weight: 700;
-    font-family: 'SF Mono', 'Fira Code', monospace;
+.spreads-best .best-value {
+    font-size: 1rem;
 }
 
-.best-direction {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
+.spreads-best .best-direction {
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
     font-weight: 600;
     background: rgba(99, 102, 241, 0.2);
     color: #a5b4fc;
 }
 
-.target-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    background: rgba(16, 185, 129, 0.15);
-    color: #34d399;
+.exit-best {
+    background: rgba(239, 68, 68, 0.05);
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+/* Value coloring for spreads */
+.value-positive {
+    color: #10b981;
+}
+
+.value-neutral {
+    color: #f59e0b;
+}
+
+.value-negative {
+    color: #ef4444;
 }
 
 /* Config Card */
@@ -1333,6 +1414,57 @@ body {
     gap: 10px;
 }
 
+/* Target Edit Modal */
+.target-modal {
+    min-width: 350px;
+}
+
+.target-edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.target-edit-form p {
+    color: #9ca3af;
+    margin: 0;
+}
+
+.target-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.target-input {
+    flex: 1;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    text-align: right;
+}
+
+.target-input:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+.target-input-suffix {
+    font-size: 1.1rem;
+    color: #9ca3af;
+    font-weight: 500;
+}
+
+.target-hint {
+    font-size: 0.8rem;
+    color: #6b7280 !important;
+}
+
 /* Footer */
 .footer {
     display: flex;
@@ -1377,10 +1509,9 @@ body {
     }
 
     .prices-card,
-    .spread-card,
+    .spreads-analysis-card,
     .config-card,
     .records-card,
-    .market-exit-card,
     .risk-card,
     .portfolio-card,
     .event-log-card,
@@ -1397,6 +1528,20 @@ body {
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+    
+    .spreads-analysis-content {
+        flex-direction: column;
+    }
+    
+    .spreads-divider {
+        width: 100%;
+        height: 1px;
+        margin: 10px 0;
+    }
+    
+    .spreads-column {
+        gap: 8px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1405,10 +1550,9 @@ body {
     }
 
     .prices-card,
-    .spread-card,
+    .spreads-analysis-card,
     .config-card,
     .records-card,
-    .market-exit-card,
     .risk-card,
     .portfolio-card,
     .positions-card,
@@ -1461,6 +1605,27 @@ body {
     
     .modal {
         min-width: 90vw;
+    }
+    
+    .spreads-analysis-content {
+        flex-direction: column;
+    }
+    
+    .spreads-divider {
+        width: 100%;
+        height: 1px;
+        margin: 10px 0;
+    }
+    
+    .spreads-column-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+    }
+    
+    .target-btn {
+        width: 100%;
+        justify-content: center;
     }
 }
 
