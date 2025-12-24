@@ -604,8 +604,6 @@ class ArbitrageEngine:
             # Используем валовый спред без комиссий
             gross_spread = data['gross_spread']
             
-            # Убрали spam - не логируем каждую проверку
-            
             if gross_spread >= min_spread_required:
                 risk_ok, reason = self.risk_manager.can_open_position(
                     direction, gross_spread, data['buy_price']
@@ -615,10 +613,8 @@ class ArbitrageEngine:
                     return direction, data
                 else:
                     logger.warning(f"⚠️ Risk check FAILED for {direction.value}: {reason}")
-            else:
-                logger.debug(f"📉 Spread too low for {direction.value}: {gross_spread:.3f}% < {min_spread_required:.3f}%")
+            # Не логируем "spread too low" - это создает спам
         
-        logger.debug("🔍 No suitable opportunities found in this cycle")
         return None
     
     async def execute_opportunity(self, opportunity: Tuple[TradeDirection, Dict]) -> bool:
@@ -696,9 +692,9 @@ class ArbitrageEngine:
         
         return True
     
-    def monitor_positions(self, bitget_data: Dict, hyper_data: Dict,
-                         bitget_slippage: Dict = None, hyper_slippage: Dict = None):
-        """Мониторинг и закрытие позиций по условиям (только валовый спред)"""
+    async def monitor_positions(self, bitget_data: Dict, hyper_data: Dict,
+                              bitget_slippage: Dict = None, hyper_slippage: Dict = None):
+        """Асинхронный мониторинг и закрытие позиций по условиям (только валовый спред)"""
         current_time = time.time()
         
         # Создаем копию списка для безопасной итерации
@@ -734,15 +730,15 @@ class ArbitrageEngine:
             if position.should_close():
                 logger.info(f"🚀 Closing position {position.id}: "
                            f"Exit spread {current_spread:.3f}% >= target {position.exit_target:.3f}%")
-                self.close_position(position, current_spread, 
+                await self.close_position(position, current_spread, 
                                   f"Exit spread reached: {current_spread:.3f}% >= {position.exit_target:.3f}%")
         
         # Периодически сохраняем позиции (каждые 10 обновлений)
         if should_save and self.open_positions:
             self._save_positions()
     
-    def close_position(self, position: Position, exit_spread: float, reason: str):
-        """Закрытие позиции"""
+    async def close_position(self, position: Position, exit_spread: float, reason: str):
+        """Асинхронное закрытие позиции"""
         # Проверяем, что позиция еще не закрыта
         if position.status != 'open':
             logger.warning(f"Position {position.id} already closed, skipping")
@@ -757,7 +753,7 @@ class ArbitrageEngine:
             buy_order = {'exchange': 'bitget', 'side': 'buy', 'amount': position.contracts}
         
         # Исполнение закрытия
-        exit_result = self.paper_executor.execute_fok_pair_sync(
+        exit_result = await self.paper_executor.execute_fok_pair_async(
             buy_order, sell_order, f"exit_{position.id}"
         )
         
@@ -804,18 +800,18 @@ class ArbitrageEngine:
         # Сохраняем позиции после закрытия
         self._save_positions()
     
-    def force_close_position(self, position: Position, reason: str):
-        """Принудительное закрытие позиции"""
+    async def force_close_position(self, position: Position, reason: str):
+        """Асинхронное принудительное закрытие позиции"""
         logger.warning(f"⚠️ Force closing position {position.id}: {reason}")
         
         # Рассчитываем текущий спред перед закрытием
         current_spread = position.current_exit_spread
-        self.close_position(position, current_spread, f"FORCE: {reason}")
+        await self.close_position(position, current_spread, f"FORCE: {reason}")
     
-    def close_all_positions(self, reason: str = "System shutdown"):
-        """Закрытие всех открытых позиций"""
+    async def close_all_positions(self, reason: str = "System shutdown"):
+        """Асинхронное закрытие всех открытых позиций"""
         for position in self.open_positions[:]:
-            self.force_close_position(position, reason)
+            await self.force_close_position(position, reason)
     
     def calculate_trade_pnl(self, position: Position, exit_result: Dict) -> Dict:
         """Расчет PnL сделки С УЧЕТОМ КОМИССИЙ (комиссии только здесь!)"""
@@ -894,6 +890,75 @@ class ArbitrageEngine:
             'total_pnl': self.total_pnl,
             'total_fees': self.total_fees,
             'total_volume': self.total_volume,
+        }
+    
+    def get_spread_history(self, limit: int = 100) -> Dict:
+        """Получение истории спредов для графика"""
+        # Возвращаем данные из best_spreads_session для графика
+        entry_spreads = self.best_spreads_session.get('entry_spreads_history', [])
+        exit_spreads = self.best_spreads_session.get('exit_spreads_history', [])
+        
+        # Берем последние N записей
+        recent_entries = entry_spreads[-limit:] if len(entry_spreads) > limit else entry_spreads
+        recent_exits = exit_spreads[-limit:] if len(exit_spreads) > limit else exit_spreads
+        
+        # Строим данные для графика
+        labels = []
+        entry_bh = []
+        entry_hb = []
+        exit_bh = []
+        exit_hb = []
+        timestamps = []
+        
+        for entry in recent_entries:
+            labels.append(entry.get('time_str', datetime.fromtimestamp(entry.get('time', 0)).strftime('%H:%M:%S')) if 'time_str' in entry else datetime.fromtimestamp(entry.get('time', 0)).strftime('%H:%M:%S'))
+            direction = entry.get('direction', '')
+            spread = entry.get('spread', 0)
+            if direction == 'B→H' or direction == 'B_TO_H':
+                entry_bh.append(spread)
+                entry_hb.append(None)
+            elif direction == 'H→B' or direction == 'H_TO_B':
+                entry_hb.append(spread)
+                entry_bh.append(None)
+            else:
+                entry_bh.append(None)
+                entry_hb.append(None)
+            timestamps.append(entry.get('time', 0))
+        
+        for exit_rec in recent_exits:
+            direction = exit_rec.get('direction', '')
+            spread = exit_rec.get('spread', 0)
+            if direction == 'B→H' or direction == 'B_TO_H':
+                exit_bh.append(spread)
+                exit_hb.append(None)
+            elif direction == 'H→B' or direction == 'H_TO_B':
+                exit_hb.append(spread)
+                exit_bh.append(None)
+            else:
+                exit_bh.append(None)
+                exit_hb.append(None)
+        
+        # Заполняем None значения для выравнивания массивов
+        max_len = max(len(entry_bh), len(entry_hb), len(exit_bh), len(exit_hb))
+        while len(entry_bh) < max_len: entry_bh.append(None)
+        while len(entry_hb) < max_len: entry_hb.append(None)
+        while len(exit_bh) < max_len: exit_bh.append(None)
+        while len(exit_hb) < max_len: exit_hb.append(None)
+        while len(labels) < max_len: labels.append(None)
+        
+        return {
+            'labels': [l for l in labels if l is not None],
+            'datasets': {
+                'entry_bh': [v for v in entry_bh if v is not None],
+                'entry_hb': [v for v in entry_hb if v is not None],
+                'exit_bh': [v for v in exit_bh if v is not None],
+                'exit_hb': [v for v in exit_hb if v is not None],
+            },
+            'timestamps': [t for t in timestamps if t > 0],
+            'health': {
+                'bitget': [True] * len([t for t in timestamps if t > 0]),
+                'hyper': [True] * len([t for t in timestamps if t > 0]),
+            }
         }
     
     def diagnose_positions(self) -> Dict:
@@ -977,12 +1042,49 @@ class ArbitrageEngine:
         
         logger.info("=" * 60)
     
+    def reload_config(self):
+        """Перечитывание конфига из модуля"""
+        try:
+            import importlib
+            import config
+            importlib.reload(config)
+            self.config = config.TRADING_CONFIG
+            logger.info("Config reloaded successfully")
+            return True
+        except Exception as e:
+            logger.error(f"Error reloading config: {e}")
+            return False
+
+    def update_exit_targets_from_config(self):
+        """Обновление целевых выходных спредов для всех открытых позиций на основе текущего конфига"""
+        if not self.open_positions:
+            return
+        
+        new_exit_target = self.config['MIN_SPREAD_EXIT'] * 100
+        updated_count = 0
+        
+        for position in self.open_positions:
+            if position.status == 'open' and position.exit_target != new_exit_target:
+                old_target = position.exit_target
+                position.exit_target = new_exit_target
+                updated_count += 1
+                logger.info(f"Updated position {position.id}: exit_target {old_target:.3f}% -> {new_exit_target:.3f}%")
+        
+        if updated_count > 0:
+            logger.info(f"✅ Updated exit targets for {updated_count} open position(s) to {new_exit_target:.3f}%")
+            self._save_positions()
+        else:
+            logger.debug("No open positions to update")
+
     async def initialize(self):
         """Инициализация движка"""
         logger.info("Arbitrage Engine initializing...")
         
         # Загружаем сохраненные позиции
         self._load_positions()
+        
+        # Обновляем целевые спреды из конфига
+        self.update_exit_targets_from_config()
         
         logger.info("Arbitrage Engine initialized")
         return True
