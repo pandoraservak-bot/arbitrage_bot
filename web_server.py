@@ -26,11 +26,11 @@ async def csp_middleware(request, handler):
     response = await handler(request)
     
     # CSP policy configuration
-    # Strict CSP without unsafe-eval and unsafe-inline to prevent code injection
-    # style-src has unsafe-inline because the HTML contains inline styles
+    # unsafe-eval is required for Chart.js and chartjs-plugin-zoom which use eval internally
+    # chartjs-plugin-zoom uses Function constructor for dynamic function creation
     csp_policy = (
         "default-src 'self'; "
-        "script-src 'self' https://cdn.jsdelivr.net; "
+        "script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "img-src 'self' data:; "
         "font-src 'self' https://fonts.gstatic.com; "
