@@ -640,7 +640,7 @@ class DashboardClient {
 
         const exitTarget = data.config?.MIN_SPREAD_EXIT * 100;
         if (exitTarget !== undefined && exitTarget !== null) {
-            document.getElementById('exitTarget').textContent = Math.abs(exitTarget).toFixed(2);
+            document.getElementById('exitTarget').textContent = exitTarget.toFixed(2);
         }
     }
 
@@ -733,7 +733,7 @@ class DashboardClient {
             if (pos.should_close) {
                 statusClass = 'ready';
                 statusText = 'Ready!';
-            } else if (pos.current_exit_spread <= pos.exit_target) {
+            } else if (pos.current_exit_spread >= pos.exit_target) {
                 statusClass = 'warning';
                 statusText = 'Target';
             }
@@ -792,7 +792,7 @@ class DashboardClient {
             targetBtn.setAttribute('data-position-target', '');
             targetBtn.setAttribute('data-position-id', pos.id);
             targetBtn.setAttribute('data-current-value', pos.exit_target.toFixed(3));
-            targetBtn.textContent = `≤${pos.exit_target.toFixed(3)}%`;
+            targetBtn.textContent = `>=${pos.exit_target.toFixed(3)}%`;
             
             targetDetail.appendChild(targetLabel);
             targetDetail.appendChild(targetBtn);
@@ -1346,8 +1346,8 @@ function updateConfig(field) {
             break;
         case 'min_spread_exit':
             value = parseFloat(document.getElementById('minSpreadExit').value);
-            if (isNaN(value) || value < -1.0 || value > 0.01) {
-                toast.error('Min Exit Spread must be between -1.0 and 0.01');
+            if (isNaN(value) || value < -1.0 || value > 0.2) {
+                toast.error('Min Exit Spread must be between -1.0 and 0.2');
                 return;
             }
             payload = { MIN_SPREAD_EXIT: value / 100 };
@@ -1559,12 +1559,12 @@ function openTargetModal(targetType) {
         input.step = 0.01;
     } else if (targetType === 'exit') {
         const span = document.getElementById('exitTarget');
-        currentValue = parseFloat(span.textContent) || 0.05;
+        currentValue = parseFloat(span.textContent) || -0.05;
         title.textContent = 'Edit Exit Target';
-        description.textContent = 'Enter new exit spread target (maximum allowed spread):';
-        hint.textContent = 'Range: 0.01 - 5.00%';
-        input.min = 0.01;
-        input.max = 5.00;
+        description.textContent = 'Enter new exit spread target (position closes when spread >= target):';
+        hint.textContent = 'Range: -1.0 - 0.2%';
+        input.min = -1.0;
+        input.max = 0.2;
         input.step = 0.01;
     }
     

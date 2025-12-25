@@ -425,7 +425,7 @@ class WebDashboardServer:
 
             if 'MIN_SPREAD_EXIT' in config:
                 value = float(config['MIN_SPREAD_EXIT'])
-                if -0.01 <= value <= 0.0001:  # -1.0% to 0.01%
+                if -0.01 <= value <= 0.002:  # -1.0% to 0.2%
                     if isinstance(bot_config, dict):
                         bot_config['MIN_SPREAD_EXIT'] = value
                     config_to_save['MIN_SPREAD_EXIT'] = value
@@ -433,7 +433,7 @@ class WebDashboardServer:
                 else:
                     return {
                         'success': False,
-                        'error': 'MIN_SPREAD_EXIT must be between -1.0% and 0.01%'
+                        'error': 'MIN_SPREAD_EXIT must be between -1.0% and 0.2%'
                     }
 
             if 'MAX_POSITION_AGE_HOURS' in config:

@@ -144,7 +144,7 @@
                         <div class="spreads-column-header">
                             <span class="column-title">Exit Spreads</span>
                             <button class="target-btn" data-target-type="exit" data-action="edit-target" title="Click to edit target">
-                                Target: ≤<span id="exitTarget">0.05</span>%
+                                Target: ≥<span id="exitTarget">0.05</span>%
                             </button>
                         </div>
                         <div class="spreads-directions">
@@ -186,10 +186,10 @@
                     <div class="config-item">
                         <label class="config-label">Min Exit Spread (%)</label>
                         <div class="config-input-group">
-                            <input type="number" id="minSpreadExit" step="0.01" min="-1.0" max="0.01" class="config-input" />
+                            <input type="number" id="minSpreadExit" step="0.01" min="-1.0" max="0.2" class="config-input" />
                             <button class="btn btn-config" data-config-update="min_spread_exit">Update</button>
                         </div>
-                        <span class="config-hint">Range: -1.0 - 0.01</span>
+                        <span class="config-hint">Range: -1.0 - 0.2 (positive = close on high spread)</span>
                     </div>
                     <div class="config-item">
                         <label class="config-label">Max Position Age (hours)</label>
