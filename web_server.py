@@ -356,7 +356,8 @@ class WebDashboardServer:
                     logger.info(f"Position {position_id}: exit_target changed from {old_value:.3f}% to {new_exit_spread:.3f}%")
                     return {
                         'success': True,
-                        'message': f'Position #{position_id} exit spread updated to {new_exit_spread:.3f}%'
+                        'message': f'Position #{position_id} exit spread updated to {new_exit_spread:.3f}%',
+                        'event_type': 'success'
                     }
             
             return {
