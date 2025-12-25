@@ -23,13 +23,27 @@ class ToastNotification {
         
         const icon = type === 'success' ? '✓' : type === 'warning' ? '⚠️' : '❌';
         
-        toast.innerHTML = `
-            <span class="toast-icon">${icon}</span>
-            <div class="toast-content">
-                <div class="toast-message">${message}</div>
-            </div>
-            <button class="toast-close" data-action="close-toast">&times;</button>
-        `;
+        // Create toast elements safely without innerHTML
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'toast-icon';
+        iconSpan.textContent = icon;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'toast-content';
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'toast-message';
+        messageDiv.textContent = message;
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'toast-close';
+        closeBtn.setAttribute('data-action', 'close-toast');
+        closeBtn.textContent = '×';
+        
+        contentDiv.appendChild(messageDiv);
+        toast.appendChild(iconSpan);
+        toast.appendChild(contentDiv);
+        toast.appendChild(closeBtn);
         
         this.container.appendChild(toast);
         
@@ -89,25 +103,47 @@ class EventLogger {
             ? this.events 
             : this.events.filter(e => e.type === this.filter);
         
+        // Clear container
+        this.container.textContent = '';
+        
         if (filtered.length === 0) {
-            this.container.innerHTML = '<div class="no-events">No events yet</div>';
+            const noEventsDiv = document.createElement('div');
+            noEventsDiv.className = 'no-events';
+            noEventsDiv.textContent = 'No events yet';
+            this.container.appendChild(noEventsDiv);
             return;
         }
         
-        this.container.innerHTML = filtered.map(event => {
+        // Create event items safely without innerHTML
+        filtered.forEach(event => {
             const icon = event.type === 'success' ? '✓' : event.type === 'warning' ? '⚠️' : '❌';
             const time = event.timestamp.toLocaleTimeString();
             
-            return `
-                <div class="event-log-item ${event.type}">
-                    <span class="event-icon">${icon}</span>
-                    <div class="event-content">
-                        <div class="event-message">${event.message}</div>
-                        <div class="event-time">${time}</div>
-                    </div>
-                </div>
-            `;
-        }).join('');
+            const itemDiv = document.createElement('div');
+            itemDiv.className = `event-log-item ${event.type}`;
+            
+            const iconSpan = document.createElement('span');
+            iconSpan.className = 'event-icon';
+            iconSpan.textContent = icon;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'event-content';
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'event-message';
+            messageDiv.textContent = event.message;
+            
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'event-time';
+            timeDiv.textContent = time;
+            
+            contentDiv.appendChild(messageDiv);
+            contentDiv.appendChild(timeDiv);
+            itemDiv.appendChild(iconSpan);
+            itemDiv.appendChild(contentDiv);
+            
+            this.container.appendChild(itemDiv);
+        });
     }
 
     setFilter(filter) {
@@ -139,27 +175,59 @@ class TradeHistoryManager {
     }
 
     render() {
+        // Clear tbody
+        this.tbody.textContent = '';
+        
         if (this.trades.length === 0) {
-            this.tbody.innerHTML = '<tr><td colspan="7" class="no-trades">No completed trades</td></tr>';
+            const tr = document.createElement('tr');
+            const td = document.createElement('td');
+            td.setAttribute('colspan', '7');
+            td.className = 'no-trades';
+            td.textContent = 'No completed trades';
+            tr.appendChild(td);
+            this.tbody.appendChild(tr);
             return;
         }
         
-        this.tbody.innerHTML = this.trades.map(trade => {
+        // Create trade rows safely without innerHTML
+        this.trades.forEach(trade => {
             const profitClass = trade.profit >= 0 ? 'trade-profit-positive' : 'trade-profit-negative';
             const profitSign = trade.profit >= 0 ? '+' : '';
             
-            return `
-                <tr>
-                    <td>#${trade.id}</td>
-                    <td>${trade.direction}</td>
-                    <td>${trade.entry_spread}%</td>
-                    <td>${trade.exit_spread}%</td>
-                    <td class="${profitClass}">${profitSign}$${trade.profit.toFixed(2)}</td>
-                    <td>${trade.duration}</td>
-                    <td>${trade.time}</td>
-                </tr>
-            `;
-        }).join('');
+            const tr = document.createElement('tr');
+            
+            const idTd = document.createElement('td');
+            idTd.textContent = `#${trade.id}`;
+            
+            const dirTd = document.createElement('td');
+            dirTd.textContent = trade.direction;
+            
+            const entryTd = document.createElement('td');
+            entryTd.textContent = `${trade.entry_spread}%`;
+            
+            const exitTd = document.createElement('td');
+            exitTd.textContent = `${trade.exit_spread}%`;
+            
+            const profitTd = document.createElement('td');
+            profitTd.className = profitClass;
+            profitTd.textContent = `${profitSign}${trade.profit.toFixed(2)}`;
+            
+            const durationTd = document.createElement('td');
+            durationTd.textContent = trade.duration;
+            
+            const timeTd = document.createElement('td');
+            timeTd.textContent = trade.time;
+            
+            tr.appendChild(idTd);
+            tr.appendChild(dirTd);
+            tr.appendChild(entryTd);
+            tr.appendChild(exitTd);
+            tr.appendChild(profitTd);
+            tr.appendChild(durationTd);
+            tr.appendChild(timeTd);
+            
+            this.tbody.appendChild(tr);
+        });
     }
 
     exportCSV() {
@@ -641,12 +709,19 @@ class DashboardClient {
         const positionsList = document.getElementById('positionsList');
         document.getElementById('positionsCount').textContent = positions.length;
         
+        // Clear positions list
+        positionsList.textContent = '';
+        
         if (positions.length === 0) {
-            positionsList.innerHTML = '<div class="no-positions">No open positions</div>';
+            const noPositionsDiv = document.createElement('div');
+            noPositionsDiv.className = 'no-positions';
+            noPositionsDiv.textContent = 'No open positions';
+            positionsList.appendChild(noPositionsDiv);
             return;
         }
         
-        positionsList.innerHTML = positions.map(pos => {
+        // Create position items safely without innerHTML
+        positions.forEach(pos => {
             const dirCode = pos.direction || pos.direction_label;
             const isBtoH = dirCode === 'B_TO_H' || dirCode === 'B→H' || dirCode === 'B->H';
             const dirClass = isBtoH ? 'b-to-h' : 'h-to-b';
@@ -663,29 +738,85 @@ class DashboardClient {
                 statusText = 'Target';
             }
             
-            return `
-                <div class="position-item ${dirClass}">
-                    <span class="position-id">#${pos.id}</span>
-                    <span class="position-direction">${dirLabel}</span>
-                    <div class="position-details">
-                        <div class="position-detail">
-                            <span class="position-detail-label">Age:</span>
-                            <span class="position-detail-value">${pos.age || '--'}</span>
-                        </div>
-                        <div class="position-detail">
-                            <span class="position-detail-label">Exit:</span>
-                            <span class="position-detail-value">${pos.exit_spread.toFixed(3)}%</span>
-                        </div>
-                        <div class="position-detail">
-                            <span class="position-detail-label">Target:</span>
-                            <span class="position-detail-value">≤${pos.exit_target.toFixed(3)}%</span>
-                        </div>
-                    </div>
-                    <span class="exit-status ${statusClass}">${statusText}</span>
-                    <button class="btn btn-close-position" data-action="close-position" data-position-id="${pos.id}">❌ Close</button>
-                </div>
-            `;
-        }).join('');
+            // Create position item container
+            const positionItem = document.createElement('div');
+            positionItem.className = `position-item ${dirClass}`;
+            
+            // Position ID
+            const positionId = document.createElement('span');
+            positionId.className = 'position-id';
+            positionId.textContent = `#${pos.id}`;
+            
+            // Position direction
+            const positionDir = document.createElement('span');
+            positionDir.className = 'position-direction';
+            positionDir.textContent = dirLabel;
+            
+            // Position details container
+            const detailsDiv = document.createElement('div');
+            detailsDiv.className = 'position-details';
+            
+            // Age detail
+            const ageDetail = document.createElement('div');
+            ageDetail.className = 'position-detail';
+            const ageLabel = document.createElement('span');
+            ageLabel.className = 'position-detail-label';
+            ageLabel.textContent = 'Age:';
+            const ageValue = document.createElement('span');
+            ageValue.className = 'position-detail-value';
+            ageValue.textContent = pos.age || '--';
+            ageDetail.appendChild(ageLabel);
+            ageDetail.appendChild(ageValue);
+            
+            // Exit spread detail
+            const exitDetail = document.createElement('div');
+            exitDetail.className = 'position-detail';
+            const exitLabel = document.createElement('span');
+            exitLabel.className = 'position-detail-label';
+            exitLabel.textContent = 'Exit:';
+            const exitValue = document.createElement('span');
+            exitValue.className = 'position-detail-value';
+            exitValue.textContent = `${pos.exit_spread.toFixed(3)}%`;
+            exitDetail.appendChild(exitLabel);
+            exitDetail.appendChild(exitValue);
+            
+            // Target detail
+            const targetDetail = document.createElement('div');
+            targetDetail.className = 'position-detail';
+            const targetLabel = document.createElement('span');
+            targetLabel.className = 'position-detail-label';
+            targetLabel.textContent = 'Target:';
+            const targetValue = document.createElement('span');
+            targetValue.className = 'position-detail-value';
+            targetValue.textContent = `≤${pos.exit_target.toFixed(3)}%`;
+            targetDetail.appendChild(targetLabel);
+            targetDetail.appendChild(targetValue);
+            
+            detailsDiv.appendChild(ageDetail);
+            detailsDiv.appendChild(exitDetail);
+            detailsDiv.appendChild(targetDetail);
+            
+            // Exit status
+            const exitStatus = document.createElement('span');
+            exitStatus.className = `exit-status ${statusClass}`;
+            exitStatus.textContent = statusText;
+            
+            // Close button
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'btn btn-close-position';
+            closeBtn.setAttribute('data-action', 'close-position');
+            closeBtn.setAttribute('data-position-id', pos.id);
+            closeBtn.textContent = '❌ Close';
+            
+            // Assemble position item
+            positionItem.appendChild(positionId);
+            positionItem.appendChild(positionDir);
+            positionItem.appendChild(detailsDiv);
+            positionItem.appendChild(exitStatus);
+            positionItem.appendChild(closeBtn);
+            
+            positionsList.appendChild(positionItem);
+        });
     }
 
     updateStats(data) {
