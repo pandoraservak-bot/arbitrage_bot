@@ -857,7 +857,9 @@ class WebDashboardServer:
         self.runner = web.AppRunner(self.app)
         await self.runner.setup()
         
-        self.site = web.TCPSite(self.runner, self.host, self.port)
+        # Enable SO_REUSEADDR to allow immediate port reuse
+        # This prevents "address already in use" errors on Windows when restarting
+        self.site = web.TCPSite(self.runner, self.host, self.port, reuse_address=True)
         await self.site.start()
         
         logger.info(f"🌐 Web Dashboard available at http://{self.host}:{self.port}")
