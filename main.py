@@ -1234,10 +1234,10 @@ class NVDAFuturesArbitrageBot:
         # Initialize web dashboard server
         if WEB_DASHBOARD_AVAILABLE and integrate_web_dashboard:
             try:
-                self.web_dashboard = integrate_web_dashboard(self, host='0.0.0.0', port=8080)
+                self.web_dashboard = integrate_web_dashboard(self, host='0.0.0.0', port=5000)
                 if self.web_dashboard:
                     await self.web_dashboard.start()
-                    logger.info("🌐 Web Dashboard: http://0.0.0.0:8080")
+                    logger.info("🌐 Web Dashboard: http://0.0.0.0:5000")
             except Exception as e:
                 logger.warning(f"Не удалось запустить web dashboard: {e}")
         
