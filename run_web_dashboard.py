@@ -142,6 +142,13 @@ async def main():
                     bot.best_spreads_session['best_entry_direction'] = 'B_TO_H' if b_to_h > h_to_b else 'H_TO_B'
                     bot.best_spreads_session['best_entry_time'] = time.time()
                 
+                best_exit_spread = max(b_to_h, h_to_b)
+                current_best_exit = bot.best_spreads_session.get('best_exit_spread_overall', 0)
+                if best_exit_spread > current_best_exit:
+                    bot.best_spreads_session['best_exit_spread_overall'] = best_exit_spread
+                    bot.best_spreads_session['best_exit_direction'] = 'B_TO_H' if b_to_h > h_to_b else 'H_TO_B'
+                    bot.best_spreads_session['best_exit_time'] = time.time()
+                
                 if best_spread > 0:
                     bot.session_stats['positive_spreads'] += 1
                 else:
