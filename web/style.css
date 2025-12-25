@@ -898,17 +898,6 @@ body {
     flex-wrap: wrap;
 }
 
-.position-item .config-input {
-    width: 80px;
-    padding: 6px 10px;
-    font-size: 0.8rem;
-}
-
-.position-item .btn-config {
-    padding: 6px 12px;
-    font-size: 0.75rem;
-}
-
 .position-item.b-to-h {
     border-left-color: #10b981;
 }
