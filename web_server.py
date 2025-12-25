@@ -26,17 +26,24 @@ async def csp_middleware(request, handler):
     response = await handler(request)
     
     # CSP policy configuration
+    # Strict CSP without unsafe-eval to prevent code injection
+    # unsafe-inline is still needed for inline styles in the HTML
     csp_policy = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "img-src 'self' data:; "
         "font-src 'self' https://fonts.gstatic.com; "
         "connect-src 'self' ws: wss:; "
-        "frame-ancestors 'none'"
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self'"
     )
     
     response.headers['Content-Security-Policy'] = csp_policy
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
     
     return response
 
