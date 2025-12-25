@@ -801,6 +801,22 @@ class DashboardClient {
             exitStatus.className = `exit-status ${statusClass}`;
             exitStatus.textContent = statusText;
             
+            // Exit spread input
+            const exitSpreadInput = document.createElement('input');
+            exitSpreadInput.className = 'config-input';
+            exitSpreadInput.id = `exitSpreadInput_${pos.id}`;
+            exitSpreadInput.type = 'number';
+            exitSpreadInput.step = '0.001';
+            exitSpreadInput.placeholder = pos.exit_target.toFixed(3);
+            exitSpreadInput.title = 'New exit target spread';
+            
+            // Update button
+            const updateBtn = document.createElement('button');
+            updateBtn.className = 'btn btn-config';
+            updateBtn.setAttribute('data-position-update', 'update_exit_spread');
+            updateBtn.setAttribute('data-position-id', pos.id);
+            updateBtn.textContent = 'Update';
+            
             // Close button
             const closeBtn = document.createElement('button');
             closeBtn.className = 'btn btn-close-position';
@@ -813,6 +829,8 @@ class DashboardClient {
             positionItem.appendChild(positionDir);
             positionItem.appendChild(detailsDiv);
             positionItem.appendChild(exitStatus);
+            positionItem.appendChild(exitSpreadInput);
+            positionItem.appendChild(updateBtn);
             positionItem.appendChild(closeBtn);
             
             positionsList.appendChild(positionItem);
@@ -1070,6 +1088,14 @@ class DashboardClient {
             }
             if (e.target.closest('[data-action="confirm-target-modal"]')) {
                 confirmTargetModal();
+                return;
+            }
+
+            // Position update buttons
+            const posUpdateBtn = e.target.closest('[data-position-update]');
+            if (posUpdateBtn) {
+                const positionId = posUpdateBtn.dataset.positionId;
+                updatePositionExitSpread(positionId);
                 return;
             }
 
@@ -1395,6 +1421,22 @@ function closePosition(positionId) {
             eventLogger.addEvent(`Position #${positionId} close requested`, 'warning');
         }
     );
+}
+
+function updatePositionExitSpread(positionId) {
+    const input = document.getElementById(`exitSpreadInput_${positionId}`);
+    if (!input) return;
+    
+    const value = parseFloat(input.value);
+    if (isNaN(value)) {
+        toast.error('Invalid spread value');
+        return;
+    }
+    
+    dashboard.sendCommand('update_position_exit_spread', {
+        position_id: positionId,
+        new_exit_spread: value
+    });
 }
 
 // Trade history

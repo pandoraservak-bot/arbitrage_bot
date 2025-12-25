@@ -310,6 +310,14 @@ class WebDashboardServer:
             await self.send_to_client(ws, 'trading_status', {
                 'enabled': getattr(self.bot, 'trading_enabled', True)
             })
+        
+        elif msg_type == 'update_position_exit_spread':
+            # Update exit_target for a specific position
+            position_id = data.get('position_id')
+            new_exit_spread = data.get('new_exit_spread')
+            if position_id is not None and new_exit_spread is not None:
+                result = await self.update_position_exit_spread(position_id, float(new_exit_spread))
+                await self.send_to_client(ws, 'command_result', result)
     
     async def close_position(self, position_id):
         """Close a specific position"""
@@ -329,6 +337,38 @@ class WebDashboardServer:
         except Exception as e:
             logger.error(f"Error closing position {position_id}: {e}")
             return False
+    
+    async def update_position_exit_spread(self, position_id, new_exit_spread):
+        """Update exit_target for a specific position"""
+        try:
+            arb_engine = getattr(self.bot, 'arb_engine', None)
+            if not arb_engine or not hasattr(arb_engine, 'get_open_positions'):
+                return {
+                    'success': False,
+                    'error': 'Arbitrage engine not available'
+                }
+
+            positions = arb_engine.get_open_positions()
+            for pos in positions:
+                if pos.id == position_id:
+                    old_value = pos.exit_target
+                    pos.exit_target = new_exit_spread
+                    logger.info(f"Position {position_id}: exit_target changed from {old_value:.3f}% to {new_exit_spread:.3f}%")
+                    return {
+                        'success': True,
+                        'message': f'Position #{position_id} exit spread updated to {new_exit_spread:.3f}%'
+                    }
+            
+            return {
+                'success': False,
+                'error': f'Position #{position_id} not found'
+            }
+        except Exception as e:
+            logger.error(f"Error updating position exit spread {position_id}: {e}")
+            return {
+                'success': False,
+                'error': str(e)
+            }
     
     async def handle_bot_command(self, command):
         """Handle bot control commands (start/pause/stop)"""
