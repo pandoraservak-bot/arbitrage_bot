@@ -26,11 +26,11 @@ async def csp_middleware(request, handler):
     response = await handler(request)
     
     # CSP policy configuration
-    # Strict CSP without unsafe-eval to prevent code injection
-    # unsafe-inline is still needed for inline styles in the HTML
+    # Strict CSP without unsafe-eval and unsafe-inline to prevent code injection
+    # style-src has unsafe-inline because the HTML contains inline styles
     csp_policy = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+        "script-src 'self' https://cdn.jsdelivr.net; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
         "img-src 'self' data:; "
         "font-src 'self' https://fonts.gstatic.com; "
