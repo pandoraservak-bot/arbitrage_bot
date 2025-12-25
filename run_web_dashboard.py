@@ -51,7 +51,7 @@ class RealBot:
             'best_entry_spread': 0.0,
             'best_entry_direction': None,
             'best_entry_time': None,
-            'best_exit_spread_overall': 0.0,
+            'best_exit_spread_overall': -999.0,
             'best_exit_direction': None,
             'best_exit_time': None,
         }
@@ -142,11 +142,21 @@ async def main():
                     bot.best_spreads_session['best_entry_direction'] = 'B_TO_H' if b_to_h > h_to_b else 'H_TO_B'
                     bot.best_spreads_session['best_entry_time'] = time.time()
                 
-                best_exit_spread = max(b_to_h, h_to_b)
-                current_best_exit = bot.best_spreads_session.get('best_exit_spread_overall', 0)
-                if best_exit_spread > current_best_exit:
-                    bot.best_spreads_session['best_exit_spread_overall'] = best_exit_spread
-                    bot.best_spreads_session['best_exit_direction'] = 'B_TO_H' if b_to_h > h_to_b else 'H_TO_B'
+                best_entry_dir = bot.best_spreads_session.get('best_entry_direction')
+                if best_entry_dir == 'H_TO_B':
+                    exit_spread_for_entry = b_to_h
+                    exit_dir = 'B_TO_H'
+                elif best_entry_dir == 'B_TO_H':
+                    exit_spread_for_entry = h_to_b
+                    exit_dir = 'H_TO_B'
+                else:
+                    exit_spread_for_entry = max(b_to_h, h_to_b)
+                    exit_dir = 'B_TO_H' if b_to_h > h_to_b else 'H_TO_B'
+                
+                current_best_exit = bot.best_spreads_session.get('best_exit_spread_overall', float('-inf'))
+                if exit_spread_for_entry > current_best_exit:
+                    bot.best_spreads_session['best_exit_spread_overall'] = exit_spread_for_entry
+                    bot.best_spreads_session['best_exit_direction'] = exit_dir
                     bot.best_spreads_session['best_exit_time'] = time.time()
                 
                 if best_spread > 0:
