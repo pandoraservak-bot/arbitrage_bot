@@ -99,9 +99,9 @@ class NVDAFuturesArbitrageBot:
             'best_entry_time': None,            # Время лучшего входа
             
             # Лучшие выходные спреды (рассчитываются всегда, даже без позиций)
-            'best_exit_spread_bh': float('inf'),  # Лучший спред для выхода B→H
-            'best_exit_spread_hb': float('inf'),  # Лучший спред для выхода H→B
-            'best_exit_spread_overall': float('inf'),  # Абсолютно лучший выходной спред
+            'best_exit_spread_bh': -float('inf'),  # Лучший спред для выхода B→H (чем выше, тем лучше)
+            'best_exit_spread_hb': -float('inf'),  # Лучший спред для выхода H→B (чем выше, тем лучше)
+            'best_exit_spread_overall': -float('inf'),  # Абсолютно лучший выходной спред (чем выше, тем лучше)
             'best_exit_direction': None,        # Направление лучшего выхода
             'best_exit_time': None,             # Время лучшего выхода
             'best_exit_with_position': False,   # Был ли связан с позицией
@@ -343,19 +343,19 @@ class NVDAFuturesArbitrageBot:
                 for direction, exit_spread in exit_spreads.items():
                     self.update_exit_spread_stats(exit_spread, direction, None, False)
                 
-                # Обновляем абсолютно лучший выходной спред
-                best_exit_overall = min(exit_spreads.values())
-                best_exit_dir = min(exit_spreads, key=exit_spreads.get)
+                # Обновляем абсолютно лучший выходной спред (чем выше, тем лучше)
+                best_exit_overall = max(exit_spreads.values())
+                best_exit_dir = max(exit_spreads, key=exit_spreads.get)
                 
-                if best_exit_overall < self.best_spreads_session['best_exit_spread_overall']:
+                if best_exit_overall > self.best_spreads_session['best_exit_spread_overall']:
                     self.best_spreads_session['best_exit_spread_overall'] = best_exit_overall
                     self.best_spreads_session['best_exit_direction'] = best_exit_dir.value if best_exit_dir else None
                     self.best_spreads_session['best_exit_time'] = time.time()
                     self.best_spreads_session['best_exit_with_position'] = False
                     
                     # Логируем только если спред значительно улучшился (более 10%)
-                    if self.best_spreads_session['best_exit_spread_overall'] != float('inf'):
-                        improvement = ((self.best_spreads_session['best_exit_spread_overall'] - best_exit_overall) /
+                    if self.best_spreads_session['best_exit_spread_overall'] != -float('inf'):
+                        improvement = ((best_exit_overall - self.best_spreads_session['best_exit_spread_overall']) /
                                      abs(self.best_spreads_session['best_exit_spread_overall']) * 100)
                         if abs(improvement) > 10:
                             logger.info(f"🎯 Новый рекордный выходной спред (без позиции): {best_exit_overall:.3f}% ({best_exit_dir.value if best_exit_dir else 'N/A'})")
@@ -410,18 +410,18 @@ class NVDAFuturesArbitrageBot:
         if len(self.best_spreads_session['exit_spreads_history']) > max_history:
             self.best_spreads_session['exit_spreads_history'] = self.best_spreads_session['exit_spreads_history'][-max_history:]
         
-        # Обновляем лучшие спреды для конкретного направления
+        # Обновляем лучшие спреды для конкретного направления (чем выше, тем лучше)
         if direction == TradeDirection.B_TO_H:
-            if spread < self.best_spreads_session['best_exit_spread_bh']:
+            if spread > self.best_spreads_session['best_exit_spread_bh']:
                 self.best_spreads_session['best_exit_spread_bh'] = spread
                 # Убрали spam - логируем только значительные улучшения
         elif direction == TradeDirection.H_TO_B:
-            if spread < self.best_spreads_session['best_exit_spread_hb']:
+            if spread > self.best_spreads_session['best_exit_spread_hb']:
                 self.best_spreads_session['best_exit_spread_hb'] = spread
                 # Убрали spam - логируем только значительные улучшения
         
-        # Обновляем абсолютно лучший выходной спред
-        if spread < self.best_spreads_session['best_exit_spread_overall']:
+        # Обновляем абсолютно лучший выходной спред (чем выше, тем лучше)
+        if spread > self.best_spreads_session['best_exit_spread_overall']:
             self.best_spreads_session['best_exit_spread_overall'] = spread
             self.best_spreads_session['best_exit_direction'] = direction.value if direction else None
             self.best_spreads_session['best_exit_time'] = time.time()
@@ -429,12 +429,12 @@ class NVDAFuturesArbitrageBot:
             
             # Логируем только значительные улучшения (более 10%)
             should_log = False
-            if self.best_spreads_session['best_exit_spread_overall'] != float('inf'):
-                improvement = ((self.best_spreads_session['best_exit_spread_overall'] - spread) /
+            if self.best_spreads_session['best_exit_spread_overall'] != -float('inf'):
+                improvement = ((spread - self.best_spreads_session['best_exit_spread_overall']) /
                              abs(self.best_spreads_session['best_exit_spread_overall']) * 100)
                 should_log = abs(improvement) > 10
             
-            if should_log or self.best_spreads_session['best_exit_spread_overall'] == float('inf'):
+            if should_log or self.best_spreads_session['best_exit_spread_overall'] == -float('inf'):
                 if from_position and position_id:
                     logger.info(f"🎯 Новый рекордный спред для выхода: {spread:.3f}% (позиция {position_id})")
                 else:
