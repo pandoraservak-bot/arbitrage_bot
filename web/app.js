@@ -1590,19 +1590,22 @@ function confirmTargetModal() {
     const input = document.getElementById('targetEditInput');
     const value = parseFloat(input.value);
     
-    if (isNaN(value) || value < 0.01 || value > 5.00) {
-        toast.error('Target value must be between 0.01 and 5.00%');
-        return;
-    }
-    
     let payload;
     if (currentTargetType === 'entry') {
+        if (isNaN(value) || value < 0.01 || value > 5.00) {
+            toast.error('Entry target must be between 0.01 and 5.00%');
+            return;
+        }
         payload = { MIN_SPREAD_ENTER: value / 100 };
         // Update local display immediately
         document.getElementById('spreadTarget').textContent = value.toFixed(2);
         toast.success(`Entry target updated to ${value.toFixed(2)}%`);
     } else if (currentTargetType === 'exit') {
-        payload = { MIN_SPREAD_EXIT: -(value / 100) };
+        if (isNaN(value) || value < -1.0 || value > 0.2) {
+            toast.error('Exit target must be between -1.0 and 0.2%');
+            return;
+        }
+        payload = { MIN_SPREAD_EXIT: value / 100 };
         // Update local display immediately
         document.getElementById('exitTarget').textContent = value.toFixed(2);
         toast.success(`Exit target updated to ${value.toFixed(2)}%`);
