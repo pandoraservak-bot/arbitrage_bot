@@ -780,17 +780,22 @@ class DashboardClient {
             exitDetail.appendChild(exitLabel);
             exitDetail.appendChild(exitValue);
             
-            // Target detail
+            // Target detail (clickable button)
             const targetDetail = document.createElement('div');
             targetDetail.className = 'position-detail';
             const targetLabel = document.createElement('span');
             targetLabel.className = 'position-detail-label';
             targetLabel.textContent = 'Target:';
-            const targetValue = document.createElement('span');
-            targetValue.className = 'position-detail-value';
-            targetValue.textContent = `≤${pos.exit_target.toFixed(3)}%`;
+            
+            const targetBtn = document.createElement('button');
+            targetBtn.className = 'target-badge';
+            targetBtn.setAttribute('data-position-target', '');
+            targetBtn.setAttribute('data-position-id', pos.id);
+            targetBtn.setAttribute('data-current-value', pos.exit_target.toFixed(3));
+            targetBtn.textContent = `≤${pos.exit_target.toFixed(3)}%`;
+            
             targetDetail.appendChild(targetLabel);
-            targetDetail.appendChild(targetValue);
+            targetDetail.appendChild(targetBtn);
             
             detailsDiv.appendChild(ageDetail);
             detailsDiv.appendChild(exitDetail);
@@ -1103,6 +1108,15 @@ class DashboardClient {
             const closePosBtn = e.target.closest('[data-action="close-position"]');
             if (closePosBtn) {
                 closePosition(closePosBtn.dataset.positionId);
+                return;
+            }
+
+            // Position target button
+            const posTargetBtn = e.target.closest('[data-position-target]');
+            if (posTargetBtn) {
+                const positionId = posTargetBtn.dataset.positionId;
+                const currentValue = parseFloat(posTargetBtn.dataset.currentValue);
+                showUpdatePositionExitSpreadModal(positionId, currentValue);
                 return;
             }
 
@@ -1426,17 +1440,75 @@ function closePosition(positionId) {
 function updatePositionExitSpread(positionId) {
     const input = document.getElementById(`exitSpreadInput_${positionId}`);
     if (!input) return;
-    
+
     const value = parseFloat(input.value);
     if (isNaN(value)) {
         toast.error('Invalid spread value');
         return;
     }
-    
+
     dashboard.sendCommand('update_position_exit_spread', {
         position_id: positionId,
         new_exit_spread: value
     });
+}
+
+function showUpdatePositionExitSpreadModal(positionId, currentValue) {
+    showModal(
+        'Update Position Exit Target',
+        '',
+        () => updatePositionExitSpreadFromModal(positionId)
+    );
+
+    // Set modal body HTML after showModal
+    const modalBody = document.getElementById('modalBody');
+    modalBody.innerHTML = `
+        <div class="position-modal-content">
+            <label>New Exit Target Spread (%)</label>
+            <input type="number" id="positionExitSpreadInput" step="0.01" placeholder="0.00" value="${currentValue}" />
+        </div>
+    `;
+
+    // Set up modal confirm button to call our function
+    const confirmBtn = document.getElementById('modalConfirm');
+    confirmBtn.onclick = () => {
+        updatePositionExitSpreadFromModal(positionId);
+    };
+
+    // Focus and select input after modal is visible
+    setTimeout(() => {
+        const input = document.getElementById('positionExitSpreadInput');
+        if (input) {
+            input.focus();
+            input.select();
+
+            // Add Enter key handler
+            input.onkeydown = (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    updatePositionExitSpreadFromModal(positionId);
+                }
+            };
+        }
+    }, 100);
+}
+
+function updatePositionExitSpreadFromModal(positionId) {
+    const input = document.getElementById('positionExitSpreadInput');
+    if (!input) return;
+
+    const value = parseFloat(input.value);
+    if (isNaN(value)) {
+        toast.error('Please enter a valid number');
+        return; // Keep modal open
+    }
+
+    dashboard.sendCommand('update_position_exit_spread', {
+        position_id: positionId,
+        new_exit_spread: value
+    });
+
+    closeModal();
 }
 
 // Trade history

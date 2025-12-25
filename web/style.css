@@ -963,6 +963,30 @@ body {
     font-family: 'SF Mono', 'Fira Code', monospace;
 }
 
+.target-badge {
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    background: rgba(99, 102, 241, 0.15);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    line-height: 1.2;
+}
+
+.target-badge:hover {
+    background: rgba(99, 102, 241, 0.25);
+    border-color: rgba(99, 102, 241, 0.4);
+    transform: scale(1.05);
+}
+
+.target-badge:active {
+    transform: scale(0.95);
+}
+
 .exit-status {
     padding: 4px 10px;
     border-radius: 12px;
@@ -1416,6 +1440,35 @@ body {
     padding: 20px;
     color: #d1d5db;
     font-size: 0.95rem;
+}
+
+.position-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.position-modal-content label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #9ca3af;
+}
+
+.position-modal-content input {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    font-size: 1rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    width: 100%;
+}
+
+.position-modal-content input:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
 .modal-footer {
