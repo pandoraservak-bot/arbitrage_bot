@@ -76,3 +76,13 @@ data/logs/
 # Local data
 data/paper_portfolio.json
 data/session_stats.json
+
+# Config backups
+*.bak
+config.py.test_backup
+config.py.integration_backup
+
+# Test files
+test_config_save.py
+test_integration_config_save.py
+TEST_README.md

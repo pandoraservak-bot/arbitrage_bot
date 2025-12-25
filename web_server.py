@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import math
+import re
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Optional, Any
@@ -48,6 +49,113 @@ class DateTimeEncoder(json.JSONEncoder):
         if hasattr(obj, 'isoformat'):
             return obj.isoformat()
         return super().default(obj)
+
+
+def save_config_to_file(config_updates: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Save configuration updates to config.py file.
+    
+    Args:
+        config_updates: Dictionary with keys like 'MIN_SPREAD_ENTER', 'MIN_SPREAD_EXIT', etc.
+    
+    Returns:
+        Dictionary with 'success' boolean and 'message' or 'error' string
+    """
+    try:
+        # Get the config file path
+        config_path = Path(__file__).parent / "config.py"
+        
+        if not config_path.exists():
+            return {
+                'success': False,
+                'error': 'config.py file not found'
+            }
+        
+        # Read the current config file
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config_content = f.read()
+        
+        original_content = config_content
+        updated_fields = []
+        
+        # Map of config keys to their regex patterns and replacement templates
+        # Format: key -> (pattern, replacement_template, config_section)
+        config_mappings = {
+            'MIN_SPREAD_ENTER': (
+                r"('MIN_SPREAD_ENTER'\s*:\s*)([0-9.-]+)",
+                r"\g<1>{value}",
+                "TRADING_CONFIG"
+            ),
+            'MIN_SPREAD_EXIT': (
+                r"('MIN_SPREAD_EXIT'\s*:\s*)([0-9.-]+)",
+                r"\g<1>{value}",
+                "TRADING_CONFIG"
+            ),
+            'DAILY_LOSS_LIMIT': (
+                r"(\"MAX_DAILY_LOSS\"\s*:\s*)([0-9.-]+)",
+                r"\g<1>{value}",
+                "RISK_CONFIG"
+            ),
+            'MAX_POSITION_SIZE': (
+                r"(\"MAX_POSITION_CONTRACTS\"\s*:\s*)([0-9.-]+)",
+                r"\g<1>{value}",
+                "RISK_CONFIG"
+            ),
+        }
+        
+        # Process each update
+        for key, value in config_updates.items():
+            if key not in config_mappings:
+                logger.warning(f"Config key '{key}' not supported for file persistence")
+                continue
+            
+            pattern, replacement_template, section = config_mappings[key]
+            replacement = replacement_template.format(value=value)
+            
+            # Check if pattern exists in config
+            if not re.search(pattern, config_content):
+                logger.warning(f"Pattern for '{key}' not found in config.py")
+                continue
+            
+            # Replace the value
+            new_content, count = re.subn(pattern, replacement, config_content)
+            
+            if count > 0:
+                config_content = new_content
+                updated_fields.append(f"{key}={value}")
+                logger.info(f"Updated {section}['{key}'] = {value} in config.py")
+        
+        # Only write if changes were made
+        if config_content != original_content:
+            # Create backup
+            backup_path = config_path.with_suffix('.py.bak')
+            with open(backup_path, 'w', encoding='utf-8') as f:
+                f.write(original_content)
+            
+            # Write updated config
+            with open(config_path, 'w', encoding='utf-8') as f:
+                f.write(config_content)
+            
+            logger.info(f"✅ Configuration saved to {config_path}")
+            logger.info(f"📝 Updated fields: {', '.join(updated_fields)}")
+            logger.info(f"💾 Backup saved to {backup_path}")
+            
+            return {
+                'success': True,
+                'message': f'Configuration saved to file: {", ".join(updated_fields)}'
+            }
+        else:
+            return {
+                'success': True,
+                'message': 'No changes to save'
+            }
+            
+    except Exception as e:
+        logger.error(f"❌ Error saving config to file: {e}", exc_info=True)
+        return {
+            'success': False,
+            'error': f'Failed to save config to file: {str(e)}'
+        }
 
 
 class WebDashboardServer:
@@ -252,12 +360,14 @@ class WebDashboardServer:
             # Validate and update configuration
             updated_fields = []
             bot_config = getattr(self.bot, 'config', {})
+            config_to_save = {}
 
             if 'MIN_SPREAD_ENTER' in config:
                 value = float(config['MIN_SPREAD_ENTER'])
                 if 0.0001 <= value <= 0.01:  # 0.01% to 1.0%
                     if isinstance(bot_config, dict):
                         bot_config['MIN_SPREAD_ENTER'] = value
+                    config_to_save['MIN_SPREAD_ENTER'] = value
                     updated_fields.append(f"MIN_SPREAD_ENTER={value*100:.2f}%")
                 else:
                     return {
@@ -270,6 +380,7 @@ class WebDashboardServer:
                 if -0.01 <= value <= 0.0001:  # -1.0% to 0.01%
                     if isinstance(bot_config, dict):
                         bot_config['MIN_SPREAD_EXIT'] = value
+                    config_to_save['MIN_SPREAD_EXIT'] = value
                     updated_fields.append(f"MIN_SPREAD_EXIT={value*100:.2f}%")
                 else:
                     return {
@@ -282,6 +393,7 @@ class WebDashboardServer:
                 if 0.5 <= value <= 24:
                     if isinstance(bot_config, dict):
                         bot_config['MAX_POSITION_AGE_HOURS'] = value
+                    # Note: This field is not in config.py, only in memory
                     updated_fields.append(f"MAX_POSITION_AGE_HOURS={value}")
                 else:
                     return {
@@ -294,6 +406,7 @@ class WebDashboardServer:
                 if 1 <= value <= 10:
                     if isinstance(bot_config, dict):
                         bot_config['MAX_CONCURRENT_POSITIONS'] = value
+                    # Note: This field is not in config.py, only in memory
                     updated_fields.append(f"MAX_CONCURRENT_POSITIONS={value}")
                 else:
                     return {
@@ -302,9 +415,22 @@ class WebDashboardServer:
                     }
 
             if updated_fields:
+                # Save persistent config fields to file
+                save_result = {'success': True}
+                if config_to_save:
+                    save_result = save_config_to_file(config_to_save)
+                
+                # Build response message
+                messages = [f'Configuration updated in memory: {", ".join(updated_fields)}']
+                if save_result.get('success'):
+                    if save_result.get('message') and 'saved to file' in save_result['message'].lower():
+                        messages.append(save_result['message'])
+                else:
+                    messages.append(f"⚠️ Warning: {save_result.get('error', 'Failed to save to file')}")
+                
                 return {
                     'success': True,
-                    'message': f'Configuration updated: {", ".join(updated_fields)}'
+                    'message': ' | '.join(messages)
                 }
             else:
                 return {
@@ -323,12 +449,14 @@ class WebDashboardServer:
         try:
             updated_fields = []
             bot_config = getattr(self.bot, 'config', {})
+            config_to_save = {}
 
             if 'DAILY_LOSS_LIMIT' in config:
                 value = float(config['DAILY_LOSS_LIMIT'])
                 if 10 <= value <= 10000:
                     if isinstance(bot_config, dict):
                         bot_config['DAILY_LOSS_LIMIT'] = value
+                    config_to_save['DAILY_LOSS_LIMIT'] = value
                     updated_fields.append(f"DAILY_LOSS_LIMIT=${value}")
                 else:
                     return {
@@ -341,6 +469,7 @@ class WebDashboardServer:
                 if 0.1 <= value <= 100:
                     if isinstance(bot_config, dict):
                         bot_config['MAX_POSITION_SIZE'] = value
+                    config_to_save['MAX_POSITION_SIZE'] = value
                     updated_fields.append(f"MAX_POSITION_SIZE={value}")
                 else:
                     return {
@@ -349,9 +478,22 @@ class WebDashboardServer:
                     }
 
             if updated_fields:
+                # Save persistent config fields to file
+                save_result = {'success': True}
+                if config_to_save:
+                    save_result = save_config_to_file(config_to_save)
+                
+                # Build response message
+                messages = [f'Risk configuration updated in memory: {", ".join(updated_fields)}']
+                if save_result.get('success'):
+                    if save_result.get('message') and 'saved to file' in save_result['message'].lower():
+                        messages.append(save_result['message'])
+                else:
+                    messages.append(f"⚠️ Warning: {save_result.get('error', 'Failed to save to file')}")
+                
                 return {
                     'success': True,
-                    'message': f'Risk configuration updated: {", ".join(updated_fields)}'
+                    'message': ' | '.join(messages)
                 }
             else:
                 return {
