@@ -166,6 +166,18 @@ async def main():
                 
                 if best_spread > bot.session_stats.get('max_spread', 0):
                     bot.session_stats['max_spread'] = best_spread
+                
+                opportunity = bot.arb_engine.find_opportunity(bitget_data, hyper_data)
+                if opportunity and not bot.arb_engine.has_open_positions():
+                    try:
+                        success = await bot.arb_engine.execute_opportunity(opportunity)
+                        if success:
+                            bot.session_stats['total_trades'] += 1
+                    except Exception as e:
+                        print(f"Error executing opportunity: {e}")
+                
+                if bot.arb_engine.has_open_positions():
+                    await bot.arb_engine.monitor_positions(bitget_data, hyper_data)
             
             await asyncio.sleep(1)
             
