@@ -62,7 +62,7 @@ TRADING_CONFIG = {
     # Лимиты
     'POSITION_CHECK_INTERVAL': 0.5,      # Проверка позиций каждые 0.5с
     'MAIN_LOOP_INTERVAL': 0.1,           # 100мс основной цикл
-    'MIN_ORDER_INTERVAL': 5.0,           # Минимальный интервал между ордерами (секунды)
+    'MIN_ORDER_INTERVAL': 3.0,           # Минимальный интервал между ордерами (секунды)
     
     # Настройки соединений
     'DATA_TIMEOUT': 15,                  # 15 секунд таймаут для данных
@@ -94,6 +94,25 @@ LOGGING_CONFIG = {
 STATS_CONFIG = {
     'UPDATE_INTERVAL': 0.5,                # Обновление статистики каждые 5 сек
     'SAVE_INTERVAL': 60,                 # Сохранение каждые 60 сек
+}
+
+# API Keys Configuration (loaded from environment)
+API_CONFIG = {
+    # Hyperliquid
+    'HYPERLIQUID_SECRET_KEY': '',       # Set via HYPERLIQUID_SECRET_KEY env var
+    'HYPERLIQUID_ACCOUNT_ADDRESS': '',  # Set via HYPERLIQUID_ACCOUNT_ADDRESS env var
+    
+    # Bitget
+    'BITGET_API_KEY': '',               # Set via BITGET_API_KEY env var
+    'BITGET_SECRET_KEY': '',            # Set via BITGET_SECRET_KEY env var
+    'BITGET_PASSPHRASE': '',            # Set via BITGET_PASSPHRASE env var
+}
+
+# Trading Mode
+TRADING_MODE = {
+    'MODE': 'paper',  # Options: 'paper', 'live'
+    'LIVE_ENABLED': False,  # Safety switch for live trading
+    'CONFIRM_BEFORE_TRADE': True,  # Require confirmation for live trades
 }
 
 # Настройки отображения
