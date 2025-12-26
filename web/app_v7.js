@@ -463,7 +463,6 @@ class DashboardClient {
         }
         
         this.updateStatus(data);
-        this.updateBotStatusBadge(data);
         this.updatePrices(data);
         this.updateSpread(data);
         this.updateExitSpreads(data);
@@ -486,7 +485,8 @@ class DashboardClient {
         if (!data) return;
         
         const mode = data.trading_mode || 'STOPPED';
-        this.updateModeBadge(mode.toLowerCase());
+        const tradingEnabled = data.trading_enabled !== false;
+        this.updateModeBadge(mode.toLowerCase(), tradingEnabled);
         
         const bitgetHealthy = data.bitget_healthy || false;
         const hyperHealthy = data.hyper_healthy || false;
@@ -522,13 +522,19 @@ class DashboardClient {
             `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
-    updateModeBadge(mode) {
+    updateModeBadge(mode, tradingEnabled = true) {
         const badge = document.getElementById('modeBadge');
         badge.className = 'mode-badge';
         
+        if (!tradingEnabled && mode === 'active') {
+            badge.textContent = '⏸️ PAUSED';
+            badge.classList.add('paused');
+            return;
+        }
+        
         switch (mode) {
             case 'active':
-                badge.textContent = '● ACTIVE';
+                badge.textContent = '▶️ ACTIVE';
                 badge.classList.add('active');
                 break;
             case 'partial':
@@ -536,9 +542,12 @@ class DashboardClient {
                 badge.classList.add('partial');
                 break;
             case 'stopped':
-            case 'paused':
-                badge.textContent = '● STOPPED';
+                badge.textContent = '⏹️ STOPPED';
                 badge.classList.add('stopped');
+                break;
+            case 'paused':
+                badge.textContent = '⏸️ PAUSED';
+                badge.classList.add('paused');
                 break;
             case 'connecting':
                 badge.textContent = 'CONNECTING...';
