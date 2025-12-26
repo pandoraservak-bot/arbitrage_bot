@@ -109,8 +109,18 @@ def save_config_to_file(config_updates: Dict[str, Any]) -> Dict[str, Any]:
                 r"\g<1>{value}",
                 "RISK_CONFIG"
             ),
-            'MAX_POSITION_SIZE': (
+            'MAX_POSITION_CONTRACTS': (
                 r"(\"MAX_POSITION_CONTRACTS\"\s*:\s*)([0-9.-]+)",
+                r"\g<1>{value}",
+                "RISK_CONFIG"
+            ),
+            'MIN_ORDER_CONTRACTS': (
+                r"(\"MIN_ORDER_CONTRACTS\"\s*:\s*)([0-9.-]+)",
+                r"\g<1>{value}",
+                "RISK_CONFIG"
+            ),
+            'MAX_SLIPPAGE': (
+                r"(\"MAX_SLIPPAGE\"\s*:\s*)([0-9.-]+)",
                 r"\g<1>{value}",
                 "RISK_CONFIG"
             ),
@@ -524,6 +534,10 @@ class WebDashboardServer:
                 if 10 <= value <= 10000:
                     if isinstance(bot_config, dict):
                         bot_config['DAILY_LOSS_LIMIT'] = value
+                    # Update risk_manager config
+                    risk_manager = getattr(self.bot, 'risk_manager', None)
+                    if risk_manager:
+                        risk_manager.config['MAX_DAILY_LOSS'] = value
                     config_to_save['DAILY_LOSS_LIMIT'] = value
                     updated_fields.append(f"DAILY_LOSS_LIMIT=${value}")
                 else:
@@ -532,17 +546,55 @@ class WebDashboardServer:
                         'error': 'DAILY_LOSS_LIMIT must be between 10 and 10000'
                     }
 
-            if 'MAX_POSITION_SIZE' in config:
-                value = float(config['MAX_POSITION_SIZE'])
-                if 0.1 <= value <= 100:
+            if 'MAX_POSITION_CONTRACTS' in config:
+                value = float(config['MAX_POSITION_CONTRACTS'])
+                if 0.01 <= value <= 100:
                     if isinstance(bot_config, dict):
-                        bot_config['MAX_POSITION_SIZE'] = value
-                    config_to_save['MAX_POSITION_SIZE'] = value
-                    updated_fields.append(f"MAX_POSITION_SIZE={value}")
+                        bot_config['MAX_POSITION_CONTRACTS'] = value
+                    # Update risk_manager config
+                    risk_manager = getattr(self.bot, 'risk_manager', None)
+                    if risk_manager:
+                        risk_manager.config['MAX_POSITION_CONTRACTS'] = value
+                    config_to_save['MAX_POSITION_CONTRACTS'] = value
+                    updated_fields.append(f"MAX_POSITION_CONTRACTS={value}")
                 else:
                     return {
                         'success': False,
-                        'error': 'MAX_POSITION_SIZE must be between 0.1 and 100'
+                        'error': 'MAX_POSITION_CONTRACTS must be between 0.01 and 100'
+                    }
+            
+            if 'MIN_ORDER_CONTRACTS' in config:
+                value = float(config['MIN_ORDER_CONTRACTS'])
+                if 0.001 <= value <= 10:
+                    if isinstance(bot_config, dict):
+                        bot_config['MIN_ORDER_CONTRACTS'] = value
+                    # Update risk_manager config
+                    risk_manager = getattr(self.bot, 'risk_manager', None)
+                    if risk_manager:
+                        risk_manager.config['MIN_ORDER_CONTRACTS'] = value
+                    config_to_save['MIN_ORDER_CONTRACTS'] = value
+                    updated_fields.append(f"MIN_ORDER_CONTRACTS={value}")
+                else:
+                    return {
+                        'success': False,
+                        'error': 'MIN_ORDER_CONTRACTS must be between 0.001 and 10'
+                    }
+            
+            if 'MAX_SLIPPAGE' in config:
+                value = float(config['MAX_SLIPPAGE'])
+                if 0.0001 <= value <= 0.05:  # 0.01% to 5%
+                    if isinstance(bot_config, dict):
+                        bot_config['MAX_SLIPPAGE'] = value
+                    # Update risk_manager config
+                    risk_manager = getattr(self.bot, 'risk_manager', None)
+                    if risk_manager:
+                        risk_manager.config['MAX_SLIPPAGE'] = value
+                    config_to_save['MAX_SLIPPAGE'] = value
+                    updated_fields.append(f"MAX_SLIPPAGE={value*100:.3f}%")
+                else:
+                    return {
+                        'success': False,
+                        'error': 'MAX_SLIPPAGE must be between 0.01% and 5%'
                     }
 
             if updated_fields:
@@ -737,6 +789,16 @@ class WebDashboardServer:
             best_exit_direction = self._normalize_direction_code(best_spreads_session.get('best_exit_direction'))
             best_exit_time = best_spreads_session.get('best_exit_time')
 
+        # Collect pending warnings from arb_engine
+        warnings = []
+        if arb_engine and hasattr(arb_engine, 'get_pending_warnings'):
+            warnings = arb_engine.get_pending_warnings()
+        
+        # Get total position size in contracts
+        total_position_contracts = 0.0
+        if arb_engine and hasattr(arb_engine, 'get_total_position_contracts'):
+            total_position_contracts = arb_engine.get_total_position_contracts()
+        
         return {
             'timestamp': datetime.now().strftime('%H:%M:%S'),
             'runtime': runtime,
@@ -762,8 +824,10 @@ class WebDashboardServer:
             'pnl': pnl,
             'daily_loss': daily_loss,
             'positions': positions,
+            'total_position_contracts': total_position_contracts,
             'config': bot_config,
-            'spread_chart_data': self._get_spread_chart_data()
+            'spread_chart_data': self._get_spread_chart_data(),
+            'warnings': warnings
         }
     
     def _get_spread_chart_data(self) -> Dict:

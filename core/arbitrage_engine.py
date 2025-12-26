@@ -677,36 +677,75 @@ class ArbitrageEngine:
         
         # MIN_SPREAD_ENTER теперь относится к валовому спреду (без комиссий)
         min_spread_required = self.config['MIN_SPREAD_ENTER'] * 100
-        # Убрали spam - логируем только при нахождении возможности
+        
+        # Получаем текущий размер позиции
+        current_contracts = self.get_total_position_contracts()
         
         for direction, data in spreads.items():
             # Используем валовый спред без комиссий
             gross_spread = data['gross_spread']
             
             if gross_spread >= min_spread_required:
+                # Расчет слиппейджа для проверки
+                slippage_used = data.get('slippage_used', {})
+                max_slippage = max(
+                    slippage_used.get(f"{data['buy_exchange']}_buy", 0),
+                    slippage_used.get(f"{data['sell_exchange']}_sell", 0)
+                )
+                
                 risk_ok, reason = self.risk_manager.can_open_position(
-                    direction, gross_spread, data['buy_price']
+                    direction, gross_spread, data['buy_price'],
+                    current_position_contracts=current_contracts,
+                    slippage=max_slippage
                 )
                 if risk_ok:
                     logger.info(f"✅ Opportunity FOUND: {direction.value}, spread: {gross_spread:.3f}% - READY TO EXECUTE!")
                     return direction, data
                 else:
+                    # Если это slippage warning - эмитируем событие для уведомления
+                    if 'slippage' in reason.lower():
+                        self._emit_slippage_warning(reason, direction, data)
                     logger.warning(f"⚠️ Risk check FAILED for {direction.value}: {reason}")
-            # Не логируем "spread too low" - это создает спам
         
         return None
     
+    def _emit_slippage_warning(self, message: str, direction: 'TradeDirection', data: Dict):
+        """Эмитирует предупреждение о слишком высоком slippage для отображения в UI"""
+        warning = {
+            'type': 'slippage_warning',
+            'message': message,
+            'direction': direction.value if hasattr(direction, 'value') else str(direction),
+            'spread': data.get('gross_spread', 0),
+            'timestamp': time.time()
+        }
+        # Сохраняем для веб-интерфейса
+        if not hasattr(self, 'pending_warnings'):
+            self.pending_warnings = []
+        self.pending_warnings.append(warning)
+        logger.warning(f"⚠️ SLIPPAGE WARNING: {message}")
+    
+    def get_pending_warnings(self) -> list:
+        """Получение и очистка ожидающих предупреждений"""
+        warnings = getattr(self, 'pending_warnings', [])
+        self.pending_warnings = []
+        return warnings
+    
     async def execute_opportunity(self, opportunity: Tuple[TradeDirection, Dict]) -> bool:
-        """Исполнение арбитражной возможности с учетом проскальзывания"""
+        """Исполнение арбитражной возможности с частичным входом"""
         direction, spread_data = opportunity
         
-        # Расчет размера позиции
+        # Получаем текущий размер позиции для частичного входа
+        current_contracts = self.get_total_position_contracts(direction)
+        
+        # Расчет размера ордера (частичный вход)
         position_size = self.risk_manager.calculate_position_size(
             spread_data['buy_price'], 
-            spread_data['gross_spread']
+            spread_data['gross_spread'],
+            current_position_contracts=current_contracts
         )
         
         if position_size['contracts'] <= 0:
+            logger.warning(f"Cannot add to position: {position_size.get('reason', 'No capacity')}")
             return False
         
         # Подготовка ордеров FOK
@@ -956,6 +995,21 @@ class ArbitrageEngine:
     def get_open_positions(self) -> List[Position]:
         """Получение списка действительно открытых позиций"""
         return [pos for pos in self.open_positions if pos.status == 'open']
+    
+    def get_total_position_contracts(self, direction: 'TradeDirection' = None) -> float:
+        """Получение общего размера открытых позиций в контрактах
+        
+        Args:
+            direction: если указано, считаем только позиции в этом направлении
+            
+        Returns:
+            Суммарный размер в контрактах
+        """
+        total = 0.0
+        for pos in self.get_open_positions():
+            if direction is None or pos.direction == direction:
+                total += pos.contracts
+        return total
     
     def get_statistics(self) -> Dict:
         """Получение статистики движка"""

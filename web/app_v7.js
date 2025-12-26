@@ -473,12 +473,35 @@ class DashboardClient {
         this.updateConfig(data);
         this.updateRiskStatus(data);
         
+        // Handle warnings (slippage, risk, etc.)
+        if (data.warnings && data.warnings.length > 0) {
+            this.handleWarnings(data.warnings);
+        }
+        
+        // Update total position contracts display
+        if (data.total_position_contracts !== undefined) {
+            const el = document.getElementById('totalPositionContracts');
+            if (el) {
+                el.textContent = data.total_position_contracts.toFixed(4);
+            }
+        }
+        
         if (data.spread_chart_data) {
             updateSpreadChart(data.spread_chart_data);
         }
         
         document.getElementById('lastUpdate').textContent = 
             `Last update: ${new Date().toLocaleTimeString()}`;
+    }
+    
+    handleWarnings(warnings) {
+        for (const warning of warnings) {
+            if (warning.type === 'slippage_warning') {
+                toast.warning(`Slippage: ${warning.message}`);
+            } else {
+                toast.warning(warning.message || 'Unknown warning');
+            }
+        }
     }
 
     updateStatus(data) {
@@ -931,10 +954,24 @@ class DashboardClient {
             }
         }
         
-        if (config.MAX_POSITION_SIZE !== undefined) {
+        if (config.MAX_POSITION_CONTRACTS !== undefined) {
             const input = document.getElementById('maxPositionSize');
             if (input && !input.matches(':focus')) {
-                input.value = config.MAX_POSITION_SIZE;
+                input.value = config.MAX_POSITION_CONTRACTS;
+            }
+        }
+        
+        if (config.MIN_ORDER_CONTRACTS !== undefined) {
+            const input = document.getElementById('minOrderContracts');
+            if (input && !input.matches(':focus')) {
+                input.value = config.MIN_ORDER_CONTRACTS;
+            }
+        }
+        
+        if (config.MAX_SLIPPAGE !== undefined) {
+            const input = document.getElementById('maxSlippage');
+            if (input && !input.matches(':focus')) {
+                input.value = (config.MAX_SLIPPAGE * 100).toFixed(2);
             }
         }
     }
@@ -1440,11 +1477,27 @@ function updateRiskConfig(field) {
             break;
         case 'max_position_size':
             value = parseFloat(document.getElementById('maxPositionSize').value);
-            if (isNaN(value) || value < 0.1 || value > 100) {
-                toast.error('Max Position Size must be between 0.1 and 100');
+            if (isNaN(value) || value < 0.01 || value > 100) {
+                toast.error('Max Position Size must be between 0.01 and 100');
                 return;
             }
-            payload = { MAX_POSITION_SIZE: value };
+            payload = { MAX_POSITION_CONTRACTS: value };
+            break;
+        case 'min_order_contracts':
+            value = parseFloat(document.getElementById('minOrderContracts').value);
+            if (isNaN(value) || value < 0.001 || value > 10) {
+                toast.error('Min Order Size must be between 0.001 and 10');
+                return;
+            }
+            payload = { MIN_ORDER_CONTRACTS: value };
+            break;
+        case 'max_slippage':
+            value = parseFloat(document.getElementById('maxSlippage').value);
+            if (isNaN(value) || value < 0.01 || value > 5) {
+                toast.error('Max Slippage must be between 0.01 and 5%');
+                return;
+            }
+            payload = { MAX_SLIPPAGE: value / 100 };  // Convert to decimal
             break;
     }
     

@@ -250,17 +250,37 @@
                         <span class="config-hint">Range: 10 - 10000</span>
                     </div>
                     <div class="config-item">
-                        <label class="config-label">Max Position Size (NVDA)</label>
+                        <label class="config-label">Max Position (contracts)</label>
                         <div class="config-input-group">
-                            <input type="number" id="maxPositionSize" step="0.1" min="0.1" max="100" class="config-input" />
+                            <input type="number" id="maxPositionSize" step="0.01" min="0.01" max="100" class="config-input" />
                             <button class="btn btn-config" data-config-risk-update="max_position_size">Update</button>
                         </div>
-                        <span class="config-hint">Range: 0.1 - 100</span>
+                        <span class="config-hint">Range: 0.01 - 100</span>
+                    </div>
+                    <div class="config-item">
+                        <label class="config-label">Min Order Size (contracts)</label>
+                        <div class="config-input-group">
+                            <input type="number" id="minOrderContracts" step="0.001" min="0.001" max="10" class="config-input" />
+                            <button class="btn btn-config" data-config-risk-update="min_order_contracts">Update</button>
+                        </div>
+                        <span class="config-hint">Range: 0.001 - 10</span>
+                    </div>
+                    <div class="config-item">
+                        <label class="config-label">Max Slippage (%)</label>
+                        <div class="config-input-group">
+                            <input type="number" id="maxSlippage" step="0.01" min="0.01" max="5" class="config-input" />
+                            <button class="btn btn-config" data-config-risk-update="max_slippage">Update</button>
+                        </div>
+                        <span class="config-hint">Range: 0.01 - 5%</span>
                     </div>
                     <div class="risk-status">
                         <div class="risk-status-item">
                             <span class="risk-label">Current Daily Loss:</span>
                             <span class="risk-value" id="currentDailyLoss">$0.00</span>
+                        </div>
+                        <div class="risk-status-item">
+                            <span class="risk-label">Total Position:</span>
+                            <span class="risk-value"><span id="totalPositionContracts">0.0000</span> contracts</span>
                         </div>
                         <div class="risk-progress">
                             <div class="risk-progress-bar" id="riskProgressBar" style="width: 0%"></div>

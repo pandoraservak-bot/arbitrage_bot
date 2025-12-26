@@ -54,10 +54,17 @@ class RiskManager:
         except Exception as e:
             logger.error(f"Error saving daily stats: {e}")
     
-    def can_open_position(self, direction: str, spread: float, price: float) -> Tuple[bool, str]:
-        """Проверка возможности открытия позиции"""
-        # Убрали spam - не логируем каждый риск-чек, только проблемы
+    def can_open_position(self, direction: str, spread: float, price: float, 
+                          current_position_contracts: float = 0.0, slippage: float = 0.0) -> Tuple[bool, str]:
+        """Проверка возможности открытия позиции
         
+        Args:
+            direction: направление сделки
+            spread: текущий спред
+            price: цена входа
+            current_position_contracts: текущий размер открытой позиции в контрактах
+            slippage: ожидаемое проскальзывание (в долях, например 0.001 = 0.1%)
+        """
         # Проверка дневного лимита убытков
         if self.daily_stats['daily_limit_exceeded']:
             logger.warning(f"❌ Daily loss limit exceeded")
@@ -71,13 +78,13 @@ class RiskManager:
             logger.warning(f"❌ Daily loss limit reached: ${abs(current_daily_loss):.2f} >= ${self.config['MAX_DAILY_LOSS']}")
             return False, "Daily loss limit reached"
         
-        # Проверка минимального спреда - ИСПРАВЛЕНО: получаем из TRADING_CONFIG
+        # Проверка минимального спреда
         from config import TRADING_CONFIG
         min_spread_from_config = TRADING_CONFIG['MIN_SPREAD_ENTER']
         min_spread_percent = min_spread_from_config * 100
         
         if spread < min_spread_percent:
-            logger.warning(f"❌ Spread too low: {spread:.3f}% < {min_spread_percent:.3f}% (config: {min_spread_from_config})")
+            logger.warning(f"❌ Spread too low: {spread:.3f}% < {min_spread_percent:.3f}%")
             return False, f"Spread too low: {spread:.3f}% < {min_spread_percent:.3f}%"
         
         # Проверка максимального размера позиции
@@ -86,36 +93,105 @@ class RiskManager:
             logger.warning(f"❌ Max position size is zero or negative: {max_contracts}")
             return False, "Max position size is zero or negative"
         
-        # Проверка максимальной стоимости позиции
-        position_value = price * max_contracts
-        if position_value > self.config['MAX_POSITION_USD']:
-            logger.warning(f"❌ Position value too high: ${position_value:.2f} > ${self.config['MAX_POSITION_USD']}")
-            return False, f"Position value ${position_value:.2f} > ${self.config['MAX_POSITION_USD']}"
+        # Проверка что не превышаем максимальный размер позиции
+        if current_position_contracts >= max_contracts:
+            logger.warning(f"❌ Max position reached: {current_position_contracts:.4f} >= {max_contracts:.4f} contracts")
+            return False, f"Max position reached: {current_position_contracts:.4f} >= {max_contracts:.4f} contracts"
         
-        # Убрали spam - не логируем каждый успешный риск-чек
+        # Проверка проскальзывания
+        max_slippage = self.config.get('MAX_SLIPPAGE', 0.001)
+        if slippage > max_slippage:
+            msg = f"Slippage too high: {slippage*100:.3f}% > {max_slippage*100:.3f}%"
+            logger.warning(f"❌ {msg}")
+            return False, msg
+        
         return True, "OK"
     
-    def calculate_position_size(self, price: float, spread: float) -> Dict:
-        """Расчет оптимального размера позиции"""
+    def check_slippage(self, slippage: float) -> Tuple[bool, str]:
+        """Проверка проскальзывания перед входом
         
-        # Базовая позиция по контрактам
-        base_contracts = self.config['MAX_POSITION_CONTRACTS']
+        Args:
+            slippage: ожидаемое проскальзывание (в долях, например 0.001 = 0.1%)
+            
+        Returns:
+            (passed, message) - прошла ли проверка и сообщение
+        """
+        max_slippage = self.config.get('MAX_SLIPPAGE', 0.001)
+        if slippage > max_slippage:
+            msg = f"Slippage {slippage*100:.3f}% exceeds max {max_slippage*100:.3f}%"
+            return False, msg
+        return True, "OK"
+    
+    def calculate_position_size(self, price: float, spread: float, 
+                                current_position_contracts: float = 0.0) -> Dict:
+        """Расчет размера ордера для частичного входа в позицию
         
-        # Применение коэффициента безопасности
-        safe_contracts = base_contracts * self.config['SAFETY_MULTIPLIER']
+        Args:
+            price: цена входа
+            spread: текущий спред
+            current_position_contracts: текущий размер открытой позиции
+            
+        Returns:
+            Dict с размером ордера и USD стоимостью
+        """
+        max_contracts = self.config['MAX_POSITION_CONTRACTS']
+        min_order = self.config.get('MIN_ORDER_CONTRACTS', 0.01)
         
-        # Проверка стоимости
-        position_value = price * safe_contracts
+        # Сколько еще можем добавить
+        remaining_capacity = max_contracts - current_position_contracts
         
-        # Если стоимость превышает лимит, уменьшаем
-        if position_value > self.config['MAX_POSITION_USD']:
-            safe_contracts = self.config['MAX_POSITION_USD'] / price
+        if remaining_capacity <= 0:
+            return {
+                'contracts': 0,
+                'usd_value': 0,
+                'can_add': False,
+                'reason': 'Max position reached'
+            }
+        
+        # Размер ордера = минимальный ордер (частичный вход)
+        order_contracts = min(min_order, remaining_capacity)
+        
+        # Применяем коэффициент безопасности если нужно
+        safe_contracts = order_contracts * self.config.get('SAFETY_MULTIPLIER', 1.0)
+        
+        # Минимум - минимальный ордер
+        if safe_contracts < min_order and remaining_capacity >= min_order:
+            safe_contracts = min_order
         
         return {
             'contracts': safe_contracts,
             'usd_value': price * safe_contracts,
-            'leverage': 1.0,
-            'risk_percentage': (self.config['MAX_TRADE_LOSS'] / (price * safe_contracts)) * 100
+            'can_add': True,
+            'remaining_capacity': remaining_capacity,
+            'max_position': max_contracts
+        }
+    
+    def calculate_exit_size(self, position_contracts: float) -> Dict:
+        """Расчет размера ордера для частичного выхода из позиции
+        
+        Args:
+            position_contracts: текущий размер позиции в контрактах
+            
+        Returns:
+            Dict с размером ордера для выхода
+        """
+        min_order = self.config.get('MIN_ORDER_CONTRACTS', 0.01)
+        
+        if position_contracts <= 0:
+            return {
+                'contracts': 0,
+                'can_exit': False,
+                'reason': 'No position to exit'
+            }
+        
+        # Выходим минимальным размером ордера
+        exit_contracts = min(min_order, position_contracts)
+        
+        return {
+            'contracts': exit_contracts,
+            'can_exit': True,
+            'remaining_position': position_contracts - exit_contracts,
+            'full_exit': position_contracts <= min_order
         }
     
     def record_trade_result(self, pnl: float, trade_volume: float):
@@ -130,10 +206,6 @@ class RiskManager:
             # Обновление максимального убытка за сделку
             if abs(pnl) > self.daily_stats['max_loss_trade']:
                 self.daily_stats['max_loss_trade'] = abs(pnl)
-                
-            # Проверка лимита на сделку
-            if abs(pnl) > self.config['MAX_TRADE_LOSS']:
-                logger.warning(f"Trade loss exceeded limit: ${abs(pnl):.4f} > ${self.config['MAX_TRADE_LOSS']}")
             
         else:  # Прибыльная сделка
             self.daily_stats['consecutive_losses'] = 0
