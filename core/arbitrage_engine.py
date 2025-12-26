@@ -277,6 +277,9 @@ class ArbitrageEngine:
         self.total_pnl = 0.0
         self.total_volume = 0.0
         
+        # Контроль интервала между ордерами
+        self.last_order_time = 0.0
+        
         # Путь к файлу с позициями
         self.positions_file = os.path.join(DATA_DIR, "positions.json")
     
@@ -668,6 +671,13 @@ class ArbitrageEngine:
             logger.debug("🔄 Already have open positions, skipping opportunity search")
             return None
         
+        # Проверка минимального интервала между ордерами
+        min_interval = self.config.get('MIN_ORDER_INTERVAL', 5.0)
+        time_since_last = time.time() - self.last_order_time
+        if time_since_last < min_interval:
+            logger.debug(f"⏳ Order interval: {time_since_last:.1f}s < {min_interval}s, waiting...")
+            return None
+        
         # Рассчитываем спреды с учетом реального проскальзывания (БЕЗ КОМИССИЙ)
         spreads = self.calculate_spreads(bitget_data, hyper_data, bitget_slippage, hyper_slippage)
         
@@ -799,6 +809,7 @@ class ArbitrageEngine:
         self.open_positions.append(position)
         self.position_counter += 1
         self.total_volume += position_size['contracts'] * spread_data['buy_price']
+        self.last_order_time = time.time()
         
         logger.info(f"✅ Position opened: {position.id}, "
                    f"Direction: {direction.value}, "

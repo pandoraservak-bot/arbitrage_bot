@@ -974,6 +974,13 @@ class DashboardClient {
                 input.value = (config.MAX_SLIPPAGE * 100).toFixed(2);
             }
         }
+        
+        if (config.MIN_ORDER_INTERVAL !== undefined) {
+            const input = document.getElementById('minOrderInterval');
+            if (input && !input.matches(':focus')) {
+                input.value = config.MIN_ORDER_INTERVAL;
+            }
+        }
     }
 
     updateRiskStatus(data) {

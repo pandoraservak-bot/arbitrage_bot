@@ -124,6 +124,11 @@ def save_config_to_file(config_updates: Dict[str, Any]) -> Dict[str, Any]:
                 r"\g<1>{value}",
                 "RISK_CONFIG"
             ),
+            'MIN_ORDER_INTERVAL': (
+                r"('MIN_ORDER_INTERVAL'\s*:\s*)([0-9.-]+)",
+                r"\g<1>{value}",
+                "TRADING_CONFIG"
+            ),
         }
         
         # Process each update
@@ -484,12 +489,28 @@ class WebDashboardServer:
                 if 1 <= value <= 10:
                     if isinstance(bot_config, dict):
                         bot_config['MAX_CONCURRENT_POSITIONS'] = value
-                    # Note: This field is not in config.py, only in memory
                     updated_fields.append(f"MAX_CONCURRENT_POSITIONS={value}")
                 else:
                     return {
                         'success': False,
                         'error': 'MAX_CONCURRENT_POSITIONS must be between 1 and 10'
+                    }
+
+            if 'MIN_ORDER_INTERVAL' in config:
+                value = float(config['MIN_ORDER_INTERVAL'])
+                if 0 <= value <= 60:
+                    if isinstance(bot_config, dict):
+                        bot_config['MIN_ORDER_INTERVAL'] = value
+                    # Update arbitrage_engine config
+                    arb_engine = getattr(self.bot, 'arbitrage_engine', None)
+                    if arb_engine:
+                        arb_engine.config['MIN_ORDER_INTERVAL'] = value
+                    config_to_save['MIN_ORDER_INTERVAL'] = value
+                    updated_fields.append(f"MIN_ORDER_INTERVAL={value}s")
+                else:
+                    return {
+                        'success': False,
+                        'error': 'MIN_ORDER_INTERVAL must be between 0 and 60 seconds'
                     }
 
             if updated_fields:
