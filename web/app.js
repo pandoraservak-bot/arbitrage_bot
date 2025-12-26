@@ -394,14 +394,15 @@ class DashboardClient {
     }
 
     handleCommandResult(data) {
-        if (data.success) {
-            toast.success(data.message || 'Command successful');
-            if (data.event_type) {
-                eventLogger.addEvent(data.message, 'success');
+        const result = data.payload || data;
+        if (result.success) {
+            toast.success(result.message || 'Command successful');
+            if (result.event_type) {
+                eventLogger.addEvent(result.message, 'success');
             }
         } else {
-            toast.error(data.error || 'Command failed');
-            eventLogger.addEvent(data.error || 'Command failed', 'error');
+            toast.error(result.error || 'Command failed');
+            eventLogger.addEvent(result.error || 'Command failed', 'error');
         }
     }
 
