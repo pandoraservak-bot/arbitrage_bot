@@ -295,7 +295,9 @@ class WebDashboardServer:
         elif msg_type == 'bot_command':
             # Handle bot control commands (start/pause/stop)
             command = data.get('command', '').lower()
+            logger.info(f"[WS] Received bot_command: {command}")
             result = await self.handle_bot_command(command)
+            logger.info(f"[WS] bot_command result: {result}")
             await self.send_to_client(ws, 'command_result', result)
         
         elif msg_type == 'update_config':
