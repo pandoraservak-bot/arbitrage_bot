@@ -402,9 +402,44 @@ class DashboardClient {
             if (result.event_type) {
                 eventLogger.addEvent(result.message, 'success');
             }
+            this.updateBotStatusFromCommand(result.message);
         } else {
             toast.error(result.error || 'Command failed');
             eventLogger.addEvent(result.error || 'Command failed', 'error');
+        }
+    }
+
+    updateBotStatusFromCommand(message) {
+        const badge = document.getElementById('botStatusBadge');
+        if (!badge) return;
+        
+        if (message && message.toLowerCase().includes('pause')) {
+            badge.textContent = '⏸️ PAUSED';
+            badge.className = 'bot-status-badge status-paused';
+        } else if (message && message.toLowerCase().includes('stop')) {
+            badge.textContent = '⏹️ STOPPED';
+            badge.className = 'bot-status-badge status-stopped';
+        } else if (message && message.toLowerCase().includes('start')) {
+            badge.textContent = '▶️ ACTIVE';
+            badge.className = 'bot-status-badge status-active';
+        }
+    }
+
+    updateBotStatusBadge(data) {
+        const badge = document.getElementById('botStatusBadge');
+        if (!badge) return;
+        
+        const tradingEnabled = data.trading_enabled !== false;
+        
+        if (!tradingEnabled) {
+            badge.textContent = '⏸️ PAUSED';
+            badge.className = 'bot-status-badge status-paused';
+        } else if (data.trading_mode === 'stopped') {
+            badge.textContent = '⏹️ STOPPED';
+            badge.className = 'bot-status-badge status-stopped';
+        } else {
+            badge.textContent = '▶️ ACTIVE';
+            badge.className = 'bot-status-badge status-active';
         }
     }
 
@@ -428,6 +463,7 @@ class DashboardClient {
         }
         
         this.updateStatus(data);
+        this.updateBotStatusBadge(data);
         this.updatePrices(data);
         this.updateSpread(data);
         this.updateExitSpreads(data);

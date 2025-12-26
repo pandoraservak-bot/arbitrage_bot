@@ -729,6 +729,7 @@ class WebDashboardServer:
             'timestamp': datetime.now().strftime('%H:%M:%S'),
             'runtime': runtime,
             'trading_mode': mode,
+            'trading_enabled': getattr(self.bot, 'trading_enabled', True),
             'bitget_healthy': getattr(self.bot, 'bitget_healthy', False),
             'hyper_healthy': getattr(self.bot, 'hyper_healthy', False),
             'bitget_latency': max(0, min(bitget_latency, 999)),  # Cap at 999ms

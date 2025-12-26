@@ -73,6 +73,29 @@ body {
     animation: none;
 }
 
+.bot-status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #10b981;
+    color: #fff;
+}
+
+.bot-status-badge.status-active {
+    background: #10b981;
+}
+
+.bot-status-badge.status-paused {
+    background: #f59e0b;
+}
+
+.bot-status-badge.status-stopped {
+    background: #ef4444;
+}
+
 .mode-badge.stopped {
     background: #ef4444;
     animation: none;
