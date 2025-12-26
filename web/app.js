@@ -394,7 +394,9 @@ class DashboardClient {
     }
 
     handleCommandResult(data) {
+        console.log('[handleCommandResult] data:', data);
         const result = data.payload || data;
+        console.log('[handleCommandResult] result:', result);
         if (result.success) {
             toast.success(result.message || 'Command successful');
             if (result.event_type) {
@@ -944,9 +946,13 @@ class DashboardClient {
     }
 
     sendCommand(type, payload) {
+        console.log('[sendCommand] type:', type, 'payload:', payload);
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(JSON.stringify({ type, ...payload }));
+            const msg = JSON.stringify({ type, ...payload });
+            console.log('[sendCommand] sending:', msg);
+            this.ws.send(msg);
         } else {
+            console.log('[sendCommand] WebSocket not connected');
             toast.error('Not connected to server');
         }
     }
