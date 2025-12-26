@@ -78,6 +78,7 @@ class NVDAFuturesArbitrageBot:
         
         # Состояние
         self.running = False
+        self.trading_enabled = True  # Флаг для паузы торговли через UI
         self.trading_mode = TradingMode.STOPPED
         self.session_start = time.time()
         self.last_mode_change = time.time()
@@ -564,7 +565,11 @@ class NVDAFuturesArbitrageBot:
         if has_bitget_data and has_hyper_data:
             # Всегда мониторим позиции, если они есть
             if self.arb_engine.has_open_positions():
+                # Мониторинг позиций работает даже в режиме паузы
                 await self.arb_engine.monitor_positions(bitget_data, hyper_data, bitget_slippage, hyper_slippage)
+            elif not self.trading_enabled:
+                # Пауза - не открываем новые позиции
+                pass
             else:
                 # Нет позиций - ищем возможности для входа
                 opportunity = self.arb_engine.find_opportunity(
@@ -1061,7 +1066,10 @@ class NVDAFuturesArbitrageBot:
         print(f"╠{'═'*68}╣")
         
         # ===== СТРОКА 1: Время и статус =====
-        if self.trading_mode == TradingMode.ACTIVE:
+        if not self.trading_enabled:
+            mode_icon = "⏸️"
+            mode_text = "PAUSED"
+        elif self.trading_mode == TradingMode.ACTIVE:
             mode_icon = "▶️"
             mode_text = "ACTIVE"
         elif self.trading_mode == TradingMode.PARTIAL:
