@@ -662,6 +662,49 @@ body {
     color: #6b7280;
 }
 
+.config-section {
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.config-section:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.config-section-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6366f1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.config-grid .config-item {
+    gap: 4px;
+}
+
+.config-grid .config-label {
+    font-size: 0.75rem;
+}
+
+.config-grid .config-input {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+}
+
+.config-grid .btn-config {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+}
+
 /* Risk Card */
 .risk-card {
     grid-column: span 2;

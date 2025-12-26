@@ -169,43 +169,90 @@
                 </div>
             </div>
 
-            <!-- Bot Configuration Card -->
+            <!-- Configuration Card (Bot + Risk) -->
             <div class="card config-card">
                 <div class="card-header">
-                    <h2>⚙️ Bot Configuration</h2>
+                    <h2>⚙️ Configuration</h2>
                 </div>
                 <div class="config-content">
-                    <div class="config-item">
-                        <label class="config-label">Min Entry Spread (%)</label>
-                        <div class="config-input-group">
-                            <input type="number" id="minSpreadEnter" step="0.01" min="0.01" max="1.0" class="config-input" />
-                            <button class="btn btn-config" data-config-update="min_spread_enter">Update</button>
+                    <div class="config-section">
+                        <div class="config-section-title">Trading Settings</div>
+                        <div class="config-grid">
+                            <div class="config-item">
+                                <label class="config-label">Min Entry Spread (%)</label>
+                                <div class="config-input-group">
+                                    <input type="number" id="minSpreadEnter" step="0.01" min="0.01" max="1.0" class="config-input" />
+                                    <button class="btn btn-config" data-config-update="min_spread_enter">Set</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label class="config-label">Min Exit Spread (%)</label>
+                                <div class="config-input-group">
+                                    <input type="number" id="minSpreadExit" step="0.01" min="-1.0" max="0.2" class="config-input" />
+                                    <button class="btn btn-config" data-config-update="min_spread_exit">Set</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label class="config-label">Max Position Age (hrs)</label>
+                                <div class="config-input-group">
+                                    <input type="number" id="maxPositionAge" step="0.5" min="0.5" max="24" class="config-input" />
+                                    <button class="btn btn-config" data-config-update="max_position_age">Set</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label class="config-label">Max Concurrent Pos</label>
+                                <div class="config-input-group">
+                                    <input type="number" id="maxConcurrentPos" step="1" min="1" max="10" class="config-input" />
+                                    <button class="btn btn-config" data-config-update="max_concurrent_positions">Set</button>
+                                </div>
+                            </div>
                         </div>
-                        <span class="config-hint">Range: 0.01 - 1.0</span>
                     </div>
-                    <div class="config-item">
-                        <label class="config-label">Min Exit Spread (%)</label>
-                        <div class="config-input-group">
-                            <input type="number" id="minSpreadExit" step="0.01" min="-1.0" max="0.2" class="config-input" />
-                            <button class="btn btn-config" data-config-update="min_spread_exit">Update</button>
+                    <div class="config-section">
+                        <div class="config-section-title">Risk Management</div>
+                        <div class="config-grid">
+                            <div class="config-item">
+                                <label class="config-label">Daily Loss Limit ($)</label>
+                                <div class="config-input-group">
+                                    <input type="number" id="dailyLossLimit" step="10" min="10" max="10000" class="config-input" />
+                                    <button class="btn btn-config" data-config-risk-update="daily_loss_limit">Set</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label class="config-label">Max Position (contracts)</label>
+                                <div class="config-input-group">
+                                    <input type="number" id="maxPositionSize" step="0.01" min="0.01" max="100" class="config-input" />
+                                    <button class="btn btn-config" data-config-risk-update="max_position_size">Set</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label class="config-label">Min Order (contracts)</label>
+                                <div class="config-input-group">
+                                    <input type="number" id="minOrderContracts" step="0.001" min="0.001" max="10" class="config-input" />
+                                    <button class="btn btn-config" data-config-risk-update="min_order_contracts">Set</button>
+                                </div>
+                            </div>
+                            <div class="config-item">
+                                <label class="config-label">Max Slippage (%)</label>
+                                <div class="config-input-group">
+                                    <input type="number" id="maxSlippage" step="0.01" min="0.01" max="5" class="config-input" />
+                                    <button class="btn btn-config" data-config-risk-update="max_slippage">Set</button>
+                                </div>
+                            </div>
                         </div>
-                        <span class="config-hint">Range: -1.0 - 0.2 (positive = close on high spread)</span>
                     </div>
-                    <div class="config-item">
-                        <label class="config-label">Max Position Age (hours)</label>
-                        <div class="config-input-group">
-                            <input type="number" id="maxPositionAge" step="0.5" min="0.5" max="24" class="config-input" />
-                            <button class="btn btn-config" data-config-update="max_position_age">Update</button>
+                    <div class="risk-status">
+                        <div class="risk-status-item">
+                            <span class="risk-label">Daily Loss:</span>
+                            <span class="risk-value" id="currentDailyLoss">$0.00</span>
                         </div>
-                        <span class="config-hint">Range: 0.5 - 24</span>
-                    </div>
-                    <div class="config-item">
-                        <label class="config-label">Max Concurrent Positions</label>
-                        <div class="config-input-group">
-                            <input type="number" id="maxConcurrentPos" step="1" min="1" max="10" class="config-input" />
-                            <button class="btn btn-config" data-config-update="max_concurrent_positions">Update</button>
+                        <div class="risk-status-item">
+                            <span class="risk-label">Position:</span>
+                            <span class="risk-value"><span id="totalPositionContracts">0.0000</span> contracts</span>
                         </div>
-                        <span class="config-hint">Range: 1 - 10</span>
+                        <div class="risk-progress">
+                            <div class="risk-progress-bar" id="riskProgressBar" style="width: 0%"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -230,60 +277,6 @@
                             <div class="record-label">Best Exit</div>
                             <div class="record-value" id="bestExitRecord">---</div>
                             <div class="record-meta" id="bestExitTime">---</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Risk Management Card -->
-            <div class="card risk-card">
-                <div class="card-header">
-                    <h2>🛡️ Risk Management</h2>
-                </div>
-                <div class="risk-content">
-                    <div class="config-item">
-                        <label class="config-label">Daily Loss Limit ($)</label>
-                        <div class="config-input-group">
-                            <input type="number" id="dailyLossLimit" step="10" min="10" max="10000" class="config-input" />
-                            <button class="btn btn-config" data-config-risk-update="daily_loss_limit">Update</button>
-                        </div>
-                        <span class="config-hint">Range: 10 - 10000</span>
-                    </div>
-                    <div class="config-item">
-                        <label class="config-label">Max Position (contracts)</label>
-                        <div class="config-input-group">
-                            <input type="number" id="maxPositionSize" step="0.01" min="0.01" max="100" class="config-input" />
-                            <button class="btn btn-config" data-config-risk-update="max_position_size">Update</button>
-                        </div>
-                        <span class="config-hint">Range: 0.01 - 100</span>
-                    </div>
-                    <div class="config-item">
-                        <label class="config-label">Min Order Size (contracts)</label>
-                        <div class="config-input-group">
-                            <input type="number" id="minOrderContracts" step="0.001" min="0.001" max="10" class="config-input" />
-                            <button class="btn btn-config" data-config-risk-update="min_order_contracts">Update</button>
-                        </div>
-                        <span class="config-hint">Range: 0.001 - 10</span>
-                    </div>
-                    <div class="config-item">
-                        <label class="config-label">Max Slippage (%)</label>
-                        <div class="config-input-group">
-                            <input type="number" id="maxSlippage" step="0.01" min="0.01" max="5" class="config-input" />
-                            <button class="btn btn-config" data-config-risk-update="max_slippage">Update</button>
-                        </div>
-                        <span class="config-hint">Range: 0.01 - 5%</span>
-                    </div>
-                    <div class="risk-status">
-                        <div class="risk-status-item">
-                            <span class="risk-label">Current Daily Loss:</span>
-                            <span class="risk-value" id="currentDailyLoss">$0.00</span>
-                        </div>
-                        <div class="risk-status-item">
-                            <span class="risk-label">Total Position:</span>
-                            <span class="risk-value"><span id="totalPositionContracts">0.0000</span> contracts</span>
-                        </div>
-                        <div class="risk-progress">
-                            <div class="risk-progress-bar" id="riskProgressBar" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
