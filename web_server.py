@@ -30,12 +30,12 @@ async def csp_middleware(request, handler):
     # chartjs-plugin-zoom uses Function constructor for dynamic function creation
     csp_policy = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net blob:; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-        "img-src 'self' data:; "
+        "img-src 'self' data: blob:; "
         "font-src 'self' https://fonts.gstatic.com; "
         "connect-src 'self' ws: wss: https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com; "
-        "frame-ancestors 'none'; "
+        "worker-src 'self' blob:; "
         "base-uri 'self'; "
         "form-action 'self'"
     )
