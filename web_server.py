@@ -398,6 +398,18 @@ class WebDashboardServer:
                     'success': True,
                     'message': f'Bot {command}ped successfully'
                 }
+            elif command == 'restart':
+                # Restart bot - reset session and re-enable trading
+                if hasattr(self.bot, 'trading_enabled'):
+                    self.bot.trading_enabled = True
+                if hasattr(self.bot, 'session_start'):
+                    self.bot.session_start = time.time()
+                if hasattr(self.bot, 'arb_engine') and hasattr(self.bot.arb_engine, 'reset_session_records'):
+                    self.bot.arb_engine.reset_session_records()
+                return {
+                    'success': True,
+                    'message': 'Bot restarted successfully'
+                }
             else:
                 return {
                     'success': False,

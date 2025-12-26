@@ -1064,7 +1064,7 @@ class DashboardClient {
 
             // Refresh
             if (e.target.closest('[data-action="refresh"]')) {
-                requestFullUpdate();
+                dashboard.sendCommand('bot_command', { command: 'restart' });
                 return;
             }
 
