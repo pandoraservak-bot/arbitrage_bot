@@ -18,9 +18,12 @@ class LiveTradeExecutor:
         
         self.hyperliquid_exchange = None
         self.hyperliquid_info = None
-        self.bitget_client = None
+        self.bitget_credentials = None
+        self.bitget_base_url = "https://api.bitget.com"
         
         self.initialized = False
+        self.hyperliquid_connected = False
+        self.bitget_connected = False
         self.order_history = []
         self.trade_history = []
         
@@ -33,15 +36,18 @@ class LiveTradeExecutor:
             hl_success = await self._init_hyperliquid()
             bg_success = await self._init_bitget()
             
-            self.initialized = hl_success and bg_success
+            self.hyperliquid_connected = hl_success
+            self.bitget_connected = bg_success
+            self.initialized = hl_success or bg_success
             
-            if self.initialized:
-                logger.info("Live Trading Executor initialized successfully")
+            if hl_success and bg_success:
+                logger.info("Live Trading Executor initialized successfully (both exchanges)")
+            elif hl_success:
+                logger.warning("Live Trading: Only Hyperliquid connected. Check Bitget API keys")
+            elif bg_success:
+                logger.warning("Live Trading: Only Bitget connected. Check Hyperliquid API keys")
             else:
-                if not hl_success:
-                    logger.warning("Hyperliquid initialization failed - check API keys")
-                if not bg_success:
-                    logger.warning("Bitget initialization failed - check API keys")
+                logger.warning("Live Trading: No exchanges connected. Check API keys")
                     
             return self.initialized
             
@@ -256,7 +262,9 @@ class LiveTradeExecutor:
             if price:
                 params['price'] = str(price)
             
-            response = self._bitget_request('POST', '/api/v2/mix/order/place-order', body=params)
+            response = await asyncio.to_thread(
+                self._bitget_request, 'POST', '/api/v2/mix/order/place-order', None, params
+            )
             
             if response.get('code') == '00000':
                 data = response.get('data', {})
@@ -375,11 +383,13 @@ class LiveTradeExecutor:
             return {}
         
         try:
-            response = self._bitget_request('GET', '/api/v2/mix/position/single-position', {
-                'symbol': self.bitget_symbol,
-                'productType': 'USDT-FUTURES',
-                'marginCoin': 'USDT'
-            })
+            response = await asyncio.to_thread(
+                self._bitget_request, 'GET', '/api/v2/mix/position/single-position', {
+                    'symbol': self.bitget_symbol,
+                    'productType': 'USDT-FUTURES',
+                    'marginCoin': 'USDT'
+                }
+            )
             
             if response.get('code') == '00000':
                 data = response.get('data', [])
@@ -408,8 +418,8 @@ class LiveTradeExecutor:
         """Get executor status"""
         return {
             'initialized': self.initialized,
-            'hyperliquid_connected': self.hyperliquid_exchange is not None,
-            'bitget_connected': self.bitget_credentials is not None,
+            'hyperliquid_connected': self.hyperliquid_connected,
+            'bitget_connected': self.bitget_connected,
             'orders_count': len(self.order_history),
             'trades_count': len(self.trade_history)
         }

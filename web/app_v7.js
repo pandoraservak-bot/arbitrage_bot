@@ -1126,6 +1126,13 @@ class DashboardClient {
                 return;
             }
 
+            // Trading mode toggle
+            const modeBtn = e.target.closest('.mode-btn[data-mode]');
+            if (modeBtn) {
+                setTradingMode(modeBtn.dataset.mode);
+                return;
+            }
+
             // Event log clear
             if (e.target.closest('[data-action="clear-events"]')) {
                 clearEventLog();
@@ -1517,6 +1524,60 @@ function updateRiskConfig(field) {
     }
     
     dashboard.sendCommand('update_risk_config', { config: payload });
+}
+
+// Trading mode management
+let currentTradingMode = 'paper';
+
+function setTradingMode(mode) {
+    if (mode === 'live' && currentTradingMode !== 'live') {
+        showModal(
+            'Enable Live Trading',
+            '⚠️ WARNING: You are about to enable LIVE TRADING.\n\nThis will use REAL MONEY on Hyperliquid and Bitget exchanges.\n\nMake sure you have:\n1. Set up API keys in Secrets\n2. Tested with paper trading first\n3. Configured proper risk limits\n\nAre you sure you want to continue?',
+            () => {
+                activateTradingMode('live');
+            }
+        );
+    } else if (mode === 'paper') {
+        activateTradingMode('paper');
+    }
+}
+
+function activateTradingMode(mode) {
+    currentTradingMode = mode;
+    
+    document.getElementById('modePaper').classList.toggle('active', mode === 'paper');
+    document.getElementById('modeLive').classList.toggle('active', mode === 'live');
+    
+    const liveWarning = document.getElementById('liveWarning');
+    if (liveWarning) {
+        liveWarning.style.display = mode === 'live' ? 'block' : 'none';
+    }
+    
+    dashboard.sendCommand('set_trading_mode', { mode: mode });
+    
+    if (mode === 'live') {
+        toast.warning('Live trading mode enabled!');
+        eventLogger.addEvent('Switched to LIVE trading mode', 'warning');
+    } else {
+        toast.success('Paper trading mode enabled');
+        eventLogger.addEvent('Switched to Paper trading mode', 'info');
+    }
+}
+
+function updateApiStatus(status) {
+    const hlDot = document.querySelector('#hlStatus .status-dot');
+    const bgDot = document.querySelector('#bgStatus .status-dot');
+    
+    if (hlDot) {
+        hlDot.classList.toggle('connected', status.hyperliquid_connected);
+        hlDot.classList.toggle('disconnected', !status.hyperliquid_connected);
+    }
+    
+    if (bgDot) {
+        bgDot.classList.toggle('connected', status.bitget_connected);
+        bgDot.classList.toggle('disconnected', !status.bitget_connected);
+    }
 }
 
 // Position management

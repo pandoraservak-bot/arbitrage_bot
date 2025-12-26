@@ -334,6 +334,16 @@ class WebDashboardServer:
                 'enabled': getattr(self.bot, 'trading_enabled', True)
             })
         
+        elif msg_type == 'set_trading_mode':
+            # Set trading mode (paper/live)
+            mode = data.get('mode', 'paper')
+            result = await self.handle_trading_mode_change(mode)
+            await self.send_to_client(ws, 'command_result', result)
+            await self.send_to_client(ws, 'trading_mode', {
+                'mode': mode,
+                'live_executor_status': result.get('live_executor_status', {})
+            })
+        
         elif msg_type == 'update_position_exit_spread':
             # Update exit_target for a specific position
             position_id = data.get('position_id')
@@ -646,6 +656,56 @@ class WebDashboardServer:
             return {
                 'success': False,
                 'error': str(e)
+            }
+    
+    async def handle_trading_mode_change(self, mode):
+        """Handle trading mode change (paper/live)"""
+        try:
+            from config import TRADING_MODE
+            
+            old_mode = TRADING_MODE.get('MODE', 'paper')
+            TRADING_MODE['MODE'] = mode
+            
+            live_executor_status = {}
+            
+            if mode == 'live':
+                TRADING_MODE['LIVE_ENABLED'] = True
+                
+                if hasattr(self.bot, 'live_executor'):
+                    live_exec = self.bot.live_executor
+                    if live_exec and hasattr(live_exec, 'initialize'):
+                        if not live_exec.initialized:
+                            await live_exec.initialize()
+                        live_executor_status = live_exec.get_status() if hasattr(live_exec, 'get_status') else {}
+                else:
+                    from core.live_executor import LiveTradeExecutor
+                    self.bot.live_executor = LiveTradeExecutor()
+                    await self.bot.live_executor.initialize()
+                    live_executor_status = self.bot.live_executor.get_status()
+                
+                logger.warning(f"Trading mode changed from {old_mode} to LIVE")
+                return {
+                    'success': True,
+                    'message': f'Trading mode changed to LIVE. API Status: HL={live_executor_status.get("hyperliquid_connected", False)}, BG={live_executor_status.get("bitget_connected", False)}',
+                    'event_type': 'warning',
+                    'live_executor_status': live_executor_status
+                }
+            else:
+                TRADING_MODE['LIVE_ENABLED'] = False
+                logger.info(f"Trading mode changed from {old_mode} to paper")
+                return {
+                    'success': True,
+                    'message': 'Trading mode changed to Paper',
+                    'event_type': 'success',
+                    'live_executor_status': {}
+                }
+                
+        except Exception as e:
+            logger.error(f"Error changing trading mode: {e}")
+            return {
+                'success': False,
+                'error': str(e),
+                'live_executor_status': {}
             }
     
     def collect_dashboard_data(self):

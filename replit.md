@@ -67,7 +67,35 @@ python main.py
 - colorama: Console colors
 - python-dotenv: Environment variables
 
+## Live Trading Module
+The bot supports both paper trading and live trading modes:
+
+### Paper Trading (default)
+- Uses `core/paper_executor.py` for simulated trades
+- No real money involved, portfolio tracked locally
+
+### Live Trading
+- Uses `core/live_executor.py` with official exchange SDKs
+- **Hyperliquid**: Uses `hyperliquid-python-sdk` for API trading
+- **Bitget**: Uses REST API with HMAC signature authentication
+
+### Required Secrets for Live Trading
+Set these in Replit Secrets:
+- `HYPERLIQUID_SECRET_KEY`: Your Hyperliquid wallet private key
+- `HYPERLIQUID_ACCOUNT_ADDRESS`: Your Hyperliquid account address
+- `BITGET_API_KEY`: Bitget API key
+- `BITGET_SECRET_KEY`: Bitget secret key
+- `BITGET_PASSPHRASE`: Bitget API passphrase
+
+### Trading Mode Toggle
+- Switch between Paper/Live mode via web dashboard
+- Live mode shows API connection status (green = connected)
+- Confirmation required before enabling live trading
+
 ## Recent Changes (Dec 2025)
+- **Added Live Trading Module**: Created `core/live_executor.py` using official SDKs
+- **Trading Mode Toggle**: Paper/Live switch in Configuration panel
+- Added MIN_ORDER_INTERVAL setting for order frequency control
 - Implemented partial entry/exit trading with contract-based sizing
 - Added MAX_SLIPPAGE config with pre-entry validation
 - Removed USD-based position limits (MAX_TRADE_LOSS, MAX_POSITION_USD)
