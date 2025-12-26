@@ -42,14 +42,14 @@ async def csp_middleware(request, handler):
     
     response.headers['Content-Security-Policy'] = csp_policy
     response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     
-    # Disable caching for static files (JS, CSS, HTML) during development
-    if request.path.startswith('/static/') or request.path == '/':
-        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
+    # Disable caching for ALL responses to ensure updates are visible immediately
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    response.headers['ETag'] = ''
+    response.headers['Last-Modified'] = ''
     
     return response
 
