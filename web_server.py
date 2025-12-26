@@ -45,6 +45,12 @@ async def csp_middleware(request, handler):
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-XSS-Protection'] = '1; mode=block'
     
+    # Disable caching for static files (JS, CSS, HTML) during development
+    if request.path.startswith('/static/') or request.path == '/':
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    
     return response
 
 
