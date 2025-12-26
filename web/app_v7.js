@@ -1464,6 +1464,14 @@ function updateConfig(field) {
             }
             payload = { MAX_CONCURRENT_POSITIONS: value };
             break;
+        case 'min_order_interval':
+            value = parseFloat(document.getElementById('minOrderInterval').value);
+            if (isNaN(value) || value < 0 || value > 60) {
+                toast.error('Order Interval must be between 0 and 60 seconds');
+                return;
+            }
+            payload = { MIN_ORDER_INTERVAL: value };
+            break;
     }
     
     dashboard.sendCommand('update_config', { config: payload });
