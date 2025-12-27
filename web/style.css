@@ -599,6 +599,54 @@ body {
     border: 1px solid rgba(239, 68, 68, 0.1);
 }
 
+/* Session Records Section (inside Spreads Analysis) */
+.session-records-section {
+    display: flex;
+    gap: 20px;
+    padding: 12px 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.session-records-section .record-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.session-records-section .record-icon {
+    font-size: 1.5rem;
+}
+
+.session-records-section .record-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.session-records-section .record-label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.session-records-section .record-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #10b981;
+}
+
+.session-records-section .record-meta {
+    font-size: 0.7rem;
+    color: #6b7280;
+}
+
 /* Value coloring for spreads */
 .value-positive {
     color: #10b981;
