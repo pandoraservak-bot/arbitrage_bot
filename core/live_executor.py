@@ -95,11 +95,12 @@ class LiveTradeExecutor:
             from hyperliquid.utils import constants
             from eth_account import Account
             
-            secret_key = os.environ.get('HYPERLIQUID_SECRET_KEY')
-            account_address = os.environ.get('HYPERLIQUID_ACCOUNT_ADDRESS')
+            from config import API_CONFIG
+            secret_key = os.environ.get('HYPERLIQUID_SECRET_KEY') or API_CONFIG.get('HYPERLIQUID_SECRET_KEY')
+            account_address = os.environ.get('HYPERLIQUID_ACCOUNT_ADDRESS') or API_CONFIG.get('HYPERLIQUID_ACCOUNT_ADDRESS')
             
             if not secret_key:
-                logger.warning("HYPERLIQUID_SECRET_KEY not set in environment")
+                logger.warning("HYPERLIQUID_SECRET_KEY not set")
                 return False
                 
             wallet = Account.from_key(secret_key)
@@ -133,12 +134,13 @@ class LiveTradeExecutor:
             import base64
             import requests
             
-            api_key = os.environ.get('BITGET_API_KEY')
-            secret_key = os.environ.get('BITGET_SECRET_KEY')
-            passphrase = os.environ.get('BITGET_PASSPHRASE')
+            from config import API_CONFIG
+            api_key = os.environ.get('BITGET_API_KEY') or API_CONFIG.get('BITGET_API_KEY')
+            secret_key = os.environ.get('BITGET_SECRET_KEY') or API_CONFIG.get('BITGET_SECRET_KEY')
+            passphrase = os.environ.get('BITGET_PASSPHRASE') or API_CONFIG.get('BITGET_PASSPHRASE')
             
             if not all([api_key, secret_key, passphrase]):
-                logger.warning("Bitget API credentials not fully set in environment")
+                logger.warning("Bitget API credentials not fully set")
                 return False
             
             self.bitget_credentials = {

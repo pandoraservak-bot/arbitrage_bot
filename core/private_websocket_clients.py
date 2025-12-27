@@ -393,11 +393,13 @@ class PrivateWSManager:
     
     async def initialize(self) -> bool:
         """Initialize WebSocket connections based on available credentials"""
+        from config import API_CONFIG
+        
         hl_success = False
         bg_success = False
         
-        hl_address = os.environ.get('HYPERLIQUID_ACCOUNT_ADDRESS')
-        hl_secret = os.environ.get('HYPERLIQUID_SECRET_KEY')
+        hl_address = os.environ.get('HYPERLIQUID_ACCOUNT_ADDRESS') or API_CONFIG.get('HYPERLIQUID_ACCOUNT_ADDRESS')
+        hl_secret = os.environ.get('HYPERLIQUID_SECRET_KEY') or API_CONFIG.get('HYPERLIQUID_SECRET_KEY')
         
         if hl_address or hl_secret:
             if not hl_address and hl_secret:
@@ -414,9 +416,9 @@ class PrivateWSManager:
                 hl_success = True
                 logger.info(f"Hyperliquid private WS initialized for {hl_address[:10]}...")
         
-        bg_key = os.environ.get('BITGET_API_KEY')
-        bg_secret = os.environ.get('BITGET_SECRET_KEY')
-        bg_pass = os.environ.get('BITGET_PASSPHRASE')
+        bg_key = os.environ.get('BITGET_API_KEY') or API_CONFIG.get('BITGET_API_KEY')
+        bg_secret = os.environ.get('BITGET_SECRET_KEY') or API_CONFIG.get('BITGET_SECRET_KEY')
+        bg_pass = os.environ.get('BITGET_PASSPHRASE') or API_CONFIG.get('BITGET_PASSPHRASE')
         
         if all([bg_key, bg_secret, bg_pass]):
             self.bitget_ws = BitgetPrivateWS(bg_key, bg_secret, bg_pass)

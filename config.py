@@ -96,16 +96,16 @@ STATS_CONFIG = {
     'SAVE_INTERVAL': 60,                 # Сохранение каждые 60 сек
 }
 
-# API Keys Configuration (loaded from environment)
+# API Keys Configuration (loaded from environment variables or Replit secrets)
 API_CONFIG = {
-    # Hyperliquid
-    'HYPERLIQUID_SECRET_KEY': '0x2208081966CEc2E81EC5Ae5958F4605A3fC95bcF',       # Set via HYPERLIQUID_SECRET_KEY env var
-    'HYPERLIQUID_ACCOUNT_ADDRESS': '0xB6f826A3581af3f939d511fcdbC1ceAC0DF5Ee19',  # Set via HYPERLIQUID_ACCOUNT_ADDRESS env var
+    # Hyperliquid - loaded from environment at runtime
+    'HYPERLIQUID_SECRET_KEY': os.environ.get('HYPERLIQUID_SECRET_KEY', ''),
+    'HYPERLIQUID_ACCOUNT_ADDRESS': os.environ.get('HYPERLIQUID_ACCOUNT_ADDRESS', ''),
     
-    # Bitget
-    'BITGET_API_KEY': 'bg_4f3db17d12a686c2fdc34b3ad6b652ff',               # Set via BITGET_API_KEY env var
-    'BITGET_SECRET_KEY': '0b66e54bb690294559dad5ec9fa6802cc2514e8e43f92172b9cbfef4bbd9e27f',            # Set via BITGET_SECRET_KEY env var
-    'BITGET_PASSPHRASE': '35189267',            # Set via BITGET_PASSPHRASE env var
+    # Bitget - loaded from environment at runtime
+    'BITGET_API_KEY': os.environ.get('BITGET_API_KEY', ''),
+    'BITGET_SECRET_KEY': os.environ.get('BITGET_SECRET_KEY', ''),
+    'BITGET_PASSPHRASE': os.environ.get('BITGET_PASSPHRASE', ''),
 }
 
 # Trading Mode
