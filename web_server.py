@@ -1089,20 +1089,38 @@ class WebDashboardServer:
             logger.info("Stopped live portfolio updates")
     
     async def _live_portfolio_updates(self):
-        """Send live portfolio updates every 0.5 seconds"""
-        while self.live_mode_active:
-            try:
-                if self.ws_clients and hasattr(self.bot, 'live_executor'):
-                    live_exec = self.bot.live_executor
-                    if live_exec and live_exec.initialized:
+        """Send live portfolio updates - uses WebSocket streaming when available"""
+        live_exec = getattr(self.bot, 'live_executor', None)
+        
+        if live_exec and live_exec.private_ws_manager:
+            live_exec.set_portfolio_callback(self._on_ws_portfolio_update)
+            logger.info("Live portfolio: Using WebSocket streaming")
+            
+            while self.live_mode_active:
+                try:
+                    await asyncio.sleep(1.0)
+                except asyncio.CancelledError:
+                    break
+            
+            live_exec.set_portfolio_callback(None)
+        else:
+            logger.info("Live portfolio: Using REST polling (0.5s)")
+            while self.live_mode_active:
+                try:
+                    if self.ws_clients and live_exec and live_exec.initialized:
                         portfolio_data = await live_exec.get_live_portfolio()
                         await self.broadcast('live_portfolio', portfolio_data)
-                await asyncio.sleep(0.5)
-            except asyncio.CancelledError:
-                break
-            except Exception as e:
-                logger.error(f"Error in live portfolio updates: {e}")
-                await asyncio.sleep(1.0)
+                    await asyncio.sleep(0.5)
+                except asyncio.CancelledError:
+                    break
+                except Exception as e:
+                    logger.error(f"Error in live portfolio updates: {e}")
+                    await asyncio.sleep(1.0)
+    
+    async def _on_ws_portfolio_update(self, portfolio_data: dict):
+        """Callback when WebSocket receives portfolio update"""
+        if self.ws_clients and self.live_mode_active:
+            await self.broadcast('live_portfolio', portfolio_data)
     
     async def _periodic_updates(self):
         """Send periodic updates to all connected clients"""

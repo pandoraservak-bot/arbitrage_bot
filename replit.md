@@ -13,11 +13,13 @@ A Python-based arbitrage trading bot that monitors price spreads between Bitget 
 │   ├── style.css           # Dashboard styles
 │   └── app_v7.js           # Dashboard JavaScript (real-time updates)
 ├── core/
-│   ├── websocket_clients.py # WebSocket connections to Bitget and Hyperliquid
-│   ├── arbitrage_engine.py  # Spread calculation and trade logic
-│   ├── risk_manager.py      # Risk management controls
-│   ├── paper_executor.py    # Paper trading execution
-│   └── connection_manager.py # Connection handling
+│   ├── websocket_clients.py       # WebSocket connections for market data (prices)
+│   ├── private_websocket_clients.py # Private WebSocket for account data streaming
+│   ├── arbitrage_engine.py        # Spread calculation and trade logic
+│   ├── risk_manager.py            # Risk management controls
+│   ├── paper_executor.py          # Paper trading execution
+│   ├── live_executor.py           # Live trading with exchange APIs
+│   └── connection_manager.py      # Connection handling
 ├── utils/
 │   └── helpers.py          # Utility functions
 ├── data/
@@ -93,6 +95,14 @@ Set these in Replit Secrets:
 - Confirmation required before enabling live trading
 
 ## Recent Changes (Dec 2025)
+- **Private WebSocket Streaming**: Real-time account data via WebSocket instead of REST polling
+  - Hyperliquid: `webData2` subscription for account state, positions, equity
+  - Bitget: `account` and `positions` channels with authentication
+  - Updates pushed instantly when data changes (vs 0.5s polling)
+- **Live Portfolio Display**: Shows real balances from both exchanges
+  - Separate cards for Hyperliquid and Bitget with equity, available, margin, positions
+  - Combined totals with net P&L
+  - Automatic switch between Paper/Live views when mode changes
 - **Added Live Trading Module**: Created `core/live_executor.py` using official SDKs
 - **Trading Mode Toggle**: Paper/Live switch in Configuration panel
 - Added MIN_ORDER_INTERVAL setting for order frequency control

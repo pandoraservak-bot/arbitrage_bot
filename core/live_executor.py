@@ -30,6 +30,9 @@ class LiveTradeExecutor:
         self.hyperliquid_symbol = "NVDA"
         self.bitget_symbol = "NVDAUSDT"
         
+        self.private_ws_manager = None
+        self._ws_portfolio_callback = None
+        
     async def initialize(self) -> bool:
         """Initialize exchange connections"""
         try:
@@ -48,12 +51,41 @@ class LiveTradeExecutor:
                 logger.warning("Live Trading: Only Bitget connected. Check Hyperliquid API keys")
             else:
                 logger.warning("Live Trading: No exchanges connected. Check API keys")
+            
+            await self._init_private_websockets()
                     
             return self.initialized
             
         except Exception as e:
             logger.error(f"Error initializing Live Executor: {e}")
             return False
+    
+    async def _init_private_websockets(self):
+        """Initialize private WebSocket connections for real-time account data"""
+        try:
+            from core.private_websocket_clients import PrivateWSManager
+            
+            self.private_ws_manager = PrivateWSManager()
+            ws_init = await self.private_ws_manager.initialize()
+            
+            if ws_init:
+                self.private_ws_manager.on_portfolio_update = self._on_ws_portfolio_update
+                await self.private_ws_manager.start()
+                logger.info("Private WebSocket connections started for real-time account data")
+            else:
+                logger.warning("No private WebSocket connections initialized (missing credentials)")
+                
+        except Exception as e:
+            logger.error(f"Error initializing private WebSockets: {e}")
+    
+    async def _on_ws_portfolio_update(self, portfolio: Dict):
+        """Called when WebSocket receives new portfolio data"""
+        if self._ws_portfolio_callback:
+            await self._ws_portfolio_callback(portfolio)
+    
+    def set_portfolio_callback(self, callback):
+        """Set callback for portfolio updates from WebSocket"""
+        self._ws_portfolio_callback = callback
     
     async def _init_hyperliquid(self) -> bool:
         """Initialize Hyperliquid SDK connection"""
@@ -532,6 +564,11 @@ class LiveTradeExecutor:
     
     async def get_live_portfolio(self) -> Dict:
         """Get combined portfolio from both exchanges"""
+        if self.private_ws_manager and self.private_ws_manager.running:
+            portfolio = self.private_ws_manager.get_portfolio()
+            if portfolio.get('hyperliquid', {}).get('connected') or portfolio.get('bitget', {}).get('connected'):
+                return portfolio
+        
         hl_balance, bg_balance = await asyncio.gather(
             self.get_hyperliquid_balance(),
             self.get_bitget_balance()
@@ -557,6 +594,18 @@ class LiveTradeExecutor:
             'timestamp': time.time()
         }
     
+    def get_ws_portfolio(self) -> Optional[Dict]:
+        """Get portfolio from WebSocket data (non-async, for real-time updates)"""
+        if self.private_ws_manager:
+            return self.private_ws_manager.get_portfolio()
+        return None
+    
+    def get_ws_connection_status(self) -> Dict:
+        """Get WebSocket connection status"""
+        if self.private_ws_manager:
+            return self.private_ws_manager.is_connected()
+        return {'hyperliquid': False, 'bitget': False}
+    
     def is_ready(self) -> bool:
         """Check if executor is ready for trading"""
         return self.initialized
@@ -570,3 +619,16 @@ class LiveTradeExecutor:
             'orders_count': len(self.order_history),
             'trades_count': len(self.trade_history)
         }
+    
+    async def shutdown(self):
+        """Shutdown executor and WebSocket connections"""
+        self._ws_portfolio_callback = None
+        
+        if self.private_ws_manager:
+            await self.private_ws_manager.stop()
+            self.private_ws_manager = None
+        
+        self.initialized = False
+        self.hyperliquid_connected = False
+        self.bitget_connected = False
+        logger.info("Live executor shutdown complete")
