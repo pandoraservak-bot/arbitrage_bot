@@ -389,6 +389,12 @@ class DashboardClient {
             case 'config':
                 this.updateConfig(data.payload);
                 break;
+            case 'trading_mode':
+                this.handleTradingModeChange(data.payload);
+                break;
+            case 'live_portfolio':
+                this.updateLivePortfolio(data.payload);
+                break;
             case 'pong':
                 break;
             default:
@@ -772,6 +778,94 @@ class DashboardClient {
         document.getElementById('totalValue').textContent = `$${totalValue.toFixed(2)}`;
         
         const pnlEl = document.getElementById('pnlValue');
+        pnlEl.textContent = `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
+        pnlEl.className = `total-value ${pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}`;
+    }
+
+    handleTradingModeChange(data) {
+        if (!data) return;
+        
+        const mode = data.mode;
+        const status = data.live_executor_status || {};
+        
+        const badge = document.getElementById('portfolioModeBadge');
+        const paperPortfolio = document.getElementById('paperPortfolio');
+        const livePortfolio = document.getElementById('livePortfolio');
+        
+        if (mode === 'live') {
+            currentTradingMode = 'live';
+            badge.textContent = 'Live';
+            badge.className = 'portfolio-mode-badge live';
+            paperPortfolio.style.display = 'none';
+            livePortfolio.style.display = 'block';
+            
+            document.getElementById('modePaper').classList.remove('active');
+            document.getElementById('modeLive').classList.add('active');
+            
+            const hlStatus = document.getElementById('hlLiveStatus');
+            const bgStatus = document.getElementById('bgLiveStatus');
+            hlStatus.className = 'exchange-status ' + (status.hyperliquid_connected ? 'connected' : 'disconnected');
+            bgStatus.className = 'exchange-status ' + (status.bitget_connected ? 'connected' : 'disconnected');
+        } else {
+            currentTradingMode = 'paper';
+            badge.textContent = 'Paper';
+            badge.className = 'portfolio-mode-badge paper';
+            paperPortfolio.style.display = 'block';
+            livePortfolio.style.display = 'none';
+            
+            document.getElementById('modePaper').classList.add('active');
+            document.getElementById('modeLive').classList.remove('active');
+        }
+    }
+
+    updateLivePortfolio(data) {
+        if (!data) return;
+        
+        const hl = data.hyperliquid || {};
+        const bg = data.bitget || {};
+        const combined = data.combined || {};
+        
+        const hlStatus = document.getElementById('hlLiveStatus');
+        const bgStatus = document.getElementById('bgLiveStatus');
+        hlStatus.className = 'exchange-status ' + (hl.connected ? 'connected' : 'disconnected');
+        bgStatus.className = 'exchange-status ' + (bg.connected ? 'connected' : 'disconnected');
+        
+        if (hl.connected) {
+            document.getElementById('hlEquity').textContent = `$${(hl.equity || 0).toFixed(2)}`;
+            document.getElementById('hlAvailable').textContent = `$${(hl.available || 0).toFixed(2)}`;
+            document.getElementById('hlMargin').textContent = `$${(hl.margin_used || 0).toFixed(2)}`;
+            
+            const hlPos = hl.nvda_position;
+            const hlPosEl = document.getElementById('hlNvdaPos');
+            if (hlPos && hlPos.size !== 0) {
+                hlPosEl.textContent = hlPos.size.toFixed(4);
+                hlPosEl.className = 'balance-value ' + (hlPos.size < 0 ? 'short' : '');
+            } else {
+                hlPosEl.textContent = '0.0000';
+                hlPosEl.className = 'balance-value';
+            }
+        }
+        
+        if (bg.connected) {
+            document.getElementById('bgEquity').textContent = `$${(bg.equity || 0).toFixed(2)}`;
+            document.getElementById('bgAvailable').textContent = `$${(bg.available || 0).toFixed(2)}`;
+            document.getElementById('bgMargin').textContent = `$${(bg.margin_used || 0).toFixed(2)}`;
+            
+            const bgPos = bg.nvda_position;
+            const bgPosEl = document.getElementById('bgNvdaPos');
+            if (bgPos && bgPos.size !== 0) {
+                bgPosEl.textContent = bgPos.size.toFixed(4);
+                bgPosEl.className = 'balance-value ' + (bgPos.size < 0 ? 'short' : '');
+            } else {
+                bgPosEl.textContent = '0.0000';
+                bgPosEl.className = 'balance-value';
+            }
+        }
+        
+        document.getElementById('combinedEquity').textContent = `$${(combined.total_equity || 0).toFixed(2)}`;
+        
+        const pnl = combined.total_pnl || 0;
+        const pnlEl = document.getElementById('combinedPnl');
         pnlEl.textContent = `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
         pnlEl.className = `total-value ${pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}`;
     }

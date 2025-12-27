@@ -410,6 +410,153 @@ class LiveTradeExecutor:
         """Get order history"""
         return self.order_history.copy()
     
+    async def get_hyperliquid_balance(self) -> Dict:
+        """Get Hyperliquid account balance and equity"""
+        if not self.hyperliquid_info:
+            return {'connected': False}
+        
+        try:
+            account_address = os.environ.get('HYPERLIQUID_ACCOUNT_ADDRESS')
+            if not account_address and self.hyperliquid_exchange:
+                from eth_account import Account
+                secret_key = os.environ.get('HYPERLIQUID_SECRET_KEY')
+                if secret_key:
+                    wallet = Account.from_key(secret_key)
+                    account_address = wallet.address
+            
+            if not account_address:
+                return {'connected': False, 'error': 'No account address'}
+            
+            user_state = await asyncio.to_thread(
+                self.hyperliquid_info.user_state, account_address
+            )
+            
+            if user_state:
+                margin_summary = user_state.get('marginSummary', {})
+                account_value = float(margin_summary.get('accountValue', 0))
+                total_margin_used = float(margin_summary.get('totalMarginUsed', 0))
+                total_ntl_pos = float(margin_summary.get('totalNtlPos', 0))
+                
+                withdrawable = user_state.get('withdrawable', '0')
+                
+                nvda_position = None
+                for pos in user_state.get('assetPositions', []):
+                    if pos.get('position', {}).get('coin') == self.hyperliquid_symbol:
+                        position_data = pos.get('position', {})
+                        nvda_position = {
+                            'size': float(position_data.get('szi', 0)),
+                            'entry_px': float(position_data.get('entryPx', 0)),
+                            'unrealized_pnl': float(position_data.get('unrealizedPnl', 0)),
+                            'liquidation_px': position_data.get('liquidationPx')
+                        }
+                        break
+                
+                return {
+                    'connected': True,
+                    'balance': account_value,
+                    'equity': account_value,
+                    'available': float(withdrawable),
+                    'margin_used': total_margin_used,
+                    'total_position_value': abs(total_ntl_pos),
+                    'nvda_position': nvda_position
+                }
+            
+            return {'connected': True, 'balance': 0, 'equity': 0}
+            
+        except Exception as e:
+            logger.error(f"Error getting Hyperliquid balance: {e}")
+            return {'connected': False, 'error': str(e)}
+    
+    async def get_bitget_balance(self) -> Dict:
+        """Get Bitget account balance and equity"""
+        if not self.bitget_credentials:
+            return {'connected': False}
+        
+        try:
+            response = await asyncio.to_thread(
+                self._bitget_request, 'GET', '/api/v2/mix/account/account', {
+                    'symbol': self.bitget_symbol,
+                    'productType': 'USDT-FUTURES',
+                    'marginCoin': 'USDT'
+                }
+            )
+            
+            if response.get('code') == '00000':
+                data = response.get('data', {})
+                if isinstance(data, list) and len(data) > 0:
+                    data = data[0]
+                
+                equity = float(data.get('usdtEquity', 0))
+                available = float(data.get('crossedMaxAvailable', data.get('available', 0)))
+                margin_used = float(data.get('crossedMarginSize', data.get('locked', 0)))
+                unrealized_pnl = float(data.get('unrealizedPL', 0))
+                
+                pos_response = await asyncio.to_thread(
+                    self._bitget_request, 'GET', '/api/v2/mix/position/single-position', {
+                        'symbol': self.bitget_symbol,
+                        'productType': 'USDT-FUTURES',
+                        'marginCoin': 'USDT'
+                    }
+                )
+                
+                nvda_position = None
+                if pos_response.get('code') == '00000':
+                    pos_data = pos_response.get('data', [])
+                    if pos_data:
+                        pos = pos_data[0] if isinstance(pos_data, list) else pos_data
+                        size = float(pos.get('total', 0))
+                        if pos.get('holdSide') == 'short':
+                            size = -size
+                        nvda_position = {
+                            'size': size,
+                            'entry_px': float(pos.get('openPriceAvg', 0)),
+                            'unrealized_pnl': float(pos.get('unrealizedPL', 0)),
+                            'liquidation_px': pos.get('liquidationPrice')
+                        }
+                
+                return {
+                    'connected': True,
+                    'balance': equity - unrealized_pnl,
+                    'equity': equity,
+                    'available': available,
+                    'margin_used': margin_used,
+                    'unrealized_pnl': unrealized_pnl,
+                    'nvda_position': nvda_position
+                }
+            
+            return {'connected': False, 'error': response.get('msg', 'Unknown error')}
+            
+        except Exception as e:
+            logger.error(f"Error getting Bitget balance: {e}")
+            return {'connected': False, 'error': str(e)}
+    
+    async def get_live_portfolio(self) -> Dict:
+        """Get combined portfolio from both exchanges"""
+        hl_balance, bg_balance = await asyncio.gather(
+            self.get_hyperliquid_balance(),
+            self.get_bitget_balance()
+        )
+        
+        hl_equity = hl_balance.get('equity', 0) if hl_balance.get('connected') else 0
+        bg_equity = bg_balance.get('equity', 0) if bg_balance.get('connected') else 0
+        
+        hl_pnl = 0
+        bg_pnl = 0
+        if hl_balance.get('nvda_position'):
+            hl_pnl = hl_balance['nvda_position'].get('unrealized_pnl', 0)
+        if bg_balance.get('nvda_position'):
+            bg_pnl = bg_balance['nvda_position'].get('unrealized_pnl', 0)
+        
+        return {
+            'hyperliquid': hl_balance,
+            'bitget': bg_balance,
+            'combined': {
+                'total_equity': hl_equity + bg_equity,
+                'total_pnl': hl_pnl + bg_pnl
+            },
+            'timestamp': time.time()
+        }
+    
     def is_ready(self) -> bool:
         """Check if executor is ready for trading"""
         return self.initialized

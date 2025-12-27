@@ -299,8 +299,11 @@
             <div class="card portfolio-card">
                 <div class="card-header">
                     <h2>💼 Portfolio</h2>
+                    <span class="portfolio-mode-badge" id="portfolioModeBadge">Paper</span>
                 </div>
-                <div class="portfolio-content">
+                
+                <!-- Paper Trading Portfolio -->
+                <div class="portfolio-content paper-portfolio" id="paperPortfolio">
                     <div class="portfolio-main">
                         <div class="portfolio-item">
                             <span class="portfolio-label">USDT</span>
@@ -319,6 +322,68 @@
                         <div class="total-item">
                             <span class="total-label">PnL</span>
                             <span class="total-value" id="pnlValue">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Live Trading Portfolio -->
+                <div class="portfolio-content live-portfolio" id="livePortfolio" style="display: none;">
+                    <div class="live-exchanges-grid">
+                        <!-- Hyperliquid -->
+                        <div class="exchange-balance-card">
+                            <div class="exchange-balance-header">
+                                <span class="exchange-name">HYPERLIQUID</span>
+                                <span class="exchange-status" id="hlLiveStatus">●</span>
+                            </div>
+                            <div class="balance-row">
+                                <span class="balance-label">Equity</span>
+                                <span class="balance-value" id="hlEquity">$0.00</span>
+                            </div>
+                            <div class="balance-row">
+                                <span class="balance-label">Available</span>
+                                <span class="balance-value" id="hlAvailable">$0.00</span>
+                            </div>
+                            <div class="balance-row">
+                                <span class="balance-label">Margin</span>
+                                <span class="balance-value" id="hlMargin">$0.00</span>
+                            </div>
+                            <div class="balance-row position-row">
+                                <span class="balance-label">NVDA Pos</span>
+                                <span class="balance-value" id="hlNvdaPos">0.0000</span>
+                            </div>
+                        </div>
+                        <!-- Bitget -->
+                        <div class="exchange-balance-card">
+                            <div class="exchange-balance-header">
+                                <span class="exchange-name">BITGET</span>
+                                <span class="exchange-status" id="bgLiveStatus">●</span>
+                            </div>
+                            <div class="balance-row">
+                                <span class="balance-label">Equity</span>
+                                <span class="balance-value" id="bgEquity">$0.00</span>
+                            </div>
+                            <div class="balance-row">
+                                <span class="balance-label">Available</span>
+                                <span class="balance-value" id="bgAvailable">$0.00</span>
+                            </div>
+                            <div class="balance-row">
+                                <span class="balance-label">Margin</span>
+                                <span class="balance-value" id="bgMargin">$0.00</span>
+                            </div>
+                            <div class="balance-row position-row">
+                                <span class="balance-label">NVDA Pos</span>
+                                <span class="balance-value" id="bgNvdaPos">0.0000</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="live-portfolio-total">
+                        <div class="total-item">
+                            <span class="total-label">Combined Equity</span>
+                            <span class="total-value" id="combinedEquity">$0.00</span>
+                        </div>
+                        <div class="total-item">
+                            <span class="total-label">Net P&L</span>
+                            <span class="total-value" id="combinedPnl">$0.00</span>
                         </div>
                     </div>
                 </div>

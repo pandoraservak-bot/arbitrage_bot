@@ -198,6 +198,8 @@ class WebDashboardServer:
         self.site = None
         self.ws_clients = set()
         self.update_task = None
+        self.live_portfolio_task = None
+        self.live_mode_active = False
         
         # Web directory path
         self.web_dir = Path(__file__).parent / "web"
@@ -346,6 +348,13 @@ class WebDashboardServer:
                 'mode': mode,
                 'live_executor_status': result.get('live_executor_status', {})
             })
+            
+            if mode == 'live':
+                self.live_mode_active = True
+                await self.start_live_portfolio_updates()
+            else:
+                self.live_mode_active = False
+                await self.stop_live_portfolio_updates()
         
         elif msg_type == 'update_position_exit_spread':
             # Update exit_target for a specific position
@@ -1061,6 +1070,39 @@ class WebDashboardServer:
         """Start periodic updates to all clients"""
         if self.update_task is None or self.update_task.done():
             self.update_task = asyncio.create_task(self._periodic_updates())
+    
+    async def start_live_portfolio_updates(self):
+        """Start live portfolio updates (0.5s interval)"""
+        if self.live_portfolio_task is None or self.live_portfolio_task.done():
+            self.live_portfolio_task = asyncio.create_task(self._live_portfolio_updates())
+            logger.info("Started live portfolio updates (0.5s interval)")
+    
+    async def stop_live_portfolio_updates(self):
+        """Stop live portfolio updates"""
+        if self.live_portfolio_task and not self.live_portfolio_task.done():
+            self.live_portfolio_task.cancel()
+            try:
+                await self.live_portfolio_task
+            except asyncio.CancelledError:
+                pass
+            self.live_portfolio_task = None
+            logger.info("Stopped live portfolio updates")
+    
+    async def _live_portfolio_updates(self):
+        """Send live portfolio updates every 0.5 seconds"""
+        while self.live_mode_active:
+            try:
+                if self.ws_clients and hasattr(self.bot, 'live_executor'):
+                    live_exec = self.bot.live_executor
+                    if live_exec and live_exec.initialized:
+                        portfolio_data = await live_exec.get_live_portfolio()
+                        await self.broadcast('live_portfolio', portfolio_data)
+                await asyncio.sleep(0.5)
+            except asyncio.CancelledError:
+                break
+            except Exception as e:
+                logger.error(f"Error in live portfolio updates: {e}")
+                await asyncio.sleep(1.0)
     
     async def _periodic_updates(self):
         """Send periodic updates to all connected clients"""

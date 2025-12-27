@@ -916,8 +916,114 @@ body {
     grid-column: span 2;
 }
 
+.portfolio-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.portfolio-mode-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.portfolio-mode-badge.paper {
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+}
+
+.portfolio-mode-badge.live {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    animation: pulse-live 2s ease-in-out infinite;
+}
+
+@keyframes pulse-live {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
 .portfolio-content {
     padding: 18px;
+}
+
+/* Live Portfolio Styles */
+.live-exchanges-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.exchange-balance-card {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.exchange-balance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.exchange-balance-header .exchange-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #a5b4fc;
+    letter-spacing: 0.5px;
+}
+
+.exchange-status {
+    font-size: 0.8rem;
+}
+
+.exchange-status.connected {
+    color: #10b981;
+}
+
+.exchange-status.disconnected {
+    color: #6b7280;
+}
+
+.balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.balance-label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.balance-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.position-row .balance-value {
+    color: #10b981;
+}
+
+.position-row .balance-value.short {
+    color: #ef4444;
+}
+
+.live-portfolio-total {
+    display: flex;
+    gap: 20px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .portfolio-main {
