@@ -537,6 +537,22 @@ class DashboardClient {
             document.getElementById('hyperLatency').textContent = `${data.hyper_latency}ms`;
         }
         
+        const marketStatusEl = document.getElementById('bitgetMarketStatus');
+        if (marketStatusEl && data.market_status !== undefined) {
+            const status = data.market_status;
+            marketStatusEl.className = 'market-status';
+            if (status === 'normal') {
+                marketStatusEl.textContent = 'ОТКРЫТ';
+                marketStatusEl.classList.add('market-open');
+            } else if (status === 'maintain') {
+                marketStatusEl.textContent = 'ЗАКРЫТ';
+                marketStatusEl.classList.add('market-closed');
+            } else {
+                marketStatusEl.textContent = '--';
+                marketStatusEl.classList.add('market-unknown');
+            }
+        }
+        
         document.getElementById('totalTrades').textContent = 
             (data.session_stats?.total_trades || 0).toLocaleString();
         document.getElementById('totalChecks').textContent = 

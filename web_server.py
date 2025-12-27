@@ -11,12 +11,52 @@ from typing import Dict, Optional, Any
 import time
 
 try:
-    from aiohttp import web, WSMsgType
+    from aiohttp import web, WSMsgType, ClientSession
 except ImportError:
     logging.warning("aiohttp not installed. Web dashboard will not be available.")
     web = None
+    ClientSession = None
 
 logger = logging.getLogger(__name__)
+
+_bitget_market_status_cache = {
+    'status': 'unknown',
+    'last_check': 0,
+    'off_time': None,
+    'open_time': None
+}
+
+async def check_bitget_market_status() -> dict:
+    """Check Bitget NVDA futures market status (normal/maintain)"""
+    global _bitget_market_status_cache
+    
+    now = time.time()
+    if now - _bitget_market_status_cache['last_check'] < 60:
+        return _bitget_market_status_cache
+    
+    try:
+        if ClientSession is None:
+            return _bitget_market_status_cache
+            
+        async with ClientSession() as session:
+            url = "https://api.bitget.com/api/v2/mix/market/contracts"
+            params = {"productType": "USDT-FUTURES", "symbol": "NVDAUSDT"}
+            
+            async with session.get(url, params=params, timeout=5) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    if data.get('code') == '00000' and data.get('data'):
+                        contract = data['data'][0]
+                        _bitget_market_status_cache = {
+                            'status': contract.get('symbolStatus', 'unknown'),
+                            'last_check': now,
+                            'off_time': contract.get('offTime'),
+                            'open_time': contract.get('openTime')
+                        }
+    except Exception as e:
+        logger.debug(f"Error checking Bitget market status: {e}")
+    
+    return _bitget_market_status_cache
 
 
 # Content Security Policy Middleware
@@ -200,6 +240,7 @@ class WebDashboardServer:
         self.update_task = None
         self.live_portfolio_task = None
         self.live_mode_active = False
+        self.market_status = {'status': 'unknown', 'last_check': 0}
         
         # Web directory path
         self.web_dir = Path(__file__).parent / "web"
@@ -923,7 +964,8 @@ class WebDashboardServer:
             'total_position_contracts': total_position_contracts,
             'config': bot_config,
             'spread_chart_data': self._get_spread_chart_data(),
-            'warnings': warnings
+            'warnings': warnings,
+            'market_status': self.market_status.get('status', 'unknown')
         }
     
     def _get_spread_chart_data(self) -> Dict:
@@ -1126,6 +1168,8 @@ class WebDashboardServer:
         """Send periodic updates to all connected clients"""
         while True:
             try:
+                self.market_status = await check_bitget_market_status()
+                
                 if self.ws_clients:
                     payload = self.collect_dashboard_data()
                     logger.debug(

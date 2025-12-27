@@ -310,6 +310,29 @@ body {
     color: #6b7280;
 }
 
+.market-status {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+}
+
+.market-status.market-open {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.market-status.market-closed {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.market-status.market-unknown {
+    background: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
+}
+
 .status-label {
     font-size: 0.75rem;
     color: #6b7280;

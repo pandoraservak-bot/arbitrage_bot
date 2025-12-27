@@ -94,7 +94,14 @@ Set these in Replit Secrets:
 - Live mode shows API connection status (green = connected)
 - Confirmation required before enabling live trading
 
-## Recent Changes (Dec 2025)
+## Recent Changes (Dec 27, 2025)
+- **Market Status Display**: Added real-time Bitget NVDA market status indicator
+  - Shows "ОТКРЫТ" (green) when market is trading normally
+  - Shows "ЗАКРЫТ" (red) when market is closed/maintenance (weekends, holidays)
+  - Status fetched from Bitget API `/api/v2/mix/market/contracts` endpoint
+  - Cached for 60 seconds to reduce API calls
+
+## Previous Changes (Dec 2025)
 - **Private WebSocket Streaming**: Real-time account data via WebSocket instead of REST polling
   - Hyperliquid: `webData2` subscription for account state, positions, equity
   - Bitget: `account` and `positions` channels with authentication
