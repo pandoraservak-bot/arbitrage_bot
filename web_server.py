@@ -1031,6 +1031,8 @@ class WebDashboardServer:
                 'MIN_ORDER_CONTRACTS': TRADING_CONFIG.get('MIN_ORDER_CONTRACTS', 0.01),
                 'MAX_SLIPPAGE': TRADING_CONFIG.get('MAX_SLIPPAGE', 0.001),
                 'MIN_ORDER_INTERVAL': TRADING_CONFIG.get('MIN_ORDER_INTERVAL', 5),
+                'DAILY_LOSS_LIMIT': TRADING_CONFIG.get('MAX_DAILY_LOSS', 100.0),
+                'MAX_CONCURRENT_POSITIONS': TRADING_CONFIG.get('MAX_CONCURRENT_POSITIONS', 5),
             }
             
             await self.send_to_client(ws, 'config', {'config': config_data})
