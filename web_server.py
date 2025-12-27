@@ -266,6 +266,9 @@ class WebDashboardServer:
         self.ws_clients.add(ws)
         logger.info(f"WebSocket client connected. Total clients: {len(self.ws_clients)}")
         
+        # Send initial config to the new client
+        await self.send_initial_config(ws)
+        
         try:
             async for msg in ws:
                 if msg.type == WSMsgType.TEXT:
@@ -1015,6 +1018,25 @@ class WebDashboardServer:
                 await ws.send_str(message)
             except Exception as e:
                 logger.error(f"Error sending to client: {e}")
+    
+    async def send_initial_config(self, ws):
+        """Send initial configuration to newly connected client"""
+        try:
+            from config import TRADING_CONFIG
+            
+            config_data = {
+                'MIN_SPREAD_ENTER': TRADING_CONFIG.get('MIN_SPREAD_ENTER', 0.0007),
+                'MIN_SPREAD_EXIT': TRADING_CONFIG.get('MIN_SPREAD_EXIT', 0.0006),
+                'MAX_POSITION_CONTRACTS': TRADING_CONFIG.get('MAX_POSITION_CONTRACTS', 0.05),
+                'MIN_ORDER_CONTRACTS': TRADING_CONFIG.get('MIN_ORDER_CONTRACTS', 0.01),
+                'MAX_SLIPPAGE': TRADING_CONFIG.get('MAX_SLIPPAGE', 0.001),
+                'MIN_ORDER_INTERVAL': TRADING_CONFIG.get('MIN_ORDER_INTERVAL', 5),
+            }
+            
+            await self.send_to_client(ws, 'config', {'config': config_data})
+            logger.debug(f"Sent initial config to client: {config_data}")
+        except Exception as e:
+            logger.error(f"Error sending initial config: {e}")
     
     async def broadcast(self, msg_type, payload):
         """Broadcast message to all connected clients"""

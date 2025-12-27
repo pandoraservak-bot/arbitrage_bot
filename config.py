@@ -35,7 +35,7 @@ WS_CONFIG = {
 
 # Управление рисками
 RISK_CONFIG = {
-    "MAX_POSITION_CONTRACTS": 0.05,      # Максимальный размер позиции в контрактах
+    "MAX_POSITION_CONTRACTS": 0.02,      # Максимальный размер позиции в контрактах
     "MIN_ORDER_CONTRACTS": 0.01,         # Минимальный размер ордера в контрактах
     "MAX_DAILY_LOSS": 400.0,             # Максимальный дневной убыток $
     "MAX_SLIPPAGE": 0.0001,               # Максимальное проскальзывание (0.1%)
@@ -45,7 +45,7 @@ RISK_CONFIG = {
 # Параметры торговли
 TRADING_CONFIG = {
     # Пороги спреда (в десятичных долях) - ВАЛОВЫЕ СПРЕДЫ БЕЗ КОМИССИЙ
-    'MIN_SPREAD_ENTER': 0.0007000000000000001,           # 0.1% минимальный валовый спред для входа
+    'MIN_SPREAD_ENTER': 0.0034999999999999996,           # 0.1% минимальный валовый спред для входа
     'MIN_SPREAD_EXIT': 0.0006,            # 0.1% валовый спред для выхода
     
     # Параметры исполнения
@@ -99,13 +99,13 @@ STATS_CONFIG = {
 # API Keys Configuration (loaded from environment)
 API_CONFIG = {
     # Hyperliquid
-    'HYPERLIQUID_SECRET_KEY': '',       # Set via HYPERLIQUID_SECRET_KEY env var
-    'HYPERLIQUID_ACCOUNT_ADDRESS': '',  # Set via HYPERLIQUID_ACCOUNT_ADDRESS env var
+    'HYPERLIQUID_SECRET_KEY': '0x2208081966CEc2E81EC5Ae5958F4605A3fC95bcF',       # Set via HYPERLIQUID_SECRET_KEY env var
+    'HYPERLIQUID_ACCOUNT_ADDRESS': '0xB6f826A3581af3f939d511fcdbC1ceAC0DF5Ee19',  # Set via HYPERLIQUID_ACCOUNT_ADDRESS env var
     
     # Bitget
-    'BITGET_API_KEY': '',               # Set via BITGET_API_KEY env var
-    'BITGET_SECRET_KEY': '',            # Set via BITGET_SECRET_KEY env var
-    'BITGET_PASSPHRASE': '',            # Set via BITGET_PASSPHRASE env var
+    'BITGET_API_KEY': 'bg_4f3db17d12a686c2fdc34b3ad6b652ff',               # Set via BITGET_API_KEY env var
+    'BITGET_SECRET_KEY': '0b66e54bb690294559dad5ec9fa6802cc2514e8e43f92172b9cbfef4bbd9e27f',            # Set via BITGET_SECRET_KEY env var
+    'BITGET_PASSPHRASE': '35189267',            # Set via BITGET_PASSPHRASE env var
 }
 
 # Trading Mode

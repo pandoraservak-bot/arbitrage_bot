@@ -386,6 +386,9 @@ class DashboardClient {
             case 'event':
                 this.handleEvent(data);
                 break;
+            case 'config':
+                this.updateConfig(data.payload);
+                break;
             case 'pong':
                 break;
             default:
