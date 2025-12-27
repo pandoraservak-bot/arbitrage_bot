@@ -1535,8 +1535,8 @@ let currentTradingMode = 'paper';
 function setTradingMode(mode) {
     if (mode === 'live' && currentTradingMode !== 'live') {
         showModal(
-            'Enable Live Trading',
-            '⚠️ WARNING: You are about to enable LIVE TRADING.\n\nThis will use REAL MONEY on Hyperliquid and Bitget exchanges.\n\nMake sure you have:\n1. Set up API keys in Secrets\n2. Tested with paper trading first\n3. Configured proper risk limits\n\nAre you sure you want to continue?',
+            'Включить живую торговлю',
+            '⚠️ ВНИМАНИЕ: Вы собираетесь включить ЖИВУЮ ТОРГОВЛЮ.\n\nЭто будет использовать РЕАЛЬНЫЕ ДЕНЬГИ на биржах Hyperliquid и Bitget.\n\nУбедитесь, что вы:\n1. Настроили API-ключи в Secrets\n2. Сначала протестировали на бумажной торговле\n3. Настроили правильные лимиты риска\n\nВы уверены, что хотите продолжить?',
             () => {
                 activateTradingMode('live');
             }
