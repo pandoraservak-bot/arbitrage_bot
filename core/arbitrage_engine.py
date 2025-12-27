@@ -712,10 +712,7 @@ class ArbitrageEngine:
                     logger.info(f"✅ Opportunity FOUND: {direction.value}, spread: {gross_spread:.3f}% - READY TO EXECUTE!")
                     return direction, data
                 else:
-                    # Если это slippage warning - эмитируем событие для уведомления
-                    if 'slippage' in reason.lower():
-                        self._emit_slippage_warning(reason, direction, data)
-                    logger.warning(f"⚠️ Risk check FAILED for {direction.value}: {reason}")
+                    logger.debug(f"Risk check failed for {direction.value}: {reason}")
         
         return None
     
