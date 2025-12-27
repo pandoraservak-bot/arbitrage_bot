@@ -362,9 +362,12 @@ class WebDashboardServer:
             positions = arb_engine.get_open_positions()
             for pos in positions:
                 if pos.id == position_id:
-                    # Execute close logic
-                    if hasattr(arb_engine, 'close_position'):
-                        await arb_engine.close_position(pos)
+                    if hasattr(arb_engine, 'force_close_position'):
+                        await arb_engine.force_close_position(pos, "Manual close via dashboard")
+                        return True
+                    elif hasattr(arb_engine, 'close_position'):
+                        current_spread = getattr(pos, 'current_exit_spread', 0.0)
+                        await arb_engine.close_position(pos, current_spread, "Manual close via dashboard")
                         return True
             return False
         except Exception as e:
