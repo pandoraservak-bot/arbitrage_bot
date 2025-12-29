@@ -27,17 +27,30 @@ class LiveTradeExecutor:
         self.order_history = []
         self.trade_history = []
         
-        self.hyperliquid_symbol = "NVDA"
+        self.hyperliquid_ws_symbol = "xyz:NVDA"  # WebSocket subscription format
+        self.hyperliquid_symbol = "xyz:NVDA"  # HIP-3 trading format
+        self.hyperliquid_dex = "xyz"  # HIP-3 DEX name
+        self.hyperliquid_dex_index = 1  # HIP-3 DEX index in perpDexs
+        self.hyperliquid_asset_index = 2  # NVDA index within xyz DEX universe
+        self.hyperliquid_asset_id = 110002  # 100000 + (1 * 10000) + 2
         self.bitget_symbol = "NVDAUSDT"
+        
+        self.hip3_meta = None  # HIP-3 DEX metadata
         
         self.private_ws_manager = None
         self._ws_portfolio_callback = None
         
     async def initialize(self) -> bool:
         """Initialize exchange connections"""
+        print("=== LiveTradeExecutor.initialize() STARTING ===", flush=True)
+        logger.info("=== LiveTradeExecutor.initialize() STARTING ===")
         try:
             hl_success = await self._init_hyperliquid()
+            print(f"Hyperliquid init result: {hl_success}", flush=True)
+            logger.info(f"Hyperliquid init result: {hl_success}")
             bg_success = await self._init_bitget()
+            print(f"Bitget init result: {bg_success}", flush=True)
+            logger.info(f"Bitget init result: {bg_success}")
             
             self.hyperliquid_connected = hl_success
             self.bitget_connected = bg_success
@@ -89,21 +102,27 @@ class LiveTradeExecutor:
     
     async def _init_hyperliquid(self) -> bool:
         """Initialize Hyperliquid SDK connection"""
+        print("Initializing Hyperliquid SDK...", flush=True)
         try:
             from hyperliquid.info import Info
             from hyperliquid.exchange import Exchange
             from hyperliquid.utils import constants
             from eth_account import Account
+            print("Hyperliquid SDK imports successful", flush=True)
             
             from config import API_CONFIG
             secret_key = os.environ.get('HYPERLIQUID_SECRET_KEY') or API_CONFIG.get('HYPERLIQUID_SECRET_KEY')
             account_address = os.environ.get('HYPERLIQUID_ACCOUNT_ADDRESS') or API_CONFIG.get('HYPERLIQUID_ACCOUNT_ADDRESS')
             
+            print(f"Secret key present: {bool(secret_key)}, Address present: {bool(account_address)}", flush=True)
+            
             if not secret_key:
+                print("HYPERLIQUID_SECRET_KEY not set", flush=True)
                 logger.warning("HYPERLIQUID_SECRET_KEY not set")
                 return False
                 
             wallet = Account.from_key(secret_key)
+            print(f"Wallet created: {wallet.address[:10]}...", flush=True)
             
             api_url = constants.MAINNET_API_URL
             
@@ -113,6 +132,7 @@ class LiveTradeExecutor:
                 base_url=api_url,
                 account_address=account_address
             )
+            print("Exchange created successfully", flush=True)
             
             user_state = self.hyperliquid_info.user_state(account_address or wallet.address)
             logger.info(f"Hyperliquid connected. Account: {wallet.address[:10]}...")
@@ -225,28 +245,33 @@ class LiveTradeExecutor:
             return {'code': 'error', 'msg': str(e)}
     
     async def execute_hyperliquid_order(self, side: str, size: float, price: float = None) -> Dict:
-        """Execute order on Hyperliquid"""
+        """Execute order on Hyperliquid HIP-3 DEX (xyz:NVDA)"""
         if not self.hyperliquid_exchange:
             return {'success': False, 'error': 'Hyperliquid not initialized'}
         
         try:
             is_buy = side.lower() == 'buy'
             
-            if price:
-                order_result = self.hyperliquid_exchange.order(
-                    name=self.hyperliquid_symbol,
-                    is_buy=is_buy,
-                    sz=size,
-                    limit_px=price,
-                    order_type={"limit": {"tif": "Ioc"}}
-                )
-            else:
-                order_result = self.hyperliquid_exchange.market_open(
-                    name=self.hyperliquid_symbol,
-                    is_buy=is_buy,
-                    sz=size,
-                    slippage=self.config.get('MARKET_SLIPPAGE', 0.001)
-                )
+            # Get current mid price for market order pricing
+            if not price:
+                mid_price = await self._get_hyperliquid_mid_price()
+                if mid_price:
+                    slippage = self.config.get('MARKET_SLIPPAGE', 0.01)
+                    if is_buy:
+                        price = mid_price * (1 + slippage)
+                    else:
+                        price = mid_price * (1 - slippage)
+                else:
+                    return {'success': False, 'error': 'Could not get market price'}
+            
+            # Use raw API for HIP-3 orders
+            order_result = await self._execute_hip3_order(
+                asset_id=self.hyperliquid_asset_id,
+                is_buy=is_buy,
+                size=size,
+                price=price,
+                dex=self.hyperliquid_dex
+            )
             
             if order_result.get('status') == 'ok':
                 statuses = order_result.get('response', {}).get('data', {}).get('statuses', [])
@@ -263,18 +288,99 @@ class LiveTradeExecutor:
                 }
                 
                 self.order_history.append(result)
-                logger.info(f"Hyperliquid order executed: {side} {size} {self.hyperliquid_symbol}")
+                logger.info(f"Hyperliquid HIP-3 order executed: {side} {size} {self.hyperliquid_symbol}")
                 return result
             else:
+                error_msg = order_result.get('response', {}).get('data', {}).get('error', 'Unknown error')
+                if not error_msg:
+                    error_msg = str(order_result)
                 return {
                     'success': False,
-                    'error': order_result.get('response', {}).get('data', {}).get('error', 'Unknown error'),
+                    'error': error_msg,
                     'raw_response': order_result
                 }
                 
         except Exception as e:
-            logger.error(f"Hyperliquid order error: {e}")
+            logger.error(f"Hyperliquid HIP-3 order error: {e}")
+            import traceback
+            traceback.print_exc()
             return {'success': False, 'error': str(e)}
+    
+    async def _get_hyperliquid_mid_price(self) -> Optional[float]:
+        """Get current mid price for xyz:NVDA from HIP-3 DEX"""
+        try:
+            import requests
+            resp = requests.post('https://api.hyperliquid.xyz/info', json={
+                'type': 'metaAndAssetCtxs',
+                'dex': self.hyperliquid_dex
+            }, timeout=5)
+            data = resp.json()
+            asset_ctx = data[1][self.hyperliquid_asset_index]
+            mid_price = float(asset_ctx.get('midPx') or asset_ctx.get('markPx', 0))
+            return mid_price if mid_price > 0 else None
+        except Exception as e:
+            logger.error(f"Error getting HIP-3 mid price: {e}")
+            return None
+    
+    async def _execute_hip3_order(self, asset_id: int, is_buy: bool, size: float, price: float, dex: str) -> Dict:
+        """Execute order on HIP-3 DEX using raw Exchange API with manual signing"""
+        try:
+            from hyperliquid.utils.signing import (
+                get_timestamp_ms, 
+                sign_l1_action, 
+                order_wires_to_order_action,
+                float_to_wire
+            )
+            from hyperliquid.utils import constants
+            
+            # Build order wire with HIP-3 asset ID directly (bypasses name_to_asset lookup)
+            order_wire = {
+                "a": asset_id,
+                "b": is_buy,
+                "p": float_to_wire(price),
+                "s": float_to_wire(size),
+                "r": False,
+                "t": {"limit": {"tif": "Ioc"}}
+            }
+            
+            # Create order action
+            order_action = {
+                "type": "order",
+                "orders": [order_wire],
+                "grouping": "na"
+            }
+            
+            timestamp = get_timestamp_ms()
+            is_mainnet = self.hyperliquid_exchange.base_url == constants.MAINNET_API_URL
+            
+            # Sign using SDK's signing function
+            signature = sign_l1_action(
+                self.hyperliquid_exchange.wallet,
+                order_action,
+                self.hyperliquid_exchange.vault_address,
+                timestamp,
+                self.hyperliquid_exchange.expires_after,
+                is_mainnet
+            )
+            
+            logger.info(f"Sending HIP-3 order: asset={asset_id}, is_buy={is_buy}, sz={size}, px={price}, dex={dex}")
+            
+            # Send through SDK's post_action
+            result = self.hyperliquid_exchange._post_action(
+                order_action,
+                signature,
+                timestamp
+            )
+            
+            logger.info(f"HIP-3 order result: {result}")
+            
+            return result
+                
+        except Exception as e:
+            logger.error(f"HIP-3 order error: {e}")
+            import traceback
+            traceback.print_exc()
+            return {'status': 'error', 'error': str(e)}
     
     async def execute_bitget_order(self, side: str, size: float, price: float = None) -> Dict:
         """Execute order on Bitget"""
