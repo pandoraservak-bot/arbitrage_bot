@@ -2091,10 +2091,10 @@ function renderHeatmap(heatmapData) {
             
             cell.innerHTML = `
                 <span class="hour">${hour.toString().padStart(2, '0')}</span>
-                <span class="value">${(hourData.best_avg * 100).toFixed(2)}%</span>
+                <span class="value">${hourData.best_avg.toFixed(3)}%</span>
                 <span class="count">${hourData.count}</span>
             `;
-            cell.title = `Час ${hour}:00-${hour}:59\nСр. спред: ${(hourData.best_avg * 100).toFixed(3)}%\nМакс: ${(hourData.max_entry * 100).toFixed(3)}%\nТочек: ${hourData.count}`;
+            cell.title = `Час ${hour}:00-${hour}:59\nСр. спред: ${hourData.best_avg.toFixed(3)}%\nМакс: ${hourData.max_entry.toFixed(3)}%\nТочек: ${hourData.count}`;
         }
         
         grid.appendChild(cell);
