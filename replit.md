@@ -142,6 +142,11 @@ Set these in Replit Secrets:
   - Increased slippage to 5% for aggressive IOC order execution (market-like behavior)
   - Note: Hyperliquid API only supports limit orders - IOC with aggressive price acts as market order
   - Order type always shows as "Limit" in exchange history (this is normal for IOC)
+- **Live Portfolio Persistence Fix**:
+  - Fixed live portfolio showing $0.00 after bot restart
+  - Integrated `live_portfolio` into `full_update` payload using synchronous `get_ws_portfolio()` method
+  - Removed async broadcast which had timing issues; now uses single unified payload
+  - Frontend `renderFullUpdate()` processes `live_portfolio` from main data payload
 
 ## Previous Changes (Dec 29, 2025)
 - **Spread History Chart Improvements**:
