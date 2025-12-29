@@ -1527,8 +1527,8 @@ function initSpreadChart() {
                         },
                         font: { size: 10 }
                     },
-                    suggestedMin: -0.2,
-                    suggestedMax: 0.2
+                    min: -1,
+                    max: 1
                 }
             }
         }
@@ -1585,6 +1585,39 @@ function resetChartZoom() {
         spreadChart.resetZoom();
         eventLogger.addEvent('Зум графика сброшен', 'info');
     }
+}
+
+// Update chart Y-axis scale
+function updateChartYScale(value) {
+    if (!spreadChart) return;
+    
+    const yAxis = spreadChart.options.scales.y;
+    
+    if (value === 'auto') {
+        yAxis.min = undefined;
+        yAxis.max = undefined;
+    } else {
+        const range = parseFloat(value);
+        yAxis.min = -range;
+        yAxis.max = range;
+    }
+    
+    spreadChart.update('none');
+    eventLogger.addEvent(`Масштаб Y: ±${value}%`, 'info');
+}
+
+// Current time aggregation setting
+let currentTimeAggMinutes = 1;
+
+// Update chart time aggregation
+function updateChartTimeAgg(minutes) {
+    currentTimeAggMinutes = parseInt(minutes);
+    
+    if (dashboard) {
+        dashboard.sendCommand('set_time_aggregation', { minutes: currentTimeAggMinutes });
+    }
+    
+    eventLogger.addEvent(`Агрегация: ${minutes} мин`, 'info');
 }
 
 // Export spread history to CSV
@@ -2077,6 +2110,21 @@ function getHeatmapColor(intensity) {
         return `rgba(245, 158, 11, ${0.6 + intensity * 0.4})`;
     } else {
         return `rgba(239, 68, 68, ${0.7 + intensity * 0.3})`;
+    }
+}
+
+// Clear heatmap statistics
+async function clearHeatmapStats() {
+    try {
+        const response = await fetch('/api/clear-heatmap', { method: 'POST' });
+        if (!response.ok) throw new Error('Ошибка очистки');
+        
+        await refreshHeatmap();
+        toast.success('Статистика тепловой карты очищена');
+        eventLogger.addEvent('Статистика тепловой карты очищена', 'warning');
+    } catch (error) {
+        console.error('Clear heatmap error:', error);
+        toast.error('Ошибка очистки статистики');
     }
 }
 

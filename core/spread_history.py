@@ -205,6 +205,17 @@ class SpreadHistoryManager:
             }
         logger.info("Spread history cleared")
     
+    def clear_hourly_stats(self):
+        """Очистка только почасовой статистики (для тепловой карты)"""
+        with self._lock:
+            self._hourly_stats = {
+                h: {'count': 0, 'sum_entry_bh': 0.0, 'sum_entry_hb': 0.0,
+                    'max_entry_bh': float('-inf'), 'max_entry_hb': float('-inf')}
+                for h in range(24)
+            }
+        self._save_hourly_stats()
+        logger.info("Hourly stats cleared")
+    
     def get_full_chart_data(self, limit: int = 500) -> Dict:
         """Получение полных данных для графика (при первом подключении)"""
         with self._lock:

@@ -2035,6 +2035,11 @@ body {
     grid-column: span 1;
 }
 
+.heatmap-controls {
+    display: flex;
+    gap: 5px;
+}
+
 .heatmap-content {
     padding: 15px;
 }

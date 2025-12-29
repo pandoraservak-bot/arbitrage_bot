@@ -293,6 +293,7 @@ class WebDashboardServer:
         self.app.router.add_get('/api/stats', self.handle_api_stats)
         self.app.router.add_get('/api/heatmap', self.handle_api_heatmap)
         self.app.router.add_get('/api/export-csv', self.handle_api_export_csv)
+        self.app.router.add_post('/api/clear-heatmap', self.handle_api_clear_heatmap)
     
     async def handle_index(self, request):
         """Serve main dashboard page"""
@@ -1305,6 +1306,15 @@ class WebDashboardServer:
             )
         except Exception as e:
             logger.error(f"Error exporting CSV: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def handle_api_clear_heatmap(self, request):
+        """API endpoint for clearing heatmap statistics"""
+        try:
+            self.spread_history.clear_hourly_stats()
+            return web.json_response({'success': True, 'message': 'Heatmap stats cleared'})
+        except Exception as e:
+            logger.error(f"Error clearing heatmap stats: {e}")
             return web.json_response({'error': str(e)}, status=500)
 
 

@@ -490,14 +490,22 @@
                 <div class="card-header">
                     <h2>📈 История спредов</h2>
                     <div class="chart-controls">
-                        <button class="btn btn-small" onclick="resetChartZoom()" title="Сбросить зум">🔍 Сброс</button>
-                        <button class="btn btn-small" onclick="exportToCSV()" title="Экспорт в CSV">📥 CSV</button>
-                        <button class="btn btn-small" data-action="toggle-fullscreen" id="btnFullscreen">🖥️ Полный экран</button>
-                        <select id="chartTimeRange" data-action="change-chart-range">
-                            <option value="100" selected>100 точек</option>
-                            <option value="200">200 точек</option>
-                            <option value="500">500 точек</option>
+                        <select id="chartYScale" onchange="updateChartYScale(this.value)" title="Масштаб Y">
+                            <option value="0.5">±0.5%</option>
+                            <option value="1" selected>±1%</option>
+                            <option value="2">±2%</option>
+                            <option value="5">±5%</option>
+                            <option value="auto">Авто</option>
                         </select>
+                        <select id="chartTimeAgg" onchange="updateChartTimeAgg(this.value)" title="Агрегация">
+                            <option value="1" selected>1 мин</option>
+                            <option value="5">5 мин</option>
+                            <option value="15">15 мин</option>
+                            <option value="60">1 час</option>
+                        </select>
+                        <button class="btn btn-small" onclick="resetChartZoom()" title="Сбросить зум">🔍</button>
+                        <button class="btn btn-small" onclick="exportToCSV()" title="Экспорт CSV">📥</button>
+                        <button class="btn btn-small" data-action="toggle-fullscreen" id="btnFullscreen">🖥️</button>
                     </div>
                 </div>
                 <div class="chart-content">
@@ -509,7 +517,10 @@
             <div class="card heatmap-card" id="heatmapCard">
                 <div class="card-header">
                     <h2>🌡️ Тепловая карта (по часам)</h2>
-                    <button class="btn btn-small" onclick="refreshHeatmap()">🔄 Обновить</button>
+                    <div class="heatmap-controls">
+                        <button class="btn btn-small" onclick="refreshHeatmap()">🔄</button>
+                        <button class="btn btn-small" onclick="clearHeatmapStats()" title="Очистить статистику">🗑️</button>
+                    </div>
                 </div>
                 <div class="heatmap-content" id="heatmapContainer">
                     <div class="heatmap-grid" id="heatmapGrid"></div>
