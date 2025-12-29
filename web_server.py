@@ -242,8 +242,10 @@ class WebDashboardServer:
         self.live_mode_active = False
         self.market_status = {'status': 'unknown', 'last_check': 0}
         
-        # Web directory path
         self.web_dir = Path(__file__).parent / "web"
+        
+        from core.spread_history import SpreadHistoryManager
+        self.spread_history = SpreadHistoryManager(max_points=1000, save_interval=60)
 
     @staticmethod
     def _normalize_direction_code(direction: Any) -> Optional[str]:
@@ -289,6 +291,8 @@ class WebDashboardServer:
         self.app.router.add_get('/api/positions', self.handle_api_positions)
         self.app.router.add_get('/api/portfolio', self.handle_api_portfolio)
         self.app.router.add_get('/api/stats', self.handle_api_stats)
+        self.app.router.add_get('/api/heatmap', self.handle_api_heatmap)
+        self.app.router.add_get('/api/export-csv', self.handle_api_export_csv)
     
     async def handle_index(self, request):
         """Serve main dashboard page"""
@@ -969,80 +973,60 @@ class WebDashboardServer:
         }
     
     def _get_spread_chart_data(self) -> Dict:
-        """Получение данных для графика спредов"""
+        """Получение данных для графика спредов из истории"""
         try:
-            # Получаем историю спредов из arb_engine или создаем из текущих данных
-            if hasattr(self.bot, 'arb_engine') and hasattr(self.bot.arb_engine, 'get_spread_history'):
-                # Если есть менеджер истории
-                history_data = self.bot.arb_engine.get_spread_history(100)
-                if history_data:
-                    return history_data
-
-            # Иначе создаем из текущих данных
+            return self.spread_history.get_chart_data(limit=500)
+        except Exception as e:
+            logger.debug(f"Error getting spread chart data: {e}")
+            return self._empty_chart_data()
+    
+    def _record_current_spreads(self):
+        """Записать текущие спреды в историю"""
+        try:
             bitget_ws = getattr(self.bot, 'bitget_ws', None)
             hyper_ws = getattr(self.bot, 'hyper_ws', None)
             arb_engine = getattr(self.bot, 'arb_engine', None)
 
             if not bitget_ws or not hyper_ws or not arb_engine:
-                return self._empty_chart_data()
+                return
 
             bitget_data = bitget_ws.get_latest_data() if hasattr(bitget_ws, 'get_latest_data') else None
             hyper_data = hyper_ws.get_latest_data() if hasattr(hyper_ws, 'get_latest_data') else None
 
-            if bitget_data and hyper_data:
-                bitget_slippage = bitget_ws.get_estimated_slippage() if hasattr(bitget_ws, 'get_estimated_slippage') else None
-                hyper_slippage = hyper_ws.get_estimated_slippage() if hasattr(hyper_ws, 'get_estimated_slippage') else None
+            if not bitget_data or not hyper_data:
+                return
 
-                spreads = arb_engine.calculate_spreads(
-                    bitget_data, hyper_data, bitget_slippage, hyper_slippage
-                ) if hasattr(arb_engine, 'calculate_spreads') else {}
+            bitget_slippage = bitget_ws.get_estimated_slippage() if hasattr(bitget_ws, 'get_estimated_slippage') else None
+            hyper_slippage = hyper_ws.get_estimated_slippage() if hasattr(hyper_ws, 'get_estimated_slippage') else None
 
-                exit_spreads = arb_engine.calculate_exit_spread_for_market(
-                    bitget_data, hyper_data, bitget_slippage, hyper_slippage
-                ) if hasattr(arb_engine, 'calculate_exit_spread_for_market') else {}
+            spreads = arb_engine.calculate_spreads(
+                bitget_data, hyper_data, bitget_slippage, hyper_slippage
+            ) if hasattr(arb_engine, 'calculate_spreads') else {}
 
-                if spreads and exit_spreads:
-                    entry_bh = 0.0
-                    entry_hb = 0.0
-                    for direction, spread_data in spreads.items():
-                        code = self._normalize_direction_code(direction)
-                        if not code or not isinstance(spread_data, dict):
-                            continue
-                        if code == 'B_TO_H':
-                            entry_bh = float(spread_data.get('gross_spread', 0) or 0)
-                        elif code == 'H_TO_B':
-                            entry_hb = float(spread_data.get('gross_spread', 0) or 0)
+            exit_spreads_raw = arb_engine.calculate_exit_spread_for_market(
+                bitget_data, hyper_data, bitget_slippage, hyper_slippage
+            ) if hasattr(arb_engine, 'calculate_exit_spread_for_market') else {}
 
-                    exit_bh = 0.0
-                    exit_hb = 0.0
-                    for direction, spread_value in exit_spreads.items():
-                        code = self._normalize_direction_code(direction)
-                        if not code:
-                            continue
-                        if code == 'B_TO_H':
-                            exit_bh = float(spread_value or 0)
-                        elif code == 'H_TO_B':
-                            exit_hb = float(spread_value or 0)
+            if spreads and exit_spreads_raw:
+                entry_spreads = {}
+                exit_spreads = {}
+                
+                for direction, spread_data in spreads.items():
+                    code = self._normalize_direction_code(direction)
+                    if code and isinstance(spread_data, dict):
+                        entry_spreads[code] = float(spread_data.get('gross_spread', 0) or 0)
+                
+                for direction, spread_value in exit_spreads_raw.items():
+                    code = self._normalize_direction_code(direction)
+                    if code:
+                        exit_spreads[code] = float(spread_value or 0)
 
-                    now = datetime.now().strftime('%H:%M:%S')
-                    return {
-                        'labels': [now],
-                        'datasets': {
-                            'entry_bh': [entry_bh],
-                            'entry_hb': [entry_hb],
-                            'exit_bh': [exit_bh],
-                            'exit_hb': [exit_hb],
-                        },
-                        'timestamps': [time.time()],
-                        'health': {
-                            'bitget': [getattr(self.bot, 'bitget_healthy', False)],
-                            'hyper': [getattr(self.bot, 'hyper_healthy', False)],
-                        }
-                    }
+                bitget_healthy = getattr(self.bot, 'bitget_healthy', False)
+                hyper_healthy = getattr(self.bot, 'hyper_healthy', False)
+                
+                self.spread_history.add_spreads(entry_spreads, exit_spreads, bitget_healthy, hyper_healthy)
         except Exception as e:
-            logger.debug(f"Error getting spread chart data: {e}")
-
-        return self._empty_chart_data()
+            logger.debug(f"Error recording spreads: {e}")
 
     def _empty_chart_data(self) -> Dict:
         """Return empty chart data structure"""
@@ -1170,6 +1154,8 @@ class WebDashboardServer:
             try:
                 self.market_status = await check_bitget_market_status()
                 
+                self._record_current_spreads()
+                
                 if self.ws_clients:
                     payload = self.collect_dashboard_data()
                     logger.debug(
@@ -1177,7 +1163,7 @@ class WebDashboardServer:
                         len(self.ws_clients),
                     )
                     await self.broadcast('full_update', payload)
-                await asyncio.sleep(1.0)  # Update every second
+                await asyncio.sleep(1.0)
             except asyncio.CancelledError:
                 break
             except Exception as e:
@@ -1293,6 +1279,33 @@ class WebDashboardServer:
             'session_stats': session_stats,
             'best_spreads_session': best_spreads_session
         })
+
+    async def handle_api_heatmap(self, request):
+        """API endpoint for spread heatmap data by hour"""
+        try:
+            heatmap_data = self.spread_history.get_heatmap_data()
+            return web.json_response({
+                'heatmap': heatmap_data,
+                'stats': self.spread_history.get_statistics()
+            })
+        except Exception as e:
+            logger.error(f"Error getting heatmap data: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def handle_api_export_csv(self, request):
+        """API endpoint for exporting spread history as CSV"""
+        try:
+            csv_data = self.spread_history.get_csv_export()
+            return web.Response(
+                text=csv_data,
+                content_type='text/csv',
+                headers={
+                    'Content-Disposition': 'attachment; filename="spread_history.csv"'
+                }
+            )
+        except Exception as e:
+            logger.error(f"Error exporting CSV: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
 
 def integrate_web_dashboard(bot, host='0.0.0.0', port=8080):

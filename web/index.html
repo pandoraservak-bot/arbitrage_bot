@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
 </head>
 <body>
     <div class="dashboard">
@@ -19,19 +20,19 @@
             </div>
             <div class="header-right">
                 <div class="time-display">
-                    <span class="time-label">Runtime</span>
+                    <span class="time-label">Время работы</span>
                     <span class="time-value" id="runtime">00:00:00</span>
                 </div>
                 <div class="time-display">
-                    <span class="time-label">Server Time</span>
+                    <span class="time-label">Время сервера</span>
                     <span class="time-value" id="serverTime">--:--:--</span>
                 </div>
                 <div class="bot-controls">
-                    <button class="btn btn-control btn-start" data-bot-command="start" id="btnStart">▶️ START</button>
-                    <button class="btn btn-control btn-pause" data-bot-command="pause" id="btnPause">⏸️ PAUSE</button>
-                    <button class="btn btn-control btn-stop" data-bot-command="stop" id="btnStop">⏹️ STOP</button>
+                    <button class="btn btn-control btn-start" data-bot-command="start" id="btnStart">▶️ СТАРТ</button>
+                    <button class="btn btn-control btn-pause" data-bot-command="pause" id="btnPause">⏸️ ПАУЗА</button>
+                    <button class="btn btn-control btn-stop" data-bot-command="stop" id="btnStop">⏹️ СТОП</button>
                 </div>
-                <button class="btn btn-refresh" data-action="refresh">🔄 Refresh</button>
+                <button class="btn btn-refresh" data-action="refresh">🔄 Обновить</button>
             </div>
         </header>
 
@@ -49,20 +50,20 @@
                 <span class="status-latency" id="hyperLatency">--ms</span>
             </div>
             <div class="status-item">
-                <span class="status-label">Trades</span>
+                <span class="status-label">Сделки</span>
                 <span class="status-value" id="totalTrades">0</span>
             </div>
             <div class="status-item">
-                <span class="status-label">Checks</span>
+                <span class="status-label">Проверок</span>
                 <span class="status-value" id="totalChecks">0</span>
             </div>
             <div class="status-item">
-                <span class="status-label">WS Uptime</span>
+                <span class="status-label">Аптайм WS</span>
                 <span class="status-value" id="wsUptime">--.--%</span>
             </div>
             <div class="status-item">
-                <span class="status-label">Last Update</span>
-                <span class="status-value" id="lastUpdateStatus">--s ago</span>
+                <span class="status-label">Обновлено</span>
+                <span class="status-value" id="lastUpdateStatus">-- сек назад</span>
             </div>
         </div>
 
@@ -71,7 +72,7 @@
             <!-- Price Cards -->
             <div class="card prices-card">
                 <div class="card-header">
-                    <h2>📊 Market Prices</h2>
+                    <h2>📊 Рыночные цены</h2>
                 </div>
                 <div class="prices-content">
                     <div class="price-card bitget">
@@ -100,15 +101,15 @@
             <!-- Spreads Analysis Card (merged Entry + Exit) -->
             <div class="card spreads-analysis-card">
                 <div class="card-header">
-                    <h2>📈 Spreads Analysis</h2>
+                    <h2>📈 Анализ спредов</h2>
                 </div>
                 <div class="spreads-analysis-content">
                     <!-- Entry Spreads Column -->
                     <div class="spreads-column entry-column">
                         <div class="spreads-column-header">
-                            <span class="column-title">Entry Spreads</span>
-                            <button class="target-btn" data-target-type="entry" data-action="edit-target" title="Click to edit target">
-                                Target: ≥<span id="spreadTarget">0.10</span>%
+                            <span class="column-title">Спреды входа</span>
+                            <button class="target-btn" data-target-type="entry" data-action="edit-target" title="Нажмите для редактирования">
+                                Порог: ≥<span id="spreadTarget">0.10</span>%
                             </button>
                         </div>
                         <div class="spreads-directions">
@@ -132,7 +133,7 @@
                             </div>
                         </div>
                         <div class="spreads-best">
-                            <span class="best-label">Best Entry:</span>
+                            <span class="best-label">Лучший вход:</span>
                             <span class="best-value" id="bestEntry">---</span>
                             <span class="best-direction" id="bestEntryDirection">---</span>
                         </div>
@@ -143,9 +144,9 @@
                     <!-- Exit Spreads Column -->
                     <div class="spreads-column exit-column">
                         <div class="spreads-column-header">
-                            <span class="column-title">Exit Spreads</span>
-                            <button class="target-btn" data-target-type="exit" data-action="edit-target" title="Click to edit target">
-                                Target: ≥<span id="exitTarget">0.05</span>%
+                            <span class="column-title">Спреды выхода</span>
+                            <button class="target-btn" data-target-type="exit" data-action="edit-target" title="Нажмите для редактирования">
+                                Порог: ≥<span id="exitTarget">0.05</span>%
                             </button>
                         </div>
                         <div class="spreads-directions">
@@ -163,7 +164,7 @@
                             </div>
                         </div>
                         <div class="spreads-best exit-best">
-                            <span class="best-label">Best Exit:</span>
+                            <span class="best-label">Лучший выход:</span>
                             <span class="best-value" id="bestMarketExit">---</span>
                         </div>
                     </div>
@@ -174,7 +175,7 @@
                     <div class="record-item">
                         <div class="record-icon">🎯</div>
                         <div class="record-info">
-                            <div class="record-label">Best Entry</div>
+                            <div class="record-label">Лучший вход</div>
                             <div class="record-value" id="bestEntryRecord">---</div>
                             <div class="record-meta" id="bestEntryTime">---</div>
                         </div>
@@ -182,7 +183,7 @@
                     <div class="record-item">
                         <div class="record-icon">🚀</div>
                         <div class="record-info">
-                            <div class="record-label">Best Exit</div>
+                            <div class="record-label">Лучший выход</div>
                             <div class="record-value" id="bestExitRecord">---</div>
                             <div class="record-meta" id="bestExitTime">---</div>
                         </div>
@@ -193,19 +194,19 @@
             <!-- Configuration Card (Bot + Risk) -->
             <div class="card config-card">
                 <div class="card-header">
-                    <h2>⚙️ Configuration</h2>
+                    <h2>⚙️ Конфигурация</h2>
                 </div>
                 <div class="config-content">
                     <div class="config-section">
-                        <div class="config-section-title">Trading Mode</div>
+                        <div class="config-section-title">Режим торговли</div>
                         <div class="config-grid">
                             <div class="config-item" style="grid-column: span 2;">
                                 <div class="trading-mode-toggle">
-                                    <button id="modePaper" class="mode-btn active" data-mode="paper">📝 Paper Trading</button>
-                                    <button id="modeLive" class="mode-btn" data-mode="live">🔴 Live Trading</button>
+                                    <button id="modePaper" class="mode-btn active" data-mode="paper">📝 Бумажная</button>
+                                    <button id="modeLive" class="mode-btn" data-mode="live">🔴 Реальная</button>
                                 </div>
                                 <div id="liveWarning" class="live-warning" style="display: none;">
-                                    ⚠️ Live trading is enabled. Real money will be used!
+                                    ⚠️ Реальная торговля включена. Используются реальные средства!
                                 </div>
                                 <div id="apiStatus" class="api-status">
                                     <span class="api-item" id="hlStatus">HL: <span class="status-dot disconnected"></span></span>
@@ -215,79 +216,79 @@
                         </div>
                     </div>
                     <div class="config-section">
-                        <div class="config-section-title">Trading Settings</div>
+                        <div class="config-section-title">Настройки торговли</div>
                         <div class="config-grid">
                             <div class="config-item">
-                                <label class="config-label">Min Entry Spread (%)</label>
+                                <label class="config-label">Мин. спред входа (%)</label>
                                 <div class="config-input-group">
                                     <input type="number" id="minSpreadEnter" step="0.01" min="0.01" max="1.0" class="config-input" />
-                                    <button class="btn btn-config" data-config-update="min_spread_enter">Set</button>
+                                    <button class="btn btn-config" data-config-update="min_spread_enter">ОК</button>
                                 </div>
                             </div>
                             <div class="config-item">
-                                <label class="config-label">Min Exit Spread (%)</label>
+                                <label class="config-label">Мин. спред выхода (%)</label>
                                 <div class="config-input-group">
                                     <input type="number" id="minSpreadExit" step="0.01" min="-1.0" max="0.2" class="config-input" />
-                                    <button class="btn btn-config" data-config-update="min_spread_exit">Set</button>
+                                    <button class="btn btn-config" data-config-update="min_spread_exit">ОК</button>
                                 </div>
                             </div>
                             <div class="config-item">
-                                <label class="config-label">Max Concurrent Pos</label>
+                                <label class="config-label">Макс. позиций</label>
                                 <div class="config-input-group">
                                     <input type="number" id="maxConcurrentPos" step="1" min="1" max="10" class="config-input" />
-                                    <button class="btn btn-config" data-config-update="max_concurrent_positions">Set</button>
+                                    <button class="btn btn-config" data-config-update="max_concurrent_positions">ОК</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="config-section">
-                        <div class="config-section-title">Risk Management</div>
+                        <div class="config-section-title">Управление рисками</div>
                         <div class="config-grid">
                             <div class="config-item">
-                                <label class="config-label">Daily Loss Limit ($)</label>
+                                <label class="config-label">Лимит убытка/день ($)</label>
                                 <div class="config-input-group">
                                     <input type="number" id="dailyLossLimit" step="10" min="10" max="10000" class="config-input" />
-                                    <button class="btn btn-config" data-config-risk-update="daily_loss_limit">Set</button>
+                                    <button class="btn btn-config" data-config-risk-update="daily_loss_limit">ОК</button>
                                 </div>
                             </div>
                             <div class="config-item">
-                                <label class="config-label">Max Position (contracts)</label>
+                                <label class="config-label">Макс. позиция (контр.)</label>
                                 <div class="config-input-group">
                                     <input type="number" id="maxPositionSize" step="0.01" min="0.01" max="100" class="config-input" />
-                                    <button class="btn btn-config" data-config-risk-update="max_position_size">Set</button>
+                                    <button class="btn btn-config" data-config-risk-update="max_position_size">ОК</button>
                                 </div>
                             </div>
                             <div class="config-item">
-                                <label class="config-label">Min Order (contracts)</label>
+                                <label class="config-label">Мин. ордер (контр.)</label>
                                 <div class="config-input-group">
                                     <input type="number" id="minOrderContracts" step="0.001" min="0.001" max="10" class="config-input" />
-                                    <button class="btn btn-config" data-config-risk-update="min_order_contracts">Set</button>
+                                    <button class="btn btn-config" data-config-risk-update="min_order_contracts">ОК</button>
                                 </div>
                             </div>
                             <div class="config-item">
-                                <label class="config-label">Max Slippage (%)</label>
+                                <label class="config-label">Макс. проскальзывание (%)</label>
                                 <div class="config-input-group">
                                     <input type="number" id="maxSlippage" step="0.01" min="0.01" max="5" class="config-input" />
-                                    <button class="btn btn-config" data-config-risk-update="max_slippage">Set</button>
+                                    <button class="btn btn-config" data-config-risk-update="max_slippage">ОК</button>
                                 </div>
                             </div>
                             <div class="config-item">
-                                <label class="config-label">Order Interval (sec)</label>
+                                <label class="config-label">Интервал ордеров (сек)</label>
                                 <div class="config-input-group">
                                     <input type="number" id="minOrderInterval" step="0.5" min="0" max="60" class="config-input" />
-                                    <button class="btn btn-config" data-config-update="min_order_interval">Set</button>
+                                    <button class="btn btn-config" data-config-update="min_order_interval">ОК</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="risk-status">
                         <div class="risk-status-item">
-                            <span class="risk-label">Daily Loss:</span>
+                            <span class="risk-label">Убыток/день:</span>
                             <span class="risk-value" id="currentDailyLoss">$0.00</span>
                         </div>
                         <div class="risk-status-item">
-                            <span class="risk-label">Position:</span>
-                            <span class="risk-value"><span id="totalPositionContracts">0.0000</span> contracts</span>
+                            <span class="risk-label">Позиция:</span>
+                            <span class="risk-value"><span id="totalPositionContracts">0.0000</span> контр.</span>
                         </div>
                         <div class="risk-progress">
                             <div class="risk-progress-bar" id="riskProgressBar" style="width: 0%"></div>
@@ -299,8 +300,8 @@
             <!-- Portfolio Card -->
             <div class="card portfolio-card">
                 <div class="card-header">
-                    <h2>💼 Portfolio</h2>
-                    <span class="portfolio-mode-badge" id="portfolioModeBadge">Paper</span>
+                    <h2>💼 Портфель</h2>
+                    <span class="portfolio-mode-badge" id="portfolioModeBadge">Бумажная</span>
                 </div>
                 
                 <!-- Paper Trading Portfolio -->
@@ -317,11 +318,11 @@
                     </div>
                     <div class="portfolio-total">
                         <div class="total-item">
-                            <span class="total-label">Total Value</span>
+                            <span class="total-label">Общая стоимость</span>
                             <span class="total-value" id="totalValue">$0.00</span>
                         </div>
                         <div class="total-item">
-                            <span class="total-label">PnL</span>
+                            <span class="total-label">П/У</span>
                             <span class="total-value" id="pnlValue">$0.00</span>
                         </div>
                     </div>
@@ -487,19 +488,36 @@
             <!-- Spread Chart -->
             <div class="card chart-card" id="chartCard">
                 <div class="card-header">
-                    <h2>📈 Spread History</h2>
+                    <h2>📈 История спредов</h2>
                     <div class="chart-controls">
-                        <button class="btn btn-small" data-action="toggle-fullscreen" id="btnFullscreen">🖥️ Fullscreen</button>
+                        <button class="btn btn-small" onclick="resetChartZoom()" title="Сбросить зум">🔍 Сброс</button>
+                        <button class="btn btn-small" onclick="exportToCSV()" title="Экспорт в CSV">📥 CSV</button>
+                        <button class="btn btn-small" data-action="toggle-fullscreen" id="btnFullscreen">🖥️ Полный экран</button>
                         <select id="chartTimeRange" data-action="change-chart-range">
-                            <option value="50">50 points</option>
-                            <option value="100" selected>100 points</option>
-                            <option value="200">200 points</option>
-                            <option value="500">500 points</option>
+                            <option value="100" selected>100 точек</option>
+                            <option value="200">200 точек</option>
+                            <option value="500">500 точек</option>
                         </select>
                     </div>
                 </div>
                 <div class="chart-content">
                     <canvas id="spreadChart"></canvas>
+                </div>
+            </div>
+            
+            <!-- Heatmap -->
+            <div class="card heatmap-card" id="heatmapCard">
+                <div class="card-header">
+                    <h2>🌡️ Тепловая карта (по часам)</h2>
+                    <button class="btn btn-small" onclick="refreshHeatmap()">🔄 Обновить</button>
+                </div>
+                <div class="heatmap-content" id="heatmapContainer">
+                    <div class="heatmap-grid" id="heatmapGrid"></div>
+                    <div class="heatmap-legend">
+                        <span class="legend-label">Низкий спред</span>
+                        <div class="legend-gradient"></div>
+                        <span class="legend-label">Высокий спред</span>
+                    </div>
                 </div>
             </div>
         </div>

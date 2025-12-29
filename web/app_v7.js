@@ -1094,6 +1094,8 @@ class DashboardClient {
                 input.value = config.MIN_ORDER_INTERVAL;
             }
         }
+        
+        updateChartThresholds(config);
     }
 
     updateRiskStatus(data) {
@@ -1456,6 +1458,53 @@ function initSpreadChart() {
                         },
                         mode: 'x',
                     }
+                },
+                annotation: {
+                    annotations: {
+                        zeroLine: {
+                            type: 'line',
+                            yMin: 0,
+                            yMax: 0,
+                            borderColor: 'rgba(156, 163, 175, 0.5)',
+                            borderWidth: 1,
+                            borderDash: [4, 4],
+                            label: {
+                                display: false
+                            }
+                        },
+                        entryThreshold: {
+                            type: 'line',
+                            yMin: 0.035,
+                            yMax: 0.035,
+                            borderColor: 'rgba(34, 197, 94, 0.7)',
+                            borderWidth: 2,
+                            borderDash: [6, 4],
+                            label: {
+                                display: true,
+                                content: 'Порог входа',
+                                position: 'start',
+                                backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                                color: '#fff',
+                                font: { size: 10 }
+                            }
+                        },
+                        exitThreshold: {
+                            type: 'line',
+                            yMin: 0.006,
+                            yMax: 0.006,
+                            borderColor: 'rgba(239, 68, 68, 0.7)',
+                            borderWidth: 2,
+                            borderDash: [6, 4],
+                            label: {
+                                display: true,
+                                content: 'Порог выхода',
+                                position: 'end',
+                                backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                                color: '#fff',
+                                font: { size: 10 }
+                            }
+                        }
+                    }
                 }
             },
             scales: {
@@ -1507,6 +1556,61 @@ function changeChartRange() {
     }
 }
 
+// Update chart threshold annotations from config
+function updateChartThresholds(config) {
+    if (!spreadChart || !config) return;
+    
+    const annotations = spreadChart.options.plugins.annotation.annotations;
+    
+    if (config.MIN_SPREAD_ENTER !== undefined) {
+        const entryThreshold = config.MIN_SPREAD_ENTER * 100;
+        annotations.entryThreshold.yMin = entryThreshold;
+        annotations.entryThreshold.yMax = entryThreshold;
+        annotations.entryThreshold.label.content = `Порог входа (${entryThreshold.toFixed(2)}%)`;
+    }
+    
+    if (config.MIN_SPREAD_EXIT !== undefined) {
+        const exitThreshold = config.MIN_SPREAD_EXIT * 100;
+        annotations.exitThreshold.yMin = exitThreshold;
+        annotations.exitThreshold.yMax = exitThreshold;
+        annotations.exitThreshold.label.content = `Порог выхода (${exitThreshold.toFixed(2)}%)`;
+    }
+    
+    spreadChart.update('none');
+}
+
+// Reset chart zoom
+function resetChartZoom() {
+    if (spreadChart) {
+        spreadChart.resetZoom();
+        eventLogger.addEvent('Зум графика сброшен', 'info');
+    }
+}
+
+// Export spread history to CSV
+async function exportToCSV() {
+    try {
+        const response = await fetch('/api/export-csv');
+        if (!response.ok) throw new Error('Ошибка экспорта');
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'spread_history.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        eventLogger.addEvent('История экспортирована в CSV', 'success');
+        toast.success('История спредов экспортирована');
+    } catch (error) {
+        console.error('Export error:', error);
+        toast.error('Ошибка экспорта CSV');
+    }
+}
+
 // Fullscreen chart
 function toggleFullscreen() {
     const chartCard = document.getElementById('chartCard');
@@ -1514,18 +1618,18 @@ function toggleFullscreen() {
     
     if (!chartCard.classList.contains('fullscreen')) {
         chartCard.classList.add('fullscreen');
-        btn.textContent = '🗙 Exit Fullscreen';
+        btn.textContent = '🗙 Выход';
         if (spreadChart) {
             spreadChart.resize();
         }
-        eventLogger.addEvent('Chart fullscreen enabled', 'success');
+        eventLogger.addEvent('График развёрнут на весь экран', 'success');
     } else {
         chartCard.classList.remove('fullscreen');
-        btn.textContent = '🖥️ Fullscreen';
+        btn.textContent = '🖥️ Полный экран';
         if (spreadChart) {
             spreadChart.resize();
         }
-        eventLogger.addEvent('Chart fullscreen disabled', 'success');
+        eventLogger.addEvent('График свёрнут', 'success');
     }
 }
 
@@ -1911,3 +2015,71 @@ function confirmTargetModal() {
     
     closeTargetModal();
 }
+
+// Heatmap functions
+async function refreshHeatmap() {
+    try {
+        const response = await fetch('/api/heatmap');
+        if (!response.ok) throw new Error('Ошибка загрузки');
+        
+        const data = await response.json();
+        renderHeatmap(data.heatmap);
+    } catch (error) {
+        console.error('Heatmap error:', error);
+    }
+}
+
+function renderHeatmap(heatmapData) {
+    const grid = document.getElementById('heatmapGrid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    let maxSpread = 0;
+    for (let hour = 0; hour < 24; hour++) {
+        const hourData = heatmapData[hour.toString()] || heatmapData[hour];
+        if (hourData && hourData.best_avg > maxSpread) {
+            maxSpread = hourData.best_avg;
+        }
+    }
+    
+    for (let hour = 0; hour < 24; hour++) {
+        const hourData = heatmapData[hour.toString()] || heatmapData[hour] || { best_avg: 0, count: 0 };
+        const cell = document.createElement('div');
+        cell.className = 'heatmap-cell';
+        
+        if (hourData.count === 0) {
+            cell.classList.add('no-data');
+            cell.innerHTML = `<span class="hour">${hour.toString().padStart(2, '0')}</span><span class="value">--</span>`;
+        } else {
+            const intensity = maxSpread > 0 ? hourData.best_avg / maxSpread : 0;
+            const color = getHeatmapColor(intensity);
+            cell.style.background = color;
+            
+            cell.innerHTML = `
+                <span class="hour">${hour.toString().padStart(2, '0')}</span>
+                <span class="value">${(hourData.best_avg * 100).toFixed(2)}%</span>
+                <span class="count">${hourData.count}</span>
+            `;
+            cell.title = `Час ${hour}:00-${hour}:59\nСр. спред: ${(hourData.best_avg * 100).toFixed(3)}%\nМакс: ${(hourData.max_entry * 100).toFixed(3)}%\nТочек: ${hourData.count}`;
+        }
+        
+        grid.appendChild(cell);
+    }
+}
+
+function getHeatmapColor(intensity) {
+    if (intensity < 0.25) {
+        return `rgba(59, 130, 246, ${0.4 + intensity * 0.6})`;
+    } else if (intensity < 0.5) {
+        return `rgba(16, 185, 129, ${0.5 + intensity * 0.5})`;
+    } else if (intensity < 0.75) {
+        return `rgba(245, 158, 11, ${0.6 + intensity * 0.4})`;
+    } else {
+        return `rgba(239, 68, 68, ${0.7 + intensity * 0.3})`;
+    }
+}
+
+setTimeout(() => {
+    refreshHeatmap();
+}, 2000);

@@ -94,7 +94,21 @@ Set these in Replit Secrets:
 - Live mode shows API connection status (green = connected)
 - Confirmation required before enabling live trading
 
-## Recent Changes (Dec 27, 2025)
+## Recent Changes (Dec 29, 2025)
+- **Spread History Chart Improvements**:
+  - SpreadHistoryManager with deque storage (1000 points max) and JSON persistence
+  - Chart.js annotation plugin for threshold lines (entry/exit targets)
+  - Delta updates for efficient data transfer
+  - Reset zoom button and CSV export functionality
+  - Dynamic threshold line updates when configuration changes
+- **24-Hour Spread Heatmap**:
+  - Color-coded grid showing spread distribution by hour
+  - Displays average spread, max spread, and data point count
+  - `/api/heatmap` endpoint for hourly statistics
+  - `/api/export-csv` endpoint for data export
+- **UI Text in Russian**: All dashboard labels, buttons, and messages in Russian
+
+## Previous Changes (Dec 27, 2025)
 - **Market Status Display**: Added real-time Bitget NVDA market status indicator
   - Shows "ОТКРЫТ" (green) when market is trading normally
   - Shows "ЗАКРЫТ" (red) when market is closed/maintenance (weekends, holidays)
