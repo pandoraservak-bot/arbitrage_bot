@@ -8,21 +8,24 @@ import hmac
 import hashlib
 import base64
 import os
+import aiohttp
 from typing import Dict, Optional, Callable
 
 logger = logging.getLogger(__name__)
 
 
 class HyperliquidPrivateWS:
-    """Hyperliquid private WebSocket for account data (webData2)"""
+    """Hyperliquid private WebSocket for account data (webData2) + HIP-3 REST polling"""
     
     def __init__(self, account_address: str):
         self.account_address = account_address
         self.ws_url = "wss://api.hyperliquid.xyz/ws"
+        self.api_url = "https://api.hyperliquid.xyz/info"
         self.ws = None
         self.connected = False
         self.running = False
         self._task = None
+        self._hip3_task = None  # Task for HIP-3 REST polling
         
         self.account_data = {
             'connected': False,
@@ -33,12 +36,14 @@ class HyperliquidPrivateWS:
             'last_update': 0
         }
         
+        # HIP-3 xyz DEX position data (xyz:NVDA)
+        self.hip3_position = None
+        
         self.on_update: Optional[Callable] = None
     
     async def connect(self):
         """Connect and subscribe to webData2"""
-        self.running = True
-        
+        # Note: self.running is set in start() before this coroutine runs
         while self.running:
             try:
                 logger.info(f"Connecting to Hyperliquid private WS...")
@@ -104,9 +109,23 @@ class HyperliquidPrivateWS:
                 return
             
             nvda_position = None
-            for pos in clearinghouse.get('assetPositions', []):
+            asset_positions = clearinghouse.get('assetPositions', [])
+            
+            # Log all positions for debugging (only once per connection)
+            if asset_positions and not hasattr(self, '_logged_positions'):
+                self._logged_positions = True
+                for i, pos in enumerate(asset_positions):
+                    position = pos.get('position', {})
+                    logger.info(f"HL position {i}: coin={position.get('coin')}, szi={position.get('szi')}")
+            
+            for pos in asset_positions:
                 position = pos.get('position', {})
-                if position.get('coin') == 'NVDA':
+                coin = position.get('coin', '')
+                # Check for NVDA in any form: standard 'NVDA', HIP-3 '@110002', or any string containing 'NVDA'
+                is_nvda = (coin == 'NVDA' or 
+                          coin == '@110002' or 
+                          (coin and 'NVDA' in coin.upper()))
+                if is_nvda:
                     try:
                         nvda_position = {
                             'size': float(position.get('szi', 0) or 0),
@@ -114,16 +133,21 @@ class HyperliquidPrivateWS:
                             'unrealized_pnl': float(position.get('unrealizedPnl', 0) or 0),
                             'liquidation_px': position.get('liquidationPx')
                         }
+                        logger.info(f"Found NVDA position on Hyperliquid: coin={coin}, size={nvda_position['size']}")
                     except (ValueError, TypeError):
                         nvda_position = None
                     break
+            
+            # Use HIP-3 position if no standard NVDA position found
+            # xyz:NVDA is on HIP-3 xyz DEX, not in standard webData2
+            final_nvda_position = nvda_position if nvda_position else self.hip3_position
             
             self.account_data = {
                 'connected': True,
                 'equity': account_value,
                 'available': withdrawable,
                 'margin_used': total_margin_used,
-                'nvda_position': nvda_position,
+                'nvda_position': final_nvda_position,
                 'last_update': time.time()
             }
             
@@ -137,12 +161,72 @@ class HyperliquidPrivateWS:
         """Get latest account data"""
         return self.account_data.copy()
     
+    async def _poll_hip3_positions(self):
+        """Poll HIP-3 xyz DEX positions via REST API (xyz:NVDA is not in webData2)"""
+        # Wait for running flag to be set
+        while not self.running:
+            await asyncio.sleep(0.1)
+        
+        # Create persistent session for efficiency
+        async with aiohttp.ClientSession() as session:
+            while self.running:
+                try:
+                    payload = {
+                        "type": "clearinghouseState",
+                        "user": self.account_address,
+                        "dex": "xyz"  # HIP-3 TradeXYZ DEX
+                    }
+                    async with session.post(self.api_url, json=payload) as resp:
+                        if resp.status == 200:
+                            data = await resp.json()
+                            asset_positions = data.get('assetPositions', [])
+                            
+                            # Find xyz:NVDA position
+                            found_position = False
+                            for pos in asset_positions:
+                                position = pos.get('position', {})
+                                coin = position.get('coin', '')
+                                if 'NVDA' in coin.upper():
+                                    try:
+                                        self.hip3_position = {
+                                            'size': float(position.get('szi', 0) or 0),
+                                            'entry_px': float(position.get('entryPx', 0) or 0),
+                                            'unrealized_pnl': float(position.get('unrealizedPnl', 0) or 0),
+                                            'liquidation_px': position.get('liquidationPx')
+                                        }
+                                        found_position = True
+                                        # Update account_data with HIP-3 position
+                                        if not self.account_data.get('nvda_position'):
+                                            self.account_data['nvda_position'] = self.hip3_position
+                                            self.account_data['last_update'] = time.time()
+                                            if self.on_update:
+                                                await self.on_update('hyperliquid', self.account_data)
+                                        break
+                                    except (ValueError, TypeError):
+                                        pass
+                            
+                            if not found_position:
+                                # No xyz:NVDA position found
+                                if self.hip3_position is not None:
+                                    self.hip3_position = None
+                                    if not self.account_data.get('nvda_position'):
+                                        self.account_data['nvda_position'] = None
+                                        if self.on_update:
+                                            await self.on_update('hyperliquid', self.account_data)
+                except Exception as e:
+                    logger.debug(f"HIP-3 poll error: {e}")
+                
+                await asyncio.sleep(2)  # Poll every 2 seconds
+    
     async def start(self):
-        """Start WebSocket connection in background"""
+        """Start WebSocket connection and HIP-3 polling in background"""
+        # Set running flag BEFORE starting tasks to avoid race condition
+        self.running = True
         self._task = asyncio.create_task(self.connect())
+        self._hip3_task = asyncio.create_task(self._poll_hip3_positions())
     
     async def stop(self):
-        """Stop WebSocket connection"""
+        """Stop WebSocket connection and HIP-3 polling"""
         self.running = False
         self.connected = False
         self.account_data['connected'] = False
@@ -154,6 +238,13 @@ class HyperliquidPrivateWS:
             self._task.cancel()
             try:
                 await self._task
+            except asyncio.CancelledError:
+                pass
+        
+        if self._hip3_task:
+            self._hip3_task.cancel()
+            try:
+                await self._hip3_task
             except asyncio.CancelledError:
                 pass
 

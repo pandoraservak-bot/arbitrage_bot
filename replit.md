@@ -156,6 +156,12 @@ Set these in Replit Secrets:
   - Shows red toast error when mismatch detected (debounced to 30 seconds)
   - Message format: "Расхождение позиций: Бот=X.XXX, HL=X.XXX, BG=X.XXX"
   - Helps identify synchronization issues between bot and exchange positions
+- **HIP-3 Position Polling**:
+  - xyz:NVDA is a HIP-3 builder-deployed perpetual on TradeXYZ DEX, NOT in standard Hyperliquid webData2
+  - Added REST API polling every 2 seconds: `clearinghouseState` with `dex: "xyz"`
+  - Uses persistent aiohttp.ClientSession for efficiency
+  - Running flag set in start() before tasks to avoid race condition
+  - HIP-3 position merged with webData2 data (hip3_position used if no standard NVDA position)
 
 ## Previous Changes (Dec 29, 2025)
 - **Spread History Chart Improvements**:

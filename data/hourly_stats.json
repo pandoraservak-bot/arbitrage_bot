@@ -1,5 +1,5 @@
 {
-  "last_saved": "2025-12-29T20:57:20.730746",
+  "last_saved": "2025-12-29T21:04:44.784392",
   "stats": {
     "0": {
       "count": 0,
@@ -142,18 +142,18 @@
       "max_entry_hb": 0.17622556872798345
     },
     "20": {
-      "count": 2539,
-      "sum_entry_bh": -379.5098139708304,
-      "sum_entry_hb": 329.28721489315456,
+      "count": 2641,
+      "sum_entry_bh": -397.78950040259605,
+      "sum_entry_hb": 345.0682940227689,
       "max_entry_bh": 0,
       "max_entry_hb": 0.18615040953089412
     },
     "21": {
-      "count": 0,
-      "sum_entry_bh": 0.0,
-      "sum_entry_hb": 0.0,
+      "count": 199,
+      "sum_entry_bh": -33.16546510502102,
+      "sum_entry_hb": 28.15806229600878,
       "max_entry_bh": 0,
-      "max_entry_hb": 0
+      "max_entry_hb": 0.164735891168033
     },
     "22": {
       "count": 0,
