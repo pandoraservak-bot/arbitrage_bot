@@ -252,11 +252,13 @@ class LiveTradeExecutor:
         try:
             is_buy = side.lower() == 'buy'
             
-            # Get current mid price for market order pricing
+            # Get current mid price for aggressive market-like order pricing
+            # Use large slippage (5%) to ensure IOC fills like a market order
             if not price:
                 mid_price = await self._get_hyperliquid_mid_price()
                 if mid_price:
-                    slippage = self.config.get('MARKET_SLIPPAGE', 0.01)
+                    # 5% slippage for aggressive market-like execution
+                    slippage = self.config.get('MARKET_SLIPPAGE', 0.05)
                     if is_buy:
                         price = mid_price * (1 + slippage)
                     else:

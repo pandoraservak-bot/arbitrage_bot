@@ -879,7 +879,8 @@ class WebDashboardServer:
                     'current_exit_spread': pos.current_exit_spread,
                     'exit_target': pos.exit_target,
                     'age': pos.get_age_formatted() if hasattr(pos, 'get_age_formatted') else '--',
-                    'should_close': pos.should_close() if hasattr(pos, 'should_close') else False
+                    'should_close': pos.should_close() if hasattr(pos, 'should_close') else False,
+                    'mode': getattr(pos, 'mode', 'paper')
                 })
         except Exception:
             pass
