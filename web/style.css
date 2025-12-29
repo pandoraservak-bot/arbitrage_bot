@@ -1161,6 +1161,26 @@ body {
     min-width: 40px;
 }
 
+.position-mode-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.position-mode-badge.paper {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.position-mode-badge.live {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
 .position-direction {
     padding: 4px 10px;
     border-radius: 12px;

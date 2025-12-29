@@ -31,6 +31,9 @@ class Position:
     # Параметры для закрытия
     exit_target: float  # Целевой ВАЛОВЫЙ спред для выхода (чем ниже/отрицательнее, тем лучше)
     
+    # Режим торговли при открытии (paper/live)
+    mode: str = "paper"  # "paper" или "live"
+    
     # Текущее состояние
     status: str = "open"  # open, closed
     current_exit_spread: float = 0.0  # Текущий ВАЛОВЫЙ спред для выхода
@@ -94,6 +97,7 @@ class Position:
             'id': self.id,
             'direction': self.direction.value,
             'status': self.status,
+            'mode': self.mode,  # Режим торговли (paper/live)
             'age_seconds': self.get_age_seconds(),
             'age_formatted': self.get_age_formatted(),
             'contracts': self.contracts,
@@ -132,6 +136,7 @@ class Position:
             'entry_spread': self.entry_spread,
             'entry_slippage': self.entry_slippage,
             'exit_target': self.exit_target,
+            'mode': self.mode,
             'status': self.status,
             'current_exit_spread': self.current_exit_spread,
             'last_spread_update': self.last_spread_update,
@@ -254,6 +259,7 @@ class Position:
         position.exit_reason = data.get('exit_reason')
         position.exit_prices = data.get('exit_prices')
         position.final_pnl = data.get('final_pnl')
+        position.mode = data.get('mode', 'paper')  # По умолчанию paper для старых позиций
 
         return position
 
@@ -806,7 +812,10 @@ class ArbitrageEngine:
             logger.error(f"   Response: {entry_result}")
             return False
         
-        # Создание позиции с учетом проскальзывания
+        # Определяем режим торговли для позиции
+        position_mode = 'live' if (TRADING_MODE.get('LIVE_ENABLED', False) and self.bot and hasattr(self.bot, 'live_executor') and self.bot.live_executor) else 'paper'
+        
+        # Создание позиции с учетом проскальзывания и режима
         position = Position(
             id=f"pos_{self.position_counter:06d}",
             direction=direction,
@@ -818,7 +827,8 @@ class ArbitrageEngine:
             },
             entry_spread=spread_data['gross_spread'],
             entry_slippage=spread_data['slippage_used'],
-            exit_target=self.config['MIN_SPREAD_EXIT'] * 100
+            exit_target=self.config['MIN_SPREAD_EXIT'] * 100,
+            mode=position_mode
         )
         
         self.open_positions.append(position)
@@ -893,15 +903,14 @@ class ArbitrageEngine:
             sell_order = {'exchange': 'hyperliquid', 'side': 'sell', 'amount': position.contracts}
             buy_order = {'exchange': 'bitget', 'side': 'buy', 'amount': position.contracts}
         
-        # Исполнение закрытия - выбор executor в зависимости от режима
-        from config import TRADING_MODE
-        
-        if TRADING_MODE.get('LIVE_ENABLED', False) and self.bot and hasattr(self.bot, 'live_executor') and self.bot.live_executor:
+        # Исполнение закрытия - выбор executor в зависимости от режима ПОЗИЦИИ (не текущего режима!)
+        # Это позволяет закрывать paper позиции из live режима и наоборот
+        if position.mode == 'live' and self.bot and hasattr(self.bot, 'live_executor') and self.bot.live_executor:
             executor = self.bot.live_executor
-            logger.info(f"Using LIVE executor for exit of {position.id}")
+            logger.info(f"Using LIVE executor for exit of {position.id} (position mode: {position.mode})")
         else:
             executor = self.paper_executor
-            logger.info(f"Using PAPER executor for exit of {position.id}")
+            logger.info(f"Using PAPER executor for exit of {position.id} (position mode: {position.mode})")
         
         exit_result = await executor.execute_fok_pair_async(
             buy_order, sell_order, f"exit_{position.id}"

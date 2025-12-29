@@ -937,6 +937,12 @@ class DashboardClient {
             positionId.className = 'position-id';
             positionId.textContent = `#${pos.id}`;
             
+            // Mode badge (Бумага/Реал)
+            const modeBadge = document.createElement('span');
+            const posMode = pos.mode || 'paper';
+            modeBadge.className = `position-mode-badge ${posMode}`;
+            modeBadge.textContent = posMode === 'live' ? 'Реал' : 'Бумага';
+            
             // Position direction
             const positionDir = document.createElement('span');
             positionDir.className = 'position-direction';
@@ -1005,6 +1011,7 @@ class DashboardClient {
             
             // Assemble position item
             positionItem.appendChild(positionId);
+            positionItem.appendChild(modeBadge);
             positionItem.appendChild(positionDir);
             positionItem.appendChild(detailsDiv);
             positionItem.appendChild(exitStatus);
