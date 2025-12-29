@@ -950,10 +950,15 @@ class WebDashboardServer:
             if hasattr(live_exec, 'get_status'):
                 live_executor_status = live_exec.get_status()
         
+        # Get paper/live trading mode from config
+        from config import TRADING_MODE
+        paper_or_live = 'live' if TRADING_MODE.get('LIVE_ENABLED', False) else 'paper'
+        
         return {
             'timestamp': datetime.now().strftime('%H:%M:%S'),
             'runtime': runtime,
             'trading_mode': mode,
+            'paper_or_live': paper_or_live,
             'trading_enabled': getattr(self.bot, 'trading_enabled', True),
             'bitget_healthy': getattr(self.bot, 'bitget_healthy', False),
             'hyper_healthy': getattr(self.bot, 'hyper_healthy', False),

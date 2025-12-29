@@ -9,11 +9,12 @@ from enum import Enum
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from config import LOGGING_CONFIG, TRADING_CONFIG, STATS_CONFIG, DISPLAY_CONFIG
+from config import LOGGING_CONFIG, TRADING_CONFIG, STATS_CONFIG, DISPLAY_CONFIG, TRADING_MODE
 from core.websocket_clients import BitgetWebSocketClient, HyperliquidWebSocketClient
 from core.risk_manager import RiskManager
 from core.paper_executor import PaperTradeExecutor
 from core.arbitrage_engine import ArbitrageEngine, TradeDirection
+from core.live_executor import LiveTradeExecutor
 
 # Try to import web server (optional)
 try:
@@ -70,6 +71,7 @@ class NVDAFuturesArbitrageBot:
         # Инициализация компонентов
         self.risk_manager = RiskManager()
         self.paper_executor = PaperTradeExecutor()
+        self.live_executor = None  # Инициализируется позже если режим live
         self.arb_engine = ArbitrageEngine(self.risk_manager, self.paper_executor, self)
         
         # WebSocket клиенты
@@ -152,6 +154,16 @@ class NVDAFuturesArbitrageBot:
             await self.risk_manager.initialize()
             await self.paper_executor.initialize()
             await self.arb_engine.initialize()
+            
+            # Инициализация live executor если режим live сохранён
+            if TRADING_MODE.get('LIVE_ENABLED', False):
+                logger.info("🔴 Загружен режим LIVE торговли из файла")
+                self.live_executor = LiveTradeExecutor()
+                await self.live_executor.initialize()
+                status = self.live_executor.get_status()
+                logger.info(f"Live executor status: HL={status.get('hyperliquid_connected')}, BG={status.get('bitget_connected')}")
+            else:
+                logger.info("📄 Режим Paper торговли")
             
             # Установка callback для обновления статистики лучших спредов выхода
             self.arb_engine.set_exit_spread_callback(self.update_exit_spread_stats)

@@ -483,6 +483,11 @@ class DashboardClient {
         this.updateRiskStatus(data);
         this.updateLiveExecutorStatus(data.live_executor_status);
         
+        // Update paper/live mode from server state (for persistence across restarts)
+        if (data.paper_or_live) {
+            this.handleTradingModeChange({ mode: data.paper_or_live || 'paper', live_executor_status: data.live_executor_status || {} });
+        }
+        
         // Handle warnings (slippage, risk, etc.)
         if (data.warnings && data.warnings.length > 0) {
             this.handleWarnings(data.warnings);
