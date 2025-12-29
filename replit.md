@@ -95,6 +95,12 @@ Set these in Replit Secrets:
 - Confirmation required before enabling live trading
 
 ## Recent Changes (Dec 29, 2025)
+- **Trading Mode Persistence**:
+  - Mode (paper/live) now persists across bot restarts via `data/trading_mode.json`
+  - `config.load_trading_mode()` loads saved mode on startup
+  - `config.save_trading_mode()` saves mode on every change
+  - LiveTradeExecutor auto-initializes on startup when mode is live
+  - Frontend restores correct mode display (badge, portfolio panel) from server's `paper_or_live` field
 - **Live Trading Executor Fix**:
   - Added `execute_fok_pair` method to LiveTradeExecutor (was missing, causing AttributeError)
   - Fixed executor selection in ArbitrageEngine to properly switch between paper and live executors
