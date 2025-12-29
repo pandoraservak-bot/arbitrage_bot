@@ -124,6 +124,13 @@ Set these in Replit Secrets:
   - Fixed executor selection in ArbitrageEngine to properly switch between paper and live executors
   - Entry and exit now check TRADING_MODE['LIVE_ENABLED'] and use appropriate executor
   - Note: Paper positions block live trading - close all paper positions before switching to live mode
+- **Position Mode Display Fix**:
+  - Added `mode` field to positions sent to frontend via WebSocket (was missing)
+  - UI now correctly displays "Реал" badge for live positions instead of "Бумага"
+- **Hyperliquid Order Execution**:
+  - Increased slippage to 5% for aggressive IOC order execution (market-like behavior)
+  - Note: Hyperliquid API only supports limit orders - IOC with aggressive price acts as market order
+  - Order type always shows as "Limit" in exchange history (this is normal for IOC)
 
 ## Previous Changes (Dec 29, 2025)
 - **Spread History Chart Improvements**:
