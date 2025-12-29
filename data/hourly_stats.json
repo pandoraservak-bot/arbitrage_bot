@@ -1,5 +1,5 @@
 {
-  "last_saved": "2025-12-29T07:13:16.649346",
+  "last_saved": "2025-12-29T14:32:29.957452",
   "stats": {
     "0": {
       "count": 0,
@@ -51,60 +51,60 @@
       "max_entry_hb": 0
     },
     "7": {
-      "count": 186,
-      "sum_entry_bh": -19.120518230464906,
-      "sum_entry_hb": 12.321936358614,
-      "max_entry_bh": -0.08408660920747879,
-      "max_entry_hb": 0.07888509071785066
+      "count": 2488,
+      "sum_entry_bh": -176.78750065841766,
+      "sum_entry_hb": 103.46681554283504,
+      "max_entry_bh": -0.005262603936440069,
+      "max_entry_hb": 0.142390043244367
     },
     "8": {
-      "count": 0,
-      "sum_entry_bh": 0.0,
-      "sum_entry_hb": 0.0,
-      "max_entry_bh": 0,
-      "max_entry_hb": 0
+      "count": 3556,
+      "sum_entry_bh": -226.96928338242262,
+      "sum_entry_hb": 107.28208607148213,
+      "max_entry_bh": 0.031742672733048316,
+      "max_entry_hb": 0.11099365750528722
     },
     "9": {
-      "count": 0,
-      "sum_entry_bh": 0.0,
-      "sum_entry_hb": 0.0,
-      "max_entry_bh": 0,
-      "max_entry_hb": 0
+      "count": 3556,
+      "sum_entry_bh": -258.3851636167708,
+      "sum_entry_hb": 111.02570494274119,
+      "max_entry_bh": 0.03724196637582278,
+      "max_entry_hb": 0.11180322632167172
     },
     "10": {
-      "count": 0,
-      "sum_entry_bh": 0.0,
-      "sum_entry_hb": 0.0,
-      "max_entry_bh": 0,
-      "max_entry_hb": 0
+      "count": 3553,
+      "sum_entry_bh": -368.8251448790619,
+      "sum_entry_hb": 252.519487978684,
+      "max_entry_bh": -0.03193357815741704,
+      "max_entry_hb": 0.12757814161175052
     },
     "11": {
-      "count": 0,
-      "sum_entry_bh": 0.0,
-      "sum_entry_hb": 0.0,
-      "max_entry_bh": 0,
-      "max_entry_hb": 0
+      "count": 3555,
+      "sum_entry_bh": -418.8204278182594,
+      "sum_entry_hb": 299.15710029609073,
+      "max_entry_bh": -0.05843603909903017,
+      "max_entry_hb": 0.14342629482071434
     },
     "12": {
-      "count": 0,
-      "sum_entry_bh": 0.0,
-      "sum_entry_hb": 0.0,
-      "max_entry_bh": 0,
-      "max_entry_hb": 0
+      "count": 3548,
+      "sum_entry_bh": -468.2451860518971,
+      "sum_entry_hb": 368.17886487249945,
+      "max_entry_bh": -0.09011874469888603,
+      "max_entry_hb": 0.14345677700440262
     },
     "13": {
-      "count": 0,
-      "sum_entry_bh": 0.0,
-      "sum_entry_hb": 0.0,
-      "max_entry_bh": 0,
-      "max_entry_hb": 0
+      "count": 3555,
+      "sum_entry_bh": -402.4961371405449,
+      "sum_entry_hb": 309.3072422340873,
+      "max_entry_bh": -0.04243356494988415,
+      "max_entry_hb": 0.16494625944449837
     },
     "14": {
-      "count": 0,
-      "sum_entry_bh": 0.0,
-      "sum_entry_hb": 0.0,
-      "max_entry_bh": 0,
-      "max_entry_hb": 0
+      "count": 1924,
+      "sum_entry_bh": -264.21184199356065,
+      "sum_entry_hb": 215.66916728631583,
+      "max_entry_bh": -0.053395984621951165,
+      "max_entry_hb": 0.23602617744877818
     },
     "15": {
       "count": 0,
