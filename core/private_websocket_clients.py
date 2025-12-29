@@ -223,7 +223,7 @@ class BitgetPrivateWS:
                     login_result = json.loads(response)
                     logger.debug(f"Bitget login response: {login_result}")
                     
-                    if login_result.get('event') == 'login' and login_result.get('code') == '0':
+                    if login_result.get('event') == 'login' and str(login_result.get('code')) == '0':
                         logger.info("Bitget private WS authenticated")
                         self.connected = True
                         self.account_data['connected'] = True

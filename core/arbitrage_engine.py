@@ -3,6 +3,7 @@ import time
 import logging
 import json
 import os
+import asyncio
 from typing import Dict, Optional, Tuple, List
 from dataclasses import dataclass, field, asdict
 from enum import Enum
@@ -286,6 +287,9 @@ class ArbitrageEngine:
         # Контроль интервала между ордерами
         self.last_order_time = 0.0
         
+        # Последние рассчитанные спреды для проверки подтверждения
+        self._last_calculated_spreads = {}
+        
         # Путь к файлу с позициями
         self.positions_file = os.path.join(DATA_DIR, "positions.json")
     
@@ -518,7 +522,27 @@ class ArbitrageEngine:
             gross_spread_hb,
         )
 
+        # Сохраняем последние спреды для подтверждения перед входом
+        self._last_calculated_spreads = result
+        self._last_spread_update_time = time.time()
+
         return result
+    
+    def _get_current_spread_for_direction(self, direction: TradeDirection) -> Optional[float]:
+        """Получить текущий спред для направления (для подтверждения перед входом)"""
+        if not self._last_calculated_spreads:
+            return None
+        
+        # Проверяем свежесть данных (не старше 2 секунд)
+        if hasattr(self, '_last_spread_update_time'):
+            if time.time() - self._last_spread_update_time > 2.0:
+                logger.warning("Spread data is stale (>2s old)")
+                return None
+        
+        spread_data = self._last_calculated_spreads.get(direction)
+        if spread_data:
+            return spread_data.get('gross_spread')
+        return None
     
     def calculate_exit_spread_for_market(self, bitget_data: Dict, hyper_data: Dict,
                                         bitget_slippage: Dict = None, hyper_slippage: Dict = None) -> Dict:
@@ -755,6 +779,23 @@ class ArbitrageEngine:
     async def execute_opportunity(self, opportunity: Tuple[TradeDirection, Dict]) -> bool:
         """Исполнение арбитражной возможности с частичным входом"""
         direction, spread_data = opportunity
+        initial_spread = spread_data['gross_spread']
+        min_spread_required = self.config['MIN_SPREAD_ENTER'] * 100
+        
+        # Задержка 1 секунда для подтверждения спреда
+        logger.info(f"⏳ Spread confirmation: waiting 1 second... (spread={initial_spread:.3f}%)")
+        await asyncio.sleep(1.0)
+        
+        # Повторная проверка спреда после задержки
+        current_spread = self._get_current_spread_for_direction(direction)
+        if current_spread is None:
+            logger.warning(f"❌ Spread confirmation FAILED: no current spread data available (was {initial_spread:.3f}%)")
+            return False
+        if current_spread < min_spread_required:
+            logger.warning(f"❌ Spread confirmation FAILED: {current_spread:.3f}% < {min_spread_required:.3f}% (was {initial_spread:.3f}%)")
+            return False
+        
+        logger.info(f"✅ Spread confirmed after 1s: {current_spread:.3f}% >= {min_spread_required:.3f}%")
         
         # Получаем текущий размер позиции для частичного входа
         current_contracts = self.get_total_position_contracts(direction)
@@ -815,17 +856,37 @@ class ArbitrageEngine:
         # Определяем режим торговли для позиции
         position_mode = 'live' if (TRADING_MODE.get('LIVE_ENABLED', False) and self.bot and hasattr(self.bot, 'live_executor') and self.bot.live_executor) else 'paper'
         
-        # Создание позиции с учетом проскальзывания и режима
+        # Получаем реальные цены исполнения из результатов ордеров
+        buy_result = entry_result.get('buy_order', {})
+        sell_result = entry_result.get('sell_order', {})
+        
+        # Используем реальные цены если доступны, иначе расчётные
+        real_buy_price = buy_result.get('avg_price', 0) or buy_result.get('price', 0) or spread_data['buy_price']
+        real_sell_price = sell_result.get('avg_price', 0) or sell_result.get('price', 0) or spread_data['sell_price']
+        
+        # Рассчитываем реальный спред на основе цен исполнения
+        if real_buy_price > 0:
+            real_entry_spread = (real_sell_price / real_buy_price - 1) * 100
+        else:
+            real_entry_spread = spread_data['gross_spread']
+        
+        logger.info(f"📊 Entry prices - Expected: buy=${spread_data['buy_price']:.2f} sell=${spread_data['sell_price']:.2f}, "
+                   f"Actual: buy=${real_buy_price:.2f} sell=${real_sell_price:.2f}, "
+                   f"Expected spread: {spread_data['gross_spread']:.3f}%, Actual spread: {real_entry_spread:.3f}%")
+        
+        # Создание позиции с реальными ценами исполнения
         position = Position(
             id=f"pos_{self.position_counter:06d}",
             direction=direction,
             entry_time=time.time(),
             contracts=position_size['contracts'],
             entry_prices={
-                'buy': spread_data['buy_price'],
-                'sell': spread_data['sell_price']
+                'buy': real_buy_price,
+                'sell': real_sell_price,
+                'expected_buy': spread_data['buy_price'],
+                'expected_sell': spread_data['sell_price']
             },
-            entry_spread=spread_data['gross_spread'],
+            entry_spread=real_entry_spread,
             entry_slippage=spread_data['slippage_used'],
             exit_target=self.config['MIN_SPREAD_EXIT'] * 100,
             mode=position_mode

@@ -373,6 +373,7 @@ class LiveTradeExecutor:
             size_rounded = round(size, 3)
             
             # Build order wire with HIP-3 asset ID directly (bypasses name_to_asset lookup)
+            # HIP-3 builder markets require limit orders - use IOC with aggressive price for market-like execution
             order_wire = {
                 "a": asset_id,
                 "b": is_buy,
@@ -402,7 +403,7 @@ class LiveTradeExecutor:
                 is_mainnet
             )
             
-            logger.info(f"Sending HIP-3 order: asset={asset_id}, is_buy={is_buy}, sz={size}, px={price}, dex={dex}")
+            logger.info(f"Sending HIP-3 IOC order: asset={asset_id}, is_buy={is_buy}, sz={size_rounded}, px={price_rounded}, dex={dex}")
             
             # Send through SDK's post_action
             result = self.hyperliquid_exchange._post_action(

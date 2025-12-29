@@ -1266,10 +1266,12 @@ class WebDashboardServer:
                     'direction_label': getattr(direction_obj, 'value', None),
                     'size': getattr(pos, 'size', 0),
                     'entry_price': pos.entry_prices if hasattr(pos, 'entry_prices') else {},
+                    'entry_spread': getattr(pos, 'entry_spread', 0),
                     'current_exit_spread': pos.current_exit_spread,
                     'exit_target': pos.exit_target,
                     'age': pos.get_age_formatted() if hasattr(pos, 'get_age_formatted') else None,
-                    'statistics': pos.get_statistics() if hasattr(pos, 'get_statistics') else {}
+                    'statistics': pos.get_statistics() if hasattr(pos, 'get_statistics') else {},
+                    'mode': getattr(pos, 'mode', 'paper')
                 })
         except Exception as e:
             return web.json_response({'error': str(e)}, status=500)
