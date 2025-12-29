@@ -329,6 +329,10 @@ class LiveTradeExecutor:
             logger.error(f"Bitget order error: {e}")
             return {'success': False, 'error': str(e)}
     
+    async def execute_fok_pair(self, buy_order: Dict, sell_order: Dict, tag: str = "") -> Dict:
+        """Execute pair of orders (buy on one exchange, sell on another) - alias for execute_fok_pair_async"""
+        return await self.execute_fok_pair_async(buy_order, sell_order, tag)
+    
     async def execute_fok_pair_async(self, buy_order: Dict, sell_order: Dict, tag: str = "") -> Dict:
         """Execute pair of orders (buy on one exchange, sell on another)"""
         if not self.initialized:

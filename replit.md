@@ -95,6 +95,13 @@ Set these in Replit Secrets:
 - Confirmation required before enabling live trading
 
 ## Recent Changes (Dec 29, 2025)
+- **Live Trading Executor Fix**:
+  - Added `execute_fok_pair` method to LiveTradeExecutor (was missing, causing AttributeError)
+  - Fixed executor selection in ArbitrageEngine to properly switch between paper and live executors
+  - Entry and exit now check TRADING_MODE['LIVE_ENABLED'] and use appropriate executor
+  - Note: Paper positions block live trading - close all paper positions before switching to live mode
+
+## Previous Changes (Dec 29, 2025)
 - **Spread History Chart Improvements**:
   - SpreadHistoryManager with deque storage (1000 points max) and JSON persistence
   - Chart.js annotation plugin for threshold lines (entry/exit targets)

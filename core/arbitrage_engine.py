@@ -691,6 +691,15 @@ class ArbitrageEngine:
         # Получаем текущий размер позиции
         current_contracts = self.get_total_position_contracts()
         
+        # Логируем лучший спред каждые 10 вызовов
+        best_spread = max((d['gross_spread'] for d in spreads.values()), default=0)
+        if not hasattr(self, '_opp_check_count'):
+            self._opp_check_count = 0
+        self._opp_check_count += 1
+        if self._opp_check_count % 100 == 0:
+            from config import TRADING_MODE
+            logger.info(f"📊 Check #{self._opp_check_count}: Best spread={best_spread:.3f}%, threshold={min_spread_required:.3f}%, live={TRADING_MODE.get('LIVE_ENABLED', False)}")
+        
         for direction, data in spreads.items():
             # Используем валовый спред без комиссий
             gross_spread = data['gross_spread']
