@@ -294,6 +294,7 @@ class WebDashboardServer:
         self.app.router.add_get('/api/heatmap', self.handle_api_heatmap)
         self.app.router.add_get('/api/export-csv', self.handle_api_export_csv)
         self.app.router.add_post('/api/clear-heatmap', self.handle_api_clear_heatmap)
+        self.app.router.add_get('/api/live-portfolio', self.handle_api_live_portfolio)
     
     async def handle_index(self, request):
         """Serve main dashboard page"""
@@ -848,6 +849,7 @@ class WebDashboardServer:
         paper_executor = getattr(self.bot, 'paper_executor', None)
         if paper_executor and hasattr(paper_executor, 'get_portfolio'):
             portfolio = paper_executor.get_portfolio()
+            logger.debug(f"collect_dashboard_data(): portfolio={portfolio}")
 
         # Total value and PnL
         total_value = 0
@@ -871,10 +873,17 @@ class WebDashboardServer:
                 direction_code = self._normalize_direction_code(direction_obj)
                 direction_label = getattr(direction_obj, 'value', None)
 
+                entry_prices = getattr(pos, 'entry_prices', {})
+                entry_spread = getattr(pos, 'entry_spread', None)
+                size = getattr(pos, 'contracts', 0)
+                
                 positions.append({
                     'id': pos.id,
                     'direction': direction_code or str(direction_obj),
                     'direction_label': direction_label,
+                    'size': size,
+                    'entry_prices': entry_prices,
+                    'entry_spread': entry_spread,
                     'exit_spread': pos.current_exit_spread,
                     'current_exit_spread': pos.current_exit_spread,
                     'exit_target': pos.exit_target,
@@ -955,6 +964,13 @@ class WebDashboardServer:
         from config import TRADING_MODE
         paper_or_live = 'live' if TRADING_MODE.get('LIVE_ENABLED', False) else 'paper'
         
+        # Get live portfolio from WebSocket cache (sync, for quick access)
+        live_portfolio = None
+        if hasattr(self.bot, 'live_executor') and self.bot.live_executor:
+            live_exec = self.bot.live_executor
+            if hasattr(live_exec, 'get_ws_portfolio'):
+                live_portfolio = live_exec.get_ws_portfolio()
+        
         return {
             'timestamp': datetime.now().strftime('%H:%M:%S'),
             'runtime': runtime,
@@ -986,7 +1002,8 @@ class WebDashboardServer:
             'config': bot_config,
             'spread_chart_data': self._get_spread_chart_data(),
             'warnings': warnings,
-            'market_status': self.market_status.get('status', 'unknown')
+            'market_status': self.market_status.get('status', 'unknown'),
+            'live_portfolio': live_portfolio
         }
     
     def _get_spread_chart_data(self) -> Dict:
@@ -1147,11 +1164,47 @@ class WebDashboardServer:
             
             live_exec.set_portfolio_callback(None)
         else:
-            logger.info("Live portfolio: Using REST polling (0.5s)")
+            logger.info(f"Live portfolio: Using REST polling (0.5s), live_exec={live_exec}, initialized={getattr(live_exec, 'initialized', None) if live_exec else None}")
+            iteration = 0
             while self.live_mode_active:
                 try:
-                    if self.ws_clients and live_exec and live_exec.initialized:
+                    iteration += 1
+                    portfolio_data = None
+                    
+                    # Re-check live_exec each iteration in case it was initialized after start
+                    if live_exec is None:
+                        live_exec = getattr(self.bot, 'live_executor', None)
+                    
+                    if live_exec and live_exec.initialized:
                         portfolio_data = await live_exec.get_live_portfolio()
+                    
+                    if iteration <= 3:
+                        print(f"[PORTFOLIO] iter={iteration}, live_exec={live_exec is not None}, init={getattr(live_exec, 'initialized', None) if live_exec else None}, data={portfolio_data is not None}, clients={len(self.ws_clients)}")
+                    
+                    # Fallback to paper portfolio if live data unavailable
+                    use_fallback = False
+                    if portfolio_data is None:
+                        use_fallback = True
+                    elif (not portfolio_data.get('hyperliquid', {}).get('connected') and 
+                          not portfolio_data.get('bitget', {}).get('connected')):
+                        use_fallback = True
+                    
+                    if use_fallback:
+                        paper_exec = getattr(self.bot, 'paper_executor', None)
+                        if paper_exec and hasattr(paper_exec, 'get_portfolio'):
+                            paper_portfolio = paper_exec.get_portfolio()
+                            usdt = paper_portfolio.get('USDT', 0)
+                            portfolio_data = {
+                                'hyperliquid': {'connected': False, 'equity': 0, 'available': 0, 'margin_used': 0},
+                                'bitget': {'connected': False, 'equity': 0, 'available': 0, 'margin_used': 0},
+                                'combined': {
+                                    'total_equity': usdt,
+                                    'total_pnl': usdt - 1000.0,
+                                    'note': 'Paper portfolio (live not connected)'
+                                }
+                            }
+                    
+                    if self.ws_clients and portfolio_data:
                         await self.broadcast('live_portfolio', portfolio_data)
                     await asyncio.sleep(0.5)
                 except asyncio.CancelledError:
@@ -1167,6 +1220,7 @@ class WebDashboardServer:
     
     async def _periodic_updates(self):
         """Send periodic updates to all connected clients"""
+        from config import TRADING_MODE
         while True:
             try:
                 self.market_status = await check_bitget_market_status()
@@ -1180,6 +1234,7 @@ class WebDashboardServer:
                         len(self.ws_clients),
                     )
                     await self.broadcast('full_update', payload)
+                
                 await asyncio.sleep(1.0)
             except asyncio.CancelledError:
                 break
@@ -1208,6 +1263,15 @@ class WebDashboardServer:
         
         # Start periodic updates
         await self.start_updates()
+        
+        # If live mode is enabled on startup, start live portfolio updates
+        from config import TRADING_MODE
+        live_exec = getattr(self.bot, 'live_executor', None)
+        print(f"[WEB] Startup check: LIVE_ENABLED={TRADING_MODE.get('LIVE_ENABLED', False)}, live_exec={live_exec is not None}, initialized={getattr(live_exec, 'initialized', None) if live_exec else None}")
+        if TRADING_MODE.get('LIVE_ENABLED', False):
+            self.live_mode_active = True
+            await self.start_live_portfolio_updates()
+            logger.info("Live mode enabled on startup, started live portfolio updates")
         
         return True
     
@@ -1264,7 +1328,7 @@ class WebDashboardServer:
                     'id': pos.id,
                     'direction': self._normalize_direction_code(direction_obj) or str(direction_obj),
                     'direction_label': getattr(direction_obj, 'value', None),
-                    'size': getattr(pos, 'size', 0),
+                    'size': getattr(pos, 'contracts', 0),
                     'entry_price': pos.entry_prices if hasattr(pos, 'entry_prices') else {},
                     'entry_spread': getattr(pos, 'entry_spread', 0),
                     'current_exit_spread': pos.current_exit_spread,
@@ -1289,6 +1353,27 @@ class WebDashboardServer:
             return web.json_response({'error': str(e)}, status=500)
 
         return web.json_response({'portfolio': portfolio})
+
+    async def handle_api_live_portfolio(self, request):
+        """API endpoint for live portfolio - diagnostic"""
+        from config import TRADING_MODE
+        try:
+            live_exec = getattr(self.bot, 'live_executor', None)
+            debug_info = {
+                'live_enabled': TRADING_MODE.get('LIVE_ENABLED', False),
+                'live_executor_exists': live_exec is not None,
+                'live_executor_initialized': getattr(live_exec, 'initialized', None) if live_exec else None,
+                'hl_connected': getattr(live_exec, 'hyperliquid_connected', None) if live_exec else None,
+                'bg_connected': getattr(live_exec, 'bitget_connected', None) if live_exec else None,
+            }
+            
+            if live_exec:
+                portfolio_data = await live_exec.get_live_portfolio()
+                return web.json_response({'debug': debug_info, 'portfolio': portfolio_data})
+            else:
+                return web.json_response({'debug': debug_info, 'error': 'live_executor not found'})
+        except Exception as e:
+            return web.json_response({'error': str(e)}, status=500)
 
     async def handle_api_stats(self, request):
         """API endpoint for session stats"""

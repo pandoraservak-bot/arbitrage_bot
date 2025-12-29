@@ -483,6 +483,11 @@ class DashboardClient {
         this.updateRiskStatus(data);
         this.updateLiveExecutorStatus(data.live_executor_status);
         
+        // Update live portfolio if available
+        if (data.live_portfolio) {
+            this.updateLivePortfolio(data.live_portfolio);
+        }
+        
         // Update paper/live mode from server state (for persistence across restarts)
         if (data.paper_or_live) {
             this.handleTradingModeChange({ mode: data.paper_or_live || 'paper', live_executor_status: data.live_executor_status || {} });
@@ -952,6 +957,34 @@ class DashboardClient {
             const detailsDiv = document.createElement('div');
             detailsDiv.className = 'position-details';
             
+            // Size detail
+            const sizeDetail = document.createElement('div');
+            sizeDetail.className = 'position-detail';
+            const sizeLabel = document.createElement('span');
+            sizeLabel.className = 'position-detail-label';
+            sizeLabel.textContent = 'Size:';
+            const sizeValue = document.createElement('span');
+            sizeValue.className = 'position-detail-value';
+            sizeValue.textContent = (pos.size || 0).toFixed(3);
+            sizeDetail.appendChild(sizeLabel);
+            sizeDetail.appendChild(sizeValue);
+            
+            // Entry spread detail (real spread from execution)
+            const entrySpreadDetail = document.createElement('div');
+            entrySpreadDetail.className = 'position-detail';
+            const entrySpreadLabel = document.createElement('span');
+            entrySpreadLabel.className = 'position-detail-label';
+            entrySpreadLabel.textContent = 'Entry:';
+            const entrySpreadValue = document.createElement('span');
+            entrySpreadValue.className = 'position-detail-value';
+            if (pos.entry_spread !== null && pos.entry_spread !== undefined) {
+                entrySpreadValue.textContent = `${pos.entry_spread.toFixed(3)}%`;
+            } else {
+                entrySpreadValue.textContent = '--';
+            }
+            entrySpreadDetail.appendChild(entrySpreadLabel);
+            entrySpreadDetail.appendChild(entrySpreadValue);
+            
             // Age detail
             const ageDetail = document.createElement('div');
             ageDetail.className = 'position-detail';
@@ -993,6 +1026,8 @@ class DashboardClient {
             targetDetail.appendChild(targetLabel);
             targetDetail.appendChild(targetBtn);
             
+            detailsDiv.appendChild(sizeDetail);
+            detailsDiv.appendChild(entrySpreadDetail);
             detailsDiv.appendChild(ageDetail);
             detailsDiv.appendChild(exitDetail);
             detailsDiv.appendChild(targetDetail);
