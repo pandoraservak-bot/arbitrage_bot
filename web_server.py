@@ -948,6 +948,27 @@ class WebDashboardServer:
         if arb_engine and hasattr(arb_engine, 'get_pending_warnings'):
             warnings = arb_engine.get_pending_warnings()
         
+        # Get live portfolio from WebSocket cache (sync, for quick access)
+        live_portfolio = None
+        if hasattr(self.bot, 'live_executor') and self.bot.live_executor:
+            live_exec = self.bot.live_executor
+            if hasattr(live_exec, 'get_ws_portfolio'):
+                live_portfolio = live_exec.get_ws_portfolio()
+        
+        # Check for position mismatch between bot and exchanges
+        if live_portfolio and positions:
+            hl_pos = live_portfolio.get('hyperliquid', {}).get('nvda_position')
+            bg_pos = live_portfolio.get('bitget', {}).get('nvda_position')
+            hl_size = abs(hl_pos.get('size', 0)) if hl_pos else 0
+            bg_size = abs(bg_pos.get('size', 0)) if bg_pos else 0
+            bot_size = sum(p.get('size', 0) for p in positions)
+            
+            if abs(hl_size - bot_size) > 0.001 or abs(bg_size - bot_size) > 0.001:
+                warnings.append({
+                    'type': 'position_mismatch',
+                    'message': f'Расхождение позиций: Бот={bot_size:.3f}, HL={hl_size:.3f}, BG={bg_size:.3f}'
+                })
+        
         # Get total position size in contracts
         total_position_contracts = 0.0
         if arb_engine and hasattr(arb_engine, 'get_total_position_contracts'):
@@ -963,13 +984,6 @@ class WebDashboardServer:
         # Get paper/live trading mode from config
         from config import TRADING_MODE
         paper_or_live = 'live' if TRADING_MODE.get('LIVE_ENABLED', False) else 'paper'
-        
-        # Get live portfolio from WebSocket cache (sync, for quick access)
-        live_portfolio = None
-        if hasattr(self.bot, 'live_executor') and self.bot.live_executor:
-            live_exec = self.bot.live_executor
-            if hasattr(live_exec, 'get_ws_portfolio'):
-                live_portfolio = live_exec.get_ws_portfolio()
         
         return {
             'timestamp': datetime.now().strftime('%H:%M:%S'),

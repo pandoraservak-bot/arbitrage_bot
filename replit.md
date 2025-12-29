@@ -147,6 +147,15 @@ Set these in Replit Secrets:
   - Integrated `live_portfolio` into `full_update` payload using synchronous `get_ws_portfolio()` method
   - Removed async broadcast which had timing issues; now uses single unified payload
   - Frontend `renderFullUpdate()` processes `live_portfolio` from main data payload
+- **Position Entry Prices Display**:
+  - Added "Цены" row in positions UI showing actual fill prices (buy/sell)
+  - Added Entry Price (entry_px) display in Live Portfolio for both Hyperliquid and Bitget
+  - Displays real execution prices from exchanges, not expected prices
+- **Position Mismatch Warning**:
+  - Compares bot's internal position size with real positions from exchanges
+  - Shows red toast error when mismatch detected (debounced to 30 seconds)
+  - Message format: "Расхождение позиций: Бот=X.XXX, HL=X.XXX, BG=X.XXX"
+  - Helps identify synchronization issues between bot and exchange positions
 
 ## Previous Changes (Dec 29, 2025)
 - **Spread History Chart Improvements**:

@@ -515,9 +515,15 @@ class DashboardClient {
     }
     
     handleWarnings(warnings) {
+        const now = Date.now();
         for (const warning of warnings) {
             if (warning.type === 'slippage_warning') {
                 toast.warning(`Slippage: ${warning.message}`);
+            } else if (warning.type === 'position_mismatch') {
+                if (!this._lastMismatchWarning || now - this._lastMismatchWarning > 30000) {
+                    toast.error(warning.message);
+                    this._lastMismatchWarning = now;
+                }
             } else {
                 toast.warning(warning.message || 'Unknown warning');
             }
@@ -864,12 +870,19 @@ class DashboardClient {
             
             const hlPos = hl.nvda_position;
             const hlPosEl = document.getElementById('hlNvdaPos');
+            const hlEntryPxEl = document.getElementById('hlEntryPx');
             if (hlPos && hlPos.size !== 0) {
                 hlPosEl.textContent = hlPos.size.toFixed(4);
                 hlPosEl.className = 'balance-value ' + (hlPos.size < 0 ? 'short' : '');
+                if (hlPos.entry_px) {
+                    hlEntryPxEl.textContent = `$${hlPos.entry_px.toFixed(2)}`;
+                } else {
+                    hlEntryPxEl.textContent = '--';
+                }
             } else {
                 hlPosEl.textContent = '0.0000';
                 hlPosEl.className = 'balance-value';
+                hlEntryPxEl.textContent = '--';
             }
         }
         
@@ -880,12 +893,19 @@ class DashboardClient {
             
             const bgPos = bg.nvda_position;
             const bgPosEl = document.getElementById('bgNvdaPos');
+            const bgEntryPxEl = document.getElementById('bgEntryPx');
             if (bgPos && bgPos.size !== 0) {
                 bgPosEl.textContent = bgPos.size.toFixed(4);
                 bgPosEl.className = 'balance-value ' + (bgPos.size < 0 ? 'short' : '');
+                if (bgPos.entry_px) {
+                    bgEntryPxEl.textContent = `$${bgPos.entry_px.toFixed(2)}`;
+                } else {
+                    bgEntryPxEl.textContent = '--';
+                }
             } else {
                 bgPosEl.textContent = '0.0000';
                 bgPosEl.className = 'balance-value';
+                bgEntryPxEl.textContent = '--';
             }
         }
         
@@ -969,12 +989,30 @@ class DashboardClient {
             sizeDetail.appendChild(sizeLabel);
             sizeDetail.appendChild(sizeValue);
             
+            // Entry prices detail (actual fill prices)
+            const entryPricesDetail = document.createElement('div');
+            entryPricesDetail.className = 'position-detail';
+            const entryPricesLabel = document.createElement('span');
+            entryPricesLabel.className = 'position-detail-label';
+            entryPricesLabel.textContent = 'Цены:';
+            const entryPricesValue = document.createElement('span');
+            entryPricesValue.className = 'position-detail-value entry-prices';
+            if (pos.entry_prices && (pos.entry_prices.buy || pos.entry_prices.sell)) {
+                const buyPrice = pos.entry_prices.buy ? `$${pos.entry_prices.buy.toFixed(2)}` : '--';
+                const sellPrice = pos.entry_prices.sell ? `$${pos.entry_prices.sell.toFixed(2)}` : '--';
+                entryPricesValue.textContent = `${buyPrice} / ${sellPrice}`;
+            } else {
+                entryPricesValue.textContent = '--';
+            }
+            entryPricesDetail.appendChild(entryPricesLabel);
+            entryPricesDetail.appendChild(entryPricesValue);
+            
             // Entry spread detail (real spread from execution)
             const entrySpreadDetail = document.createElement('div');
             entrySpreadDetail.className = 'position-detail';
             const entrySpreadLabel = document.createElement('span');
             entrySpreadLabel.className = 'position-detail-label';
-            entrySpreadLabel.textContent = 'Entry:';
+            entrySpreadLabel.textContent = 'Спред:';
             const entrySpreadValue = document.createElement('span');
             entrySpreadValue.className = 'position-detail-value';
             if (pos.entry_spread !== null && pos.entry_spread !== undefined) {
@@ -1027,6 +1065,7 @@ class DashboardClient {
             targetDetail.appendChild(targetBtn);
             
             detailsDiv.appendChild(sizeDetail);
+            detailsDiv.appendChild(entryPricesDetail);
             detailsDiv.appendChild(entrySpreadDetail);
             detailsDiv.appendChild(ageDetail);
             detailsDiv.appendChild(exitDetail);
