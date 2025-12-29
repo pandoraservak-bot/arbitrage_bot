@@ -481,6 +481,7 @@ class DashboardClient {
         this.updateStats(data);
         this.updateConfig(data);
         this.updateRiskStatus(data);
+        this.updateLiveExecutorStatus(data.live_executor_status);
         
         // Handle warnings (slippage, risk, etc.)
         if (data.warnings && data.warnings.length > 0) {
@@ -1109,6 +1110,20 @@ class DashboardClient {
         const pct = Math.min((Math.abs(dailyLoss) / dailyLimit) * 100, 100);
         const bar = document.getElementById('riskProgressBar');
         bar.style.width = `${pct}%`;
+    }
+
+    updateLiveExecutorStatus(status) {
+        if (!status || currentTradingMode !== 'live') return;
+        
+        const hlStatus = document.getElementById('hlLiveStatus');
+        const bgStatus = document.getElementById('bgLiveStatus');
+        
+        if (hlStatus) {
+            hlStatus.className = 'exchange-status ' + (status.hyperliquid_connected ? 'connected' : 'disconnected');
+        }
+        if (bgStatus) {
+            bgStatus.className = 'exchange-status ' + (status.bitget_connected ? 'connected' : 'disconnected');
+        }
     }
 
     startStatusUpdater() {

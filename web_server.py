@@ -941,6 +941,13 @@ class WebDashboardServer:
         if arb_engine and hasattr(arb_engine, 'get_total_position_contracts'):
             total_position_contracts = arb_engine.get_total_position_contracts()
         
+        # Get live executor status
+        live_executor_status = {}
+        if hasattr(self.bot, 'live_executor') and self.bot.live_executor:
+            live_exec = self.bot.live_executor
+            if hasattr(live_exec, 'get_status'):
+                live_executor_status = live_exec.get_status()
+        
         return {
             'timestamp': datetime.now().strftime('%H:%M:%S'),
             'runtime': runtime,
@@ -948,6 +955,7 @@ class WebDashboardServer:
             'trading_enabled': getattr(self.bot, 'trading_enabled', True),
             'bitget_healthy': getattr(self.bot, 'bitget_healthy', False),
             'hyper_healthy': getattr(self.bot, 'hyper_healthy', False),
+            'live_executor_status': live_executor_status,
             'bitget_latency': max(0, min(bitget_latency, 999)),  # Cap at 999ms
             'hyper_latency': max(0, min(hyper_latency, 999)),
             'session_stats': session_stats,

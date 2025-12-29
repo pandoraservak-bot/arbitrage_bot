@@ -776,9 +776,18 @@ class ArbitrageEngine:
             'estimated_slippage': spread_data['slippage_used'].get(f"{spread_data['sell_exchange']}_sell", 0.0001)
         }
         
-        # Исполнение
+        # Исполнение - выбор executor в зависимости от режима
+        from config import TRADING_MODE
         logger.info(f"Attempting to execute FOK pair: buy on {spread_data['buy_exchange']}, sell on {spread_data['sell_exchange']}")
-        entry_result = await self.paper_executor.execute_fok_pair(
+        
+        if TRADING_MODE.get('LIVE_ENABLED', False) and self.bot and hasattr(self.bot, 'live_executor') and self.bot.live_executor:
+            executor = self.bot.live_executor
+            logger.info("Using LIVE executor for entry")
+        else:
+            executor = self.paper_executor
+            logger.info("Using PAPER executor for entry")
+        
+        entry_result = await executor.execute_fok_pair(
             buy_order, sell_order, f"entry_{direction.value}"
         )
         
@@ -875,8 +884,17 @@ class ArbitrageEngine:
             sell_order = {'exchange': 'hyperliquid', 'side': 'sell', 'amount': position.contracts}
             buy_order = {'exchange': 'bitget', 'side': 'buy', 'amount': position.contracts}
         
-        # Исполнение закрытия
-        exit_result = await self.paper_executor.execute_fok_pair_async(
+        # Исполнение закрытия - выбор executor в зависимости от режима
+        from config import TRADING_MODE
+        
+        if TRADING_MODE.get('LIVE_ENABLED', False) and self.bot and hasattr(self.bot, 'live_executor') and self.bot.live_executor:
+            executor = self.bot.live_executor
+            logger.info(f"Using LIVE executor for exit of {position.id}")
+        else:
+            executor = self.paper_executor
+            logger.info(f"Using PAPER executor for exit of {position.id}")
+        
+        exit_result = await executor.execute_fok_pair_async(
             buy_order, sell_order, f"exit_{position.id}"
         )
         
