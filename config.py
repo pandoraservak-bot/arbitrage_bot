@@ -115,6 +115,40 @@ TRADING_MODE = {
     'CONFIRM_BEFORE_TRADE': True,  # Require confirmation for live trades
 }
 
+TRADING_MODE_FILE = os.path.join(DATA_DIR, "trading_mode.json")
+
+def save_trading_mode():
+    """Save current trading mode to file"""
+    import json
+    try:
+        data = {
+            'MODE': TRADING_MODE.get('MODE', 'paper'),
+            'LIVE_ENABLED': TRADING_MODE.get('LIVE_ENABLED', False)
+        }
+        with open(TRADING_MODE_FILE, 'w') as f:
+            json.dump(data, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving trading mode: {e}")
+        return False
+
+def load_trading_mode():
+    """Load trading mode from file on startup"""
+    import json
+    try:
+        if os.path.exists(TRADING_MODE_FILE):
+            with open(TRADING_MODE_FILE, 'r') as f:
+                data = json.load(f)
+            TRADING_MODE['MODE'] = data.get('MODE', 'paper')
+            TRADING_MODE['LIVE_ENABLED'] = data.get('LIVE_ENABLED', False)
+            print(f"Loaded trading mode: {TRADING_MODE['MODE']}, LIVE_ENABLED: {TRADING_MODE['LIVE_ENABLED']}")
+            return True
+    except Exception as e:
+        print(f"Error loading trading mode: {e}")
+    return False
+
+load_trading_mode()
+
 # Настройки отображения
 DISPLAY_CONFIG = {
     'DISPLAY_MODE': 'dashboard',          # Варианты: 'compact', 'ultra_compact', 'dashboard'

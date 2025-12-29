@@ -722,7 +722,7 @@ class WebDashboardServer:
     async def handle_trading_mode_change(self, mode):
         """Handle trading mode change (paper/live)"""
         try:
-            from config import TRADING_MODE
+            from config import TRADING_MODE, save_trading_mode
             
             old_mode = TRADING_MODE.get('MODE', 'paper')
             TRADING_MODE['MODE'] = mode
@@ -731,6 +731,7 @@ class WebDashboardServer:
             
             if mode == 'live':
                 TRADING_MODE['LIVE_ENABLED'] = True
+                save_trading_mode()
                 
                 if hasattr(self.bot, 'live_executor'):
                     live_exec = self.bot.live_executor
@@ -753,6 +754,7 @@ class WebDashboardServer:
                 }
             else:
                 TRADING_MODE['LIVE_ENABLED'] = False
+                save_trading_mode()
                 logger.info(f"Trading mode changed from {old_mode} to paper")
                 return {
                     'success': True,
