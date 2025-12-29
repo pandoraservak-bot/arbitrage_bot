@@ -95,6 +95,13 @@ Set these in Replit Secrets:
 - Confirmation required before enabling live trading
 
 ## Recent Changes (Dec 29, 2025)
+- **Position Mode Tracking**:
+  - Each position now records whether it was opened in "paper" or "live" mode
+  - Position class has new `mode` field with default "paper" for backward compatibility
+  - Cross-mode closing: Positions closed using the executor matching their creation mode, not current mode
+  - UI displays mode badge ("Бумага"/"Реал") for each position with color styling
+- **Hyperliquid SDK Fix**:
+  - Fixed parameter from `coin=` to `name=` in `market_open()` and `order()` methods
 - **Trading Mode Persistence**:
   - Mode (paper/live) now persists across bot restarts via `data/trading_mode.json`
   - `config.load_trading_mode()` loads saved mode on startup

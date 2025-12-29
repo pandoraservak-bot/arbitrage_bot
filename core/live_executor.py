@@ -234,7 +234,7 @@ class LiveTradeExecutor:
             
             if price:
                 order_result = self.hyperliquid_exchange.order(
-                    coin=self.hyperliquid_symbol,
+                    name=self.hyperliquid_symbol,
                     is_buy=is_buy,
                     sz=size,
                     limit_px=price,
@@ -242,7 +242,7 @@ class LiveTradeExecutor:
                 )
             else:
                 order_result = self.hyperliquid_exchange.market_open(
-                    coin=self.hyperliquid_symbol,
+                    name=self.hyperliquid_symbol,
                     is_buy=is_buy,
                     sz=size,
                     slippage=self.config.get('MARKET_SLIPPAGE', 0.001)
