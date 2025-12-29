@@ -95,6 +95,17 @@ Set these in Replit Secrets:
 - Confirmation required before enabling live trading
 
 ## Recent Changes (Dec 29, 2025)
+- **Spread Confirmation Delay**:
+  - 1-second delay before opening position with spread reconfirmation
+  - Prevents false signals from momentary spread spikes
+  - Uses `_last_calculated_spreads` with 2s staleness check
+  - Entry cancelled if spread drops below MIN_SPREAD_ENTER during delay
+- **Real Execution Prices**:
+  - Position now stores actual fill prices from `avg_price` field in exchange responses
+  - Calculates real entry spread from actual execution prices
+  - Logs comparison: expected vs actual prices and spreads
+- **Bitget Private WebSocket Fix**:
+  - Fixed authentication check: `str(code) == '0'` handles both string and numeric responses
 - **HIP-3 Trading Implementation**:
   - xyz:NVDA is a HIP-3 (builder-deployed) perpetual on TradeXYZ DEX, NOT in standard Hyperliquid universe
   - HIP-3 DEX index: 1, Asset index: 2, Asset ID: 110002 (formula: 100000 + dex_index*10000 + asset_index)
