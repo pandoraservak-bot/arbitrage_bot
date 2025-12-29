@@ -95,6 +95,17 @@ Set these in Replit Secrets:
 - Confirmation required before enabling live trading
 
 ## Recent Changes (Dec 29, 2025)
+- **HIP-3 Trading Implementation**:
+  - xyz:NVDA is a HIP-3 (builder-deployed) perpetual on TradeXYZ DEX, NOT in standard Hyperliquid universe
+  - HIP-3 DEX index: 1, Asset index: 2, Asset ID: 110002 (formula: 100000 + dex_index*10000 + asset_index)
+  - SDK's high-level methods (market_open/order) don't support HIP-3 assets
+  - Implemented raw signing API using `sign_l1_action()` with HIP-3 asset ID directly
+  - Added `_execute_hip3_order()` method for HIP-3 order execution
+  - Proper response parsing: checks statuses[] for errors/fills, only returns success when 'filled' present
+  - Price rounded to 2 decimals, size to 3 decimals (xyz:NVDA szDecimals=3)
+- **Order Size Update**:
+  - MIN_ORDER_CONTRACTS increased from 0.01 to 0.06 (~$11 at $187) to meet Bitget's $5 minimum
+  - MAX_POSITION_CONTRACTS increased from 0.02 to 0.2 for larger position capacity
 - **Position Mode Tracking**:
   - Each position now records whether it was opened in "paper" or "live" mode
   - Position class has new `mode` field with default "paper" for backward compatibility

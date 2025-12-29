@@ -276,19 +276,51 @@ class LiveTradeExecutor:
             if order_result.get('status') == 'ok':
                 statuses = order_result.get('response', {}).get('data', {}).get('statuses', [])
                 
+                # Check if any status contains an error - this means the order was rejected
+                has_error = False
+                error_msg = None
+                filled_info = None
+                
+                for status in statuses:
+                    if isinstance(status, dict):
+                        if 'error' in status:
+                            has_error = True
+                            error_msg = status['error']
+                            break
+                        if 'filled' in status:
+                            filled_info = status['filled']
+                
+                if has_error:
+                    logger.warning(f"Hyperliquid HIP-3 order rejected: {error_msg}")
+                    return {
+                        'success': False,
+                        'error': error_msg,
+                        'raw_response': order_result
+                    }
+                
+                # Verify we got a fill (for IOC orders)
+                if not filled_info:
+                    logger.warning(f"Hyperliquid HIP-3 order not filled (IOC): {statuses}")
+                    return {
+                        'success': False,
+                        'error': 'Order not filled (IOC)',
+                        'raw_response': order_result
+                    }
+                
                 result = {
                     'success': True,
                     'exchange': 'hyperliquid',
-                    'order_id': str(time.time()),
+                    'order_id': str(filled_info.get('oid', time.time())),
                     'side': side,
-                    'size': size,
-                    'status': 'filled' if statuses and 'filled' in str(statuses) else 'submitted',
+                    'size': float(filled_info.get('totalSz', size)),
+                    'avg_price': float(filled_info.get('avgPx', 0)),
+                    'status': 'filled',
                     'raw_response': order_result,
                     'timestamp': time.time()
                 }
                 
                 self.order_history.append(result)
-                logger.info(f"Hyperliquid HIP-3 order executed: {side} {size} {self.hyperliquid_symbol}")
+                logger.info(f"Hyperliquid HIP-3 order FILLED: {side} {result['size']} {self.hyperliquid_symbol} @ {result['avg_price']}")
                 return result
             else:
                 error_msg = order_result.get('response', {}).get('data', {}).get('error', 'Unknown error')
@@ -333,12 +365,17 @@ class LiveTradeExecutor:
             )
             from hyperliquid.utils import constants
             
+            # Round price to 2 decimals for NVDA (required by xyz DEX)
+            price_rounded = round(price, 2)
+            # Round size to 3 decimals (szDecimals for xyz:NVDA)
+            size_rounded = round(size, 3)
+            
             # Build order wire with HIP-3 asset ID directly (bypasses name_to_asset lookup)
             order_wire = {
                 "a": asset_id,
                 "b": is_buy,
-                "p": float_to_wire(price),
-                "s": float_to_wire(size),
+                "p": str(price_rounded),
+                "s": str(size_rounded),
                 "r": False,
                 "t": {"limit": {"tif": "Ioc"}}
             }
