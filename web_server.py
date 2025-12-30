@@ -864,10 +864,24 @@ class WebDashboardServer:
         except Exception:
             pass
 
+        # Get live portfolio from WebSocket cache (moved earlier for position size use)
+        live_portfolio = None
+        if hasattr(self.bot, 'live_executor') and self.bot.live_executor:
+            live_exec = self.bot.live_executor
+            if hasattr(live_exec, 'get_ws_portfolio'):
+                live_portfolio = live_exec.get_ws_portfolio()
+        
         # Positions
         positions = []
         try:
             open_positions = arb_engine.get_open_positions() if arb_engine and hasattr(arb_engine, 'get_open_positions') else []
+            
+            # Get real-time position sizes from exchanges via WebSocket
+            hl_pos = live_portfolio.get('hyperliquid', {}).get('nvda_position') if live_portfolio else None
+            bg_pos = live_portfolio.get('bitget', {}).get('nvda_position') if live_portfolio else None
+            hl_size = abs(float(hl_pos.get('size', 0)) or 0) if hl_pos else 0
+            bg_size = abs(float(bg_pos.get('size', 0)) or 0) if bg_pos else 0
+            
             for pos in open_positions:
                 direction_obj = getattr(pos, 'direction', None)
                 direction_code = self._normalize_direction_code(direction_obj)
@@ -875,7 +889,10 @@ class WebDashboardServer:
 
                 entry_prices = getattr(pos, 'entry_prices', {})
                 entry_spread = getattr(pos, 'entry_spread', None)
-                size = getattr(pos, 'contracts', 0)
+                
+                # Use real-time position size from exchanges instead of bot's cached value
+                # Take the size from whichever exchange has the position, or sum if split
+                size = hl_size + bg_size if (hl_size > 0 or bg_size > 0) else getattr(pos, 'contracts', 0)
                 
                 positions.append({
                     'id': pos.id,
@@ -947,13 +964,6 @@ class WebDashboardServer:
         warnings = []
         if arb_engine and hasattr(arb_engine, 'get_pending_warnings'):
             warnings = arb_engine.get_pending_warnings()
-        
-        # Get live portfolio from WebSocket cache (sync, for quick access)
-        live_portfolio = None
-        if hasattr(self.bot, 'live_executor') and self.bot.live_executor:
-            live_exec = self.bot.live_executor
-            if hasattr(live_exec, 'get_ws_portfolio'):
-                live_portfolio = live_exec.get_ws_portfolio()
         
         # Check for position mismatch between bot and exchanges
         if live_portfolio and positions:
