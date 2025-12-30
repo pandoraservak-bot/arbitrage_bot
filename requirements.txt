@@ -8,3 +8,13 @@ requests==2.31.0
 eth-account
 hyperliquid-python-sdk
 websockets
+aiohttp
+colorama
+eth-account
+hyperliquid-python-sdk
+numpy
+pandas
+python-dotenv
+requests
+websocket-client
+websockets
