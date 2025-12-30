@@ -386,6 +386,15 @@ class DashboardClient {
             case 'event':
                 this.handleEvent(data);
                 break;
+            case 'config':
+                this.updateConfig(data.payload);
+                break;
+            case 'trading_mode':
+                this.handleTradingModeChange(data.payload);
+                break;
+            case 'live_portfolio':
+                this.updateLivePortfolio(data.payload);
+                break;
             case 'pong':
                 break;
             default:
@@ -402,9 +411,44 @@ class DashboardClient {
             if (result.event_type) {
                 eventLogger.addEvent(result.message, 'success');
             }
+            this.updateBotStatusFromCommand(result.message);
         } else {
             toast.error(result.error || 'Command failed');
             eventLogger.addEvent(result.error || 'Command failed', 'error');
+        }
+    }
+
+    updateBotStatusFromCommand(message) {
+        const badge = document.getElementById('botStatusBadge');
+        if (!badge) return;
+        
+        if (message && message.toLowerCase().includes('pause')) {
+            badge.textContent = '⏸️ PAUSED';
+            badge.className = 'bot-status-badge status-paused';
+        } else if (message && message.toLowerCase().includes('stop')) {
+            badge.textContent = '⏹️ STOPPED';
+            badge.className = 'bot-status-badge status-stopped';
+        } else if (message && message.toLowerCase().includes('start')) {
+            badge.textContent = '▶️ ACTIVE';
+            badge.className = 'bot-status-badge status-active';
+        }
+    }
+
+    updateBotStatusBadge(data) {
+        const badge = document.getElementById('botStatusBadge');
+        if (!badge) return;
+        
+        const tradingEnabled = data.trading_enabled !== false;
+        
+        if (!tradingEnabled) {
+            badge.textContent = '⏸️ PAUSED';
+            badge.className = 'bot-status-badge status-paused';
+        } else if (data.trading_mode === 'stopped') {
+            badge.textContent = '⏹️ STOPPED';
+            badge.className = 'bot-status-badge status-stopped';
+        } else {
+            badge.textContent = '▶️ ACTIVE';
+            badge.className = 'bot-status-badge status-active';
         }
     }
 
@@ -437,6 +481,30 @@ class DashboardClient {
         this.updateStats(data);
         this.updateConfig(data);
         this.updateRiskStatus(data);
+        this.updateLiveExecutorStatus(data.live_executor_status);
+        
+        // Update live portfolio if available
+        if (data.live_portfolio) {
+            this.updateLivePortfolio(data.live_portfolio);
+        }
+        
+        // Update paper/live mode from server state (for persistence across restarts)
+        if (data.paper_or_live) {
+            this.handleTradingModeChange({ mode: data.paper_or_live || 'paper', live_executor_status: data.live_executor_status || {} });
+        }
+        
+        // Handle warnings (slippage, risk, etc.)
+        if (data.warnings && data.warnings.length > 0) {
+            this.handleWarnings(data.warnings);
+        }
+        
+        // Update total position contracts display
+        if (data.total_position_contracts !== undefined) {
+            const el = document.getElementById('totalPositionContracts');
+            if (el) {
+                el.textContent = data.total_position_contracts.toFixed(4);
+            }
+        }
         
         if (data.spread_chart_data) {
             updateSpreadChart(data.spread_chart_data);
@@ -445,12 +513,29 @@ class DashboardClient {
         document.getElementById('lastUpdate').textContent = 
             `Last update: ${new Date().toLocaleTimeString()}`;
     }
+    
+    handleWarnings(warnings) {
+        const now = Date.now();
+        for (const warning of warnings) {
+            if (warning.type === 'slippage_warning') {
+                toast.warning(`Slippage: ${warning.message}`);
+            } else if (warning.type === 'position_mismatch') {
+                if (!this._lastMismatchWarning || now - this._lastMismatchWarning > 30000) {
+                    toast.error(warning.message);
+                    this._lastMismatchWarning = now;
+                }
+            } else {
+                toast.warning(warning.message || 'Unknown warning');
+            }
+        }
+    }
 
     updateStatus(data) {
         if (!data) return;
         
         const mode = data.trading_mode || 'STOPPED';
-        this.updateModeBadge(mode.toLowerCase());
+        const tradingEnabled = data.trading_enabled !== false;
+        this.updateModeBadge(mode.toLowerCase(), tradingEnabled);
         
         const bitgetHealthy = data.bitget_healthy || false;
         const hyperHealthy = data.hyper_healthy || false;
@@ -467,6 +552,22 @@ class DashboardClient {
         
         if (data.hyper_latency !== undefined) {
             document.getElementById('hyperLatency').textContent = `${data.hyper_latency}ms`;
+        }
+        
+        const marketStatusEl = document.getElementById('bitgetMarketStatus');
+        if (marketStatusEl && data.market_status !== undefined) {
+            const status = data.market_status;
+            marketStatusEl.className = 'market-status';
+            if (status === 'normal') {
+                marketStatusEl.textContent = 'ОТКРЫТ';
+                marketStatusEl.classList.add('market-open');
+            } else if (status === 'maintain') {
+                marketStatusEl.textContent = 'ЗАКРЫТ';
+                marketStatusEl.classList.add('market-closed');
+            } else {
+                marketStatusEl.textContent = '--';
+                marketStatusEl.classList.add('market-unknown');
+            }
         }
         
         document.getElementById('totalTrades').textContent = 
@@ -486,13 +587,19 @@ class DashboardClient {
             `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     }
 
-    updateModeBadge(mode) {
+    updateModeBadge(mode, tradingEnabled = true) {
         const badge = document.getElementById('modeBadge');
         badge.className = 'mode-badge';
         
+        if (!tradingEnabled && mode === 'active') {
+            badge.textContent = '⏸️ PAUSED';
+            badge.classList.add('paused');
+            return;
+        }
+        
         switch (mode) {
             case 'active':
-                badge.textContent = '● ACTIVE';
+                badge.textContent = '▶️ ACTIVE';
                 badge.classList.add('active');
                 break;
             case 'partial':
@@ -500,9 +607,12 @@ class DashboardClient {
                 badge.classList.add('partial');
                 break;
             case 'stopped':
-            case 'paused':
-                badge.textContent = '● STOPPED';
+                badge.textContent = '⏹️ STOPPED';
                 badge.classList.add('stopped');
+                break;
+            case 'paused':
+                badge.textContent = '⏸️ PAUSED';
+                badge.classList.add('paused');
                 break;
             case 'connecting':
                 badge.textContent = 'CONNECTING...';
@@ -705,6 +815,108 @@ class DashboardClient {
         pnlEl.className = `total-value ${pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}`;
     }
 
+    handleTradingModeChange(data) {
+        if (!data) return;
+        
+        const mode = data.mode;
+        const status = data.live_executor_status || {};
+        
+        const badge = document.getElementById('portfolioModeBadge');
+        const paperPortfolio = document.getElementById('paperPortfolio');
+        const livePortfolio = document.getElementById('livePortfolio');
+        
+        if (mode === 'live') {
+            currentTradingMode = 'live';
+            badge.textContent = 'Live';
+            badge.className = 'portfolio-mode-badge live';
+            paperPortfolio.style.display = 'none';
+            livePortfolio.style.display = 'block';
+            
+            document.getElementById('modePaper').classList.remove('active');
+            document.getElementById('modeLive').classList.add('active');
+            
+            const hlStatus = document.getElementById('hlLiveStatus');
+            const bgStatus = document.getElementById('bgLiveStatus');
+            hlStatus.className = 'exchange-status ' + (status.hyperliquid_connected ? 'connected' : 'disconnected');
+            bgStatus.className = 'exchange-status ' + (status.bitget_connected ? 'connected' : 'disconnected');
+        } else {
+            currentTradingMode = 'paper';
+            badge.textContent = 'Paper';
+            badge.className = 'portfolio-mode-badge paper';
+            paperPortfolio.style.display = 'block';
+            livePortfolio.style.display = 'none';
+            
+            document.getElementById('modePaper').classList.add('active');
+            document.getElementById('modeLive').classList.remove('active');
+        }
+    }
+
+    updateLivePortfolio(data) {
+        if (!data) return;
+        
+        const hl = data.hyperliquid || {};
+        const bg = data.bitget || {};
+        const combined = data.combined || {};
+        
+        const hlStatus = document.getElementById('hlLiveStatus');
+        const bgStatus = document.getElementById('bgLiveStatus');
+        hlStatus.className = 'exchange-status ' + (hl.connected ? 'connected' : 'disconnected');
+        bgStatus.className = 'exchange-status ' + (bg.connected ? 'connected' : 'disconnected');
+        
+        if (hl.connected) {
+            document.getElementById('hlEquity').textContent = `$${(hl.equity || 0).toFixed(2)}`;
+            document.getElementById('hlAvailable').textContent = `$${(hl.available || 0).toFixed(2)}`;
+            document.getElementById('hlMargin').textContent = `$${(hl.margin_used || 0).toFixed(2)}`;
+            
+            const hlPos = hl.nvda_position;
+            const hlPosEl = document.getElementById('hlNvdaPos');
+            const hlEntryPxEl = document.getElementById('hlEntryPx');
+            if (hlPos && hlPos.size !== 0) {
+                hlPosEl.textContent = hlPos.size.toFixed(4);
+                hlPosEl.className = 'balance-value ' + (hlPos.size < 0 ? 'short' : '');
+                if (hlPos.entry_px) {
+                    hlEntryPxEl.textContent = `$${hlPos.entry_px.toFixed(2)}`;
+                } else {
+                    hlEntryPxEl.textContent = '--';
+                }
+            } else {
+                hlPosEl.textContent = '0.0000';
+                hlPosEl.className = 'balance-value';
+                hlEntryPxEl.textContent = '--';
+            }
+        }
+        
+        if (bg.connected) {
+            document.getElementById('bgEquity').textContent = `$${(bg.equity || 0).toFixed(2)}`;
+            document.getElementById('bgAvailable').textContent = `$${(bg.available || 0).toFixed(2)}`;
+            document.getElementById('bgMargin').textContent = `$${(bg.margin_used || 0).toFixed(2)}`;
+            
+            const bgPos = bg.nvda_position;
+            const bgPosEl = document.getElementById('bgNvdaPos');
+            const bgEntryPxEl = document.getElementById('bgEntryPx');
+            if (bgPos && bgPos.size !== 0) {
+                bgPosEl.textContent = bgPos.size.toFixed(4);
+                bgPosEl.className = 'balance-value ' + (bgPos.size < 0 ? 'short' : '');
+                if (bgPos.entry_px) {
+                    bgEntryPxEl.textContent = `$${bgPos.entry_px.toFixed(2)}`;
+                } else {
+                    bgEntryPxEl.textContent = '--';
+                }
+            } else {
+                bgPosEl.textContent = '0.0000';
+                bgPosEl.className = 'balance-value';
+                bgEntryPxEl.textContent = '--';
+            }
+        }
+        
+        document.getElementById('combinedEquity').textContent = `$${(combined.total_equity || 0).toFixed(2)}`;
+        
+        const pnl = combined.total_pnl || 0;
+        const pnlEl = document.getElementById('combinedPnl');
+        pnlEl.textContent = `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
+        pnlEl.className = `total-value ${pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}`;
+    }
+
     updatePositions(data) {
         if (!data) return;
         
@@ -750,6 +962,12 @@ class DashboardClient {
             positionId.className = 'position-id';
             positionId.textContent = `#${pos.id}`;
             
+            // Mode badge (Бумага/Реал)
+            const modeBadge = document.createElement('span');
+            const posMode = pos.mode || 'paper';
+            modeBadge.className = `position-mode-badge ${posMode}`;
+            modeBadge.textContent = posMode === 'live' ? 'Реал' : 'Бумага';
+            
             // Position direction
             const positionDir = document.createElement('span');
             positionDir.className = 'position-direction';
@@ -758,6 +976,52 @@ class DashboardClient {
             // Position details container
             const detailsDiv = document.createElement('div');
             detailsDiv.className = 'position-details';
+            
+            // Size detail
+            const sizeDetail = document.createElement('div');
+            sizeDetail.className = 'position-detail';
+            const sizeLabel = document.createElement('span');
+            sizeLabel.className = 'position-detail-label';
+            sizeLabel.textContent = 'Size:';
+            const sizeValue = document.createElement('span');
+            sizeValue.className = 'position-detail-value';
+            sizeValue.textContent = (pos.size || 0).toFixed(3);
+            sizeDetail.appendChild(sizeLabel);
+            sizeDetail.appendChild(sizeValue);
+            
+            // Entry prices detail (actual fill prices)
+            const entryPricesDetail = document.createElement('div');
+            entryPricesDetail.className = 'position-detail';
+            const entryPricesLabel = document.createElement('span');
+            entryPricesLabel.className = 'position-detail-label';
+            entryPricesLabel.textContent = 'Цены:';
+            const entryPricesValue = document.createElement('span');
+            entryPricesValue.className = 'position-detail-value entry-prices';
+            if (pos.entry_prices && (pos.entry_prices.buy || pos.entry_prices.sell)) {
+                const buyPrice = pos.entry_prices.buy ? `$${pos.entry_prices.buy.toFixed(2)}` : '--';
+                const sellPrice = pos.entry_prices.sell ? `$${pos.entry_prices.sell.toFixed(2)}` : '--';
+                entryPricesValue.textContent = `${buyPrice} / ${sellPrice}`;
+            } else {
+                entryPricesValue.textContent = '--';
+            }
+            entryPricesDetail.appendChild(entryPricesLabel);
+            entryPricesDetail.appendChild(entryPricesValue);
+            
+            // Entry spread detail (real spread from execution)
+            const entrySpreadDetail = document.createElement('div');
+            entrySpreadDetail.className = 'position-detail';
+            const entrySpreadLabel = document.createElement('span');
+            entrySpreadLabel.className = 'position-detail-label';
+            entrySpreadLabel.textContent = 'Спред:';
+            const entrySpreadValue = document.createElement('span');
+            entrySpreadValue.className = 'position-detail-value';
+            if (pos.entry_spread !== null && pos.entry_spread !== undefined) {
+                entrySpreadValue.textContent = `${pos.entry_spread.toFixed(3)}%`;
+            } else {
+                entrySpreadValue.textContent = '--';
+            }
+            entrySpreadDetail.appendChild(entrySpreadLabel);
+            entrySpreadDetail.appendChild(entrySpreadValue);
             
             // Age detail
             const ageDetail = document.createElement('div');
@@ -800,6 +1064,9 @@ class DashboardClient {
             targetDetail.appendChild(targetLabel);
             targetDetail.appendChild(targetBtn);
             
+            detailsDiv.appendChild(sizeDetail);
+            detailsDiv.appendChild(entryPricesDetail);
+            detailsDiv.appendChild(entrySpreadDetail);
             detailsDiv.appendChild(ageDetail);
             detailsDiv.appendChild(exitDetail);
             detailsDiv.appendChild(targetDetail);
@@ -818,6 +1085,7 @@ class DashboardClient {
             
             // Assemble position item
             positionItem.appendChild(positionId);
+            positionItem.appendChild(modeBadge);
             positionItem.appendChild(positionDir);
             positionItem.appendChild(detailsDiv);
             positionItem.appendChild(exitStatus);
@@ -886,12 +1154,35 @@ class DashboardClient {
             }
         }
         
-        if (config.MAX_POSITION_SIZE !== undefined) {
+        if (config.MAX_POSITION_CONTRACTS !== undefined) {
             const input = document.getElementById('maxPositionSize');
             if (input && !input.matches(':focus')) {
-                input.value = config.MAX_POSITION_SIZE;
+                input.value = config.MAX_POSITION_CONTRACTS;
             }
         }
+        
+        if (config.MIN_ORDER_CONTRACTS !== undefined) {
+            const input = document.getElementById('minOrderContracts');
+            if (input && !input.matches(':focus')) {
+                input.value = config.MIN_ORDER_CONTRACTS;
+            }
+        }
+        
+        if (config.MAX_SLIPPAGE !== undefined) {
+            const input = document.getElementById('maxSlippage');
+            if (input && !input.matches(':focus')) {
+                input.value = (config.MAX_SLIPPAGE * 100).toFixed(2);
+            }
+        }
+        
+        if (config.MIN_ORDER_INTERVAL !== undefined) {
+            const input = document.getElementById('minOrderInterval');
+            if (input && !input.matches(':focus')) {
+                input.value = config.MIN_ORDER_INTERVAL;
+            }
+        }
+        
+        updateChartThresholds(config);
     }
 
     updateRiskStatus(data) {
@@ -905,6 +1196,20 @@ class DashboardClient {
         const pct = Math.min((Math.abs(dailyLoss) / dailyLimit) * 100, 100);
         const bar = document.getElementById('riskProgressBar');
         bar.style.width = `${pct}%`;
+    }
+
+    updateLiveExecutorStatus(status) {
+        if (!status || currentTradingMode !== 'live') return;
+        
+        const hlStatus = document.getElementById('hlLiveStatus');
+        const bgStatus = document.getElementById('bgLiveStatus');
+        
+        if (hlStatus) {
+            hlStatus.className = 'exchange-status ' + (status.hyperliquid_connected ? 'connected' : 'disconnected');
+        }
+        if (bgStatus) {
+            bgStatus.className = 'exchange-status ' + (status.bitget_connected ? 'connected' : 'disconnected');
+        }
     }
 
     startStatusUpdater() {
@@ -1019,7 +1324,7 @@ class DashboardClient {
 
             // Refresh
             if (e.target.closest('[data-action="refresh"]')) {
-                requestFullUpdate();
+                dashboard.sendCommand('bot_command', { command: 'restart' });
                 return;
             }
 
@@ -1034,6 +1339,13 @@ class DashboardClient {
             const riskConfigUpdateBtn = e.target.closest('[data-config-risk-update]');
             if (riskConfigUpdateBtn) {
                 updateRiskConfig(riskConfigUpdateBtn.dataset.configRiskUpdate);
+                return;
+            }
+
+            // Trading mode toggle
+            const modeBtn = e.target.closest('.mode-btn[data-mode]');
+            if (modeBtn) {
+                setTradingMode(modeBtn.dataset.mode);
                 return;
             }
 
@@ -1247,6 +1559,53 @@ function initSpreadChart() {
                         },
                         mode: 'x',
                     }
+                },
+                annotation: {
+                    annotations: {
+                        zeroLine: {
+                            type: 'line',
+                            yMin: 0,
+                            yMax: 0,
+                            borderColor: 'rgba(156, 163, 175, 0.5)',
+                            borderWidth: 1,
+                            borderDash: [4, 4],
+                            label: {
+                                display: false
+                            }
+                        },
+                        entryThreshold: {
+                            type: 'line',
+                            yMin: 0.035,
+                            yMax: 0.035,
+                            borderColor: 'rgba(34, 197, 94, 0.7)',
+                            borderWidth: 2,
+                            borderDash: [6, 4],
+                            label: {
+                                display: true,
+                                content: 'Порог входа',
+                                position: 'start',
+                                backgroundColor: 'rgba(34, 197, 94, 0.8)',
+                                color: '#fff',
+                                font: { size: 10 }
+                            }
+                        },
+                        exitThreshold: {
+                            type: 'line',
+                            yMin: 0.006,
+                            yMax: 0.006,
+                            borderColor: 'rgba(239, 68, 68, 0.7)',
+                            borderWidth: 2,
+                            borderDash: [6, 4],
+                            label: {
+                                display: true,
+                                content: 'Порог выхода',
+                                position: 'end',
+                                backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                                color: '#fff',
+                                font: { size: 10 }
+                            }
+                        }
+                    }
                 }
             },
             scales: {
@@ -1269,8 +1628,8 @@ function initSpreadChart() {
                         },
                         font: { size: 10 }
                     },
-                    suggestedMin: -0.2,
-                    suggestedMax: 0.2
+                    min: -1,
+                    max: 1
                 }
             }
         }
@@ -1298,6 +1657,94 @@ function changeChartRange() {
     }
 }
 
+// Update chart threshold annotations from config
+function updateChartThresholds(config) {
+    if (!spreadChart || !config) return;
+    
+    const annotations = spreadChart.options.plugins.annotation.annotations;
+    
+    if (config.MIN_SPREAD_ENTER !== undefined) {
+        const entryThreshold = config.MIN_SPREAD_ENTER * 100;
+        annotations.entryThreshold.yMin = entryThreshold;
+        annotations.entryThreshold.yMax = entryThreshold;
+        annotations.entryThreshold.label.content = `Порог входа (${entryThreshold.toFixed(2)}%)`;
+    }
+    
+    if (config.MIN_SPREAD_EXIT !== undefined) {
+        const exitThreshold = config.MIN_SPREAD_EXIT * 100;
+        annotations.exitThreshold.yMin = exitThreshold;
+        annotations.exitThreshold.yMax = exitThreshold;
+        annotations.exitThreshold.label.content = `Порог выхода (${exitThreshold.toFixed(2)}%)`;
+    }
+    
+    spreadChart.update('none');
+}
+
+// Reset chart zoom
+function resetChartZoom() {
+    if (spreadChart) {
+        spreadChart.resetZoom();
+        eventLogger.addEvent('Зум графика сброшен', 'info');
+    }
+}
+
+// Update chart Y-axis scale
+function updateChartYScale(value) {
+    if (!spreadChart) return;
+    
+    const yAxis = spreadChart.options.scales.y;
+    
+    if (value === 'auto') {
+        yAxis.min = undefined;
+        yAxis.max = undefined;
+    } else {
+        const range = parseFloat(value);
+        yAxis.min = -range;
+        yAxis.max = range;
+    }
+    
+    spreadChart.update('none');
+    eventLogger.addEvent(`Масштаб Y: ±${value}%`, 'info');
+}
+
+// Current time aggregation setting
+let currentTimeAggMinutes = 1;
+
+// Update chart time aggregation
+function updateChartTimeAgg(minutes) {
+    currentTimeAggMinutes = parseInt(minutes);
+    
+    if (dashboard) {
+        dashboard.sendCommand('set_time_aggregation', { minutes: currentTimeAggMinutes });
+    }
+    
+    eventLogger.addEvent(`Агрегация: ${minutes} мин`, 'info');
+}
+
+// Export spread history to CSV
+async function exportToCSV() {
+    try {
+        const response = await fetch('/api/export-csv');
+        if (!response.ok) throw new Error('Ошибка экспорта');
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'spread_history.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        eventLogger.addEvent('История экспортирована в CSV', 'success');
+        toast.success('История спредов экспортирована');
+    } catch (error) {
+        console.error('Export error:', error);
+        toast.error('Ошибка экспорта CSV');
+    }
+}
+
 // Fullscreen chart
 function toggleFullscreen() {
     const chartCard = document.getElementById('chartCard');
@@ -1305,18 +1752,18 @@ function toggleFullscreen() {
     
     if (!chartCard.classList.contains('fullscreen')) {
         chartCard.classList.add('fullscreen');
-        btn.textContent = '🗙 Exit Fullscreen';
+        btn.textContent = '🗙 Выход';
         if (spreadChart) {
             spreadChart.resize();
         }
-        eventLogger.addEvent('Chart fullscreen enabled', 'success');
+        eventLogger.addEvent('График развёрнут на весь экран', 'success');
     } else {
         chartCard.classList.remove('fullscreen');
-        btn.textContent = '🖥️ Fullscreen';
+        btn.textContent = '🖥️ Полный экран';
         if (spreadChart) {
             spreadChart.resize();
         }
-        eventLogger.addEvent('Chart fullscreen disabled', 'success');
+        eventLogger.addEvent('График свёрнут', 'success');
     }
 }
 
@@ -1375,6 +1822,14 @@ function updateConfig(field) {
             }
             payload = { MAX_CONCURRENT_POSITIONS: value };
             break;
+        case 'min_order_interval':
+            value = parseFloat(document.getElementById('minOrderInterval').value);
+            if (isNaN(value) || value < 0 || value > 60) {
+                toast.error('Order Interval must be between 0 and 60 seconds');
+                return;
+            }
+            payload = { MIN_ORDER_INTERVAL: value };
+            break;
     }
     
     dashboard.sendCommand('update_config', { config: payload });
@@ -1395,15 +1850,85 @@ function updateRiskConfig(field) {
             break;
         case 'max_position_size':
             value = parseFloat(document.getElementById('maxPositionSize').value);
-            if (isNaN(value) || value < 0.1 || value > 100) {
-                toast.error('Max Position Size must be between 0.1 and 100');
+            if (isNaN(value) || value < 0.01 || value > 100) {
+                toast.error('Max Position Size must be between 0.01 and 100');
                 return;
             }
-            payload = { MAX_POSITION_SIZE: value };
+            payload = { MAX_POSITION_CONTRACTS: value };
+            break;
+        case 'min_order_contracts':
+            value = parseFloat(document.getElementById('minOrderContracts').value);
+            if (isNaN(value) || value < 0.001 || value > 10) {
+                toast.error('Min Order Size must be between 0.001 and 10');
+                return;
+            }
+            payload = { MIN_ORDER_CONTRACTS: value };
+            break;
+        case 'max_slippage':
+            value = parseFloat(document.getElementById('maxSlippage').value);
+            if (isNaN(value) || value < 0.01 || value > 5) {
+                toast.error('Max Slippage must be between 0.01 and 5%');
+                return;
+            }
+            payload = { MAX_SLIPPAGE: value / 100 };  // Convert to decimal
             break;
     }
     
     dashboard.sendCommand('update_risk_config', { config: payload });
+}
+
+// Trading mode management
+let currentTradingMode = 'paper';
+
+function setTradingMode(mode) {
+    if (mode === 'live' && currentTradingMode !== 'live') {
+        showModal(
+            'Включить живую торговлю',
+            '⚠️ ВНИМАНИЕ: Вы собираетесь включить ЖИВУЮ ТОРГОВЛЮ.\n\nЭто будет использовать РЕАЛЬНЫЕ ДЕНЬГИ на биржах Hyperliquid и Bitget.\n\nУбедитесь, что вы:\n1. Настроили API-ключи в Secrets\n2. Сначала протестировали на бумажной торговле\n3. Настроили правильные лимиты риска\n\nВы уверены, что хотите продолжить?',
+            () => {
+                activateTradingMode('live');
+            }
+        );
+    } else if (mode === 'paper') {
+        activateTradingMode('paper');
+    }
+}
+
+function activateTradingMode(mode) {
+    currentTradingMode = mode;
+    
+    document.getElementById('modePaper').classList.toggle('active', mode === 'paper');
+    document.getElementById('modeLive').classList.toggle('active', mode === 'live');
+    
+    const liveWarning = document.getElementById('liveWarning');
+    if (liveWarning) {
+        liveWarning.style.display = mode === 'live' ? 'block' : 'none';
+    }
+    
+    dashboard.sendCommand('set_trading_mode', { mode: mode });
+    
+    if (mode === 'live') {
+        toast.warning('Live trading mode enabled!');
+        eventLogger.addEvent('Switched to LIVE trading mode', 'warning');
+    } else {
+        toast.success('Paper trading mode enabled');
+        eventLogger.addEvent('Switched to Paper trading mode', 'info');
+    }
+}
+
+function updateApiStatus(status) {
+    const hlDot = document.querySelector('#hlStatus .status-dot');
+    const bgDot = document.querySelector('#bgStatus .status-dot');
+    
+    if (hlDot) {
+        hlDot.classList.toggle('connected', status.hyperliquid_connected);
+        hlDot.classList.toggle('disconnected', !status.hyperliquid_connected);
+    }
+    
+    if (bgDot) {
+        bgDot.classList.toggle('connected', status.bitget_connected);
+        bgDot.classList.toggle('disconnected', !status.bitget_connected);
+    }
 }
 
 // Position management
@@ -1624,3 +2149,86 @@ function confirmTargetModal() {
     
     closeTargetModal();
 }
+
+// Heatmap functions
+async function refreshHeatmap() {
+    try {
+        const response = await fetch('/api/heatmap');
+        if (!response.ok) throw new Error('Ошибка загрузки');
+        
+        const data = await response.json();
+        renderHeatmap(data.heatmap);
+    } catch (error) {
+        console.error('Heatmap error:', error);
+    }
+}
+
+function renderHeatmap(heatmapData) {
+    const grid = document.getElementById('heatmapGrid');
+    if (!grid) return;
+    
+    grid.innerHTML = '';
+    
+    let maxSpread = 0;
+    for (let hour = 0; hour < 24; hour++) {
+        const hourData = heatmapData[hour.toString()] || heatmapData[hour];
+        if (hourData && hourData.best_avg > maxSpread) {
+            maxSpread = hourData.best_avg;
+        }
+    }
+    
+    for (let hour = 0; hour < 24; hour++) {
+        const hourData = heatmapData[hour.toString()] || heatmapData[hour] || { best_avg: 0, count: 0 };
+        const cell = document.createElement('div');
+        cell.className = 'heatmap-cell';
+        
+        if (hourData.count === 0) {
+            cell.classList.add('no-data');
+            cell.innerHTML = `<span class="hour">${hour.toString().padStart(2, '0')}</span><span class="value">--</span>`;
+        } else {
+            const intensity = maxSpread > 0 ? hourData.best_avg / maxSpread : 0;
+            const color = getHeatmapColor(intensity);
+            cell.style.background = color;
+            
+            cell.innerHTML = `
+                <span class="hour">${hour.toString().padStart(2, '0')}</span>
+                <span class="value">${hourData.best_avg.toFixed(3)}%</span>
+                <span class="count">${hourData.count}</span>
+            `;
+            cell.title = `Час ${hour}:00-${hour}:59\nСр. спред: ${hourData.best_avg.toFixed(3)}%\nМакс: ${hourData.max_entry.toFixed(3)}%\nТочек: ${hourData.count}`;
+        }
+        
+        grid.appendChild(cell);
+    }
+}
+
+function getHeatmapColor(intensity) {
+    if (intensity < 0.25) {
+        return `rgba(59, 130, 246, ${0.4 + intensity * 0.6})`;
+    } else if (intensity < 0.5) {
+        return `rgba(16, 185, 129, ${0.5 + intensity * 0.5})`;
+    } else if (intensity < 0.75) {
+        return `rgba(245, 158, 11, ${0.6 + intensity * 0.4})`;
+    } else {
+        return `rgba(239, 68, 68, ${0.7 + intensity * 0.3})`;
+    }
+}
+
+// Clear heatmap statistics
+async function clearHeatmapStats() {
+    try {
+        const response = await fetch('/api/clear-heatmap', { method: 'POST' });
+        if (!response.ok) throw new Error('Ошибка очистки');
+        
+        await refreshHeatmap();
+        toast.success('Статистика тепловой карты очищена');
+        eventLogger.addEvent('Статистика тепловой карты очищена', 'warning');
+    } catch (error) {
+        console.error('Clear heatmap error:', error);
+        toast.error('Ошибка очистки статистики');
+    }
+}
+
+setTimeout(() => {
+    refreshHeatmap();
+}, 2000);

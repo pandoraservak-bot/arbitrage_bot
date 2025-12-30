@@ -9,11 +9,12 @@ from enum import Enum
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from config import LOGGING_CONFIG, TRADING_CONFIG, STATS_CONFIG, DISPLAY_CONFIG
+from config import LOGGING_CONFIG, TRADING_CONFIG, STATS_CONFIG, DISPLAY_CONFIG, TRADING_MODE
 from core.websocket_clients import BitgetWebSocketClient, HyperliquidWebSocketClient
 from core.risk_manager import RiskManager
 from core.paper_executor import PaperTradeExecutor
 from core.arbitrage_engine import ArbitrageEngine, TradeDirection
+from core.live_executor import LiveTradeExecutor
 
 # Try to import web server (optional)
 try:
@@ -70,6 +71,7 @@ class NVDAFuturesArbitrageBot:
         # Инициализация компонентов
         self.risk_manager = RiskManager()
         self.paper_executor = PaperTradeExecutor()
+        self.live_executor = None  # Инициализируется позже если режим live
         self.arb_engine = ArbitrageEngine(self.risk_manager, self.paper_executor, self)
         
         # WebSocket клиенты
@@ -78,6 +80,7 @@ class NVDAFuturesArbitrageBot:
         
         # Состояние
         self.running = False
+        self.trading_enabled = True  # Флаг для паузы торговли через UI
         self.trading_mode = TradingMode.STOPPED
         self.session_start = time.time()
         self.last_mode_change = time.time()
@@ -151,6 +154,16 @@ class NVDAFuturesArbitrageBot:
             await self.risk_manager.initialize()
             await self.paper_executor.initialize()
             await self.arb_engine.initialize()
+            
+            # Инициализация live executor если режим live сохранён
+            if TRADING_MODE.get('LIVE_ENABLED', False):
+                logger.info("🔴 Загружен режим LIVE торговли из файла")
+                self.live_executor = LiveTradeExecutor()
+                await self.live_executor.initialize()
+                status = self.live_executor.get_status()
+                logger.info(f"Live executor status: HL={status.get('hyperliquid_connected')}, BG={status.get('bitget_connected')}")
+            else:
+                logger.info("📄 Режим Paper торговли")
             
             # Установка callback для обновления статистики лучших спредов выхода
             self.arb_engine.set_exit_spread_callback(self.update_exit_spread_stats)
@@ -564,7 +577,11 @@ class NVDAFuturesArbitrageBot:
         if has_bitget_data and has_hyper_data:
             # Всегда мониторим позиции, если они есть
             if self.arb_engine.has_open_positions():
+                # Мониторинг позиций работает даже в режиме паузы
                 await self.arb_engine.monitor_positions(bitget_data, hyper_data, bitget_slippage, hyper_slippage)
+            elif not self.trading_enabled:
+                # Пауза - не открываем новые позиции
+                pass
             else:
                 # Нет позиций - ищем возможности для входа
                 opportunity = self.arb_engine.find_opportunity(
@@ -1061,7 +1078,10 @@ class NVDAFuturesArbitrageBot:
         print(f"╠{'═'*68}╣")
         
         # ===== СТРОКА 1: Время и статус =====
-        if self.trading_mode == TradingMode.ACTIVE:
+        if not self.trading_enabled:
+            mode_icon = "⏸️"
+            mode_text = "PAUSED"
+        elif self.trading_mode == TradingMode.ACTIVE:
             mode_icon = "▶️"
             mode_text = "ACTIVE"
         elif self.trading_mode == TradingMode.PARTIAL:
@@ -1234,10 +1254,10 @@ class NVDAFuturesArbitrageBot:
         # Initialize web dashboard server
         if WEB_DASHBOARD_AVAILABLE and integrate_web_dashboard:
             try:
-                self.web_dashboard = integrate_web_dashboard(self, host='0.0.0.0', port=8080)
+                self.web_dashboard = integrate_web_dashboard(self, host='0.0.0.0', port=5000)
                 if self.web_dashboard:
                     await self.web_dashboard.start()
-                    logger.info("🌐 Web Dashboard: http://0.0.0.0:8080")
+                    logger.info("🌐 Web Dashboard: http://0.0.0.0:5000")
             except Exception as e:
                 logger.warning(f"Не удалось запустить web dashboard: {e}")
         

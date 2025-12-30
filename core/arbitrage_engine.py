@@ -3,6 +3,7 @@ import time
 import logging
 import json
 import os
+import asyncio
 from typing import Dict, Optional, Tuple, List
 from dataclasses import dataclass, field, asdict
 from enum import Enum
@@ -30,6 +31,9 @@ class Position:
     
     # Параметры для закрытия
     exit_target: float  # Целевой ВАЛОВЫЙ спред для выхода (чем ниже/отрицательнее, тем лучше)
+    
+    # Режим торговли при открытии (paper/live)
+    mode: str = "paper"  # "paper" или "live"
     
     # Текущее состояние
     status: str = "open"  # open, closed
@@ -94,6 +98,7 @@ class Position:
             'id': self.id,
             'direction': self.direction.value,
             'status': self.status,
+            'mode': self.mode,  # Режим торговли (paper/live)
             'age_seconds': self.get_age_seconds(),
             'age_formatted': self.get_age_formatted(),
             'contracts': self.contracts,
@@ -132,6 +137,7 @@ class Position:
             'entry_spread': self.entry_spread,
             'entry_slippage': self.entry_slippage,
             'exit_target': self.exit_target,
+            'mode': self.mode,
             'status': self.status,
             'current_exit_spread': self.current_exit_spread,
             'last_spread_update': self.last_spread_update,
@@ -254,6 +260,7 @@ class Position:
         position.exit_reason = data.get('exit_reason')
         position.exit_prices = data.get('exit_prices')
         position.final_pnl = data.get('final_pnl')
+        position.mode = data.get('mode', 'paper')  # По умолчанию paper для старых позиций
 
         return position
 
@@ -276,6 +283,12 @@ class ArbitrageEngine:
         self.total_fees = 0.0
         self.total_pnl = 0.0
         self.total_volume = 0.0
+        
+        # Контроль интервала между ордерами
+        self.last_order_time = 0.0
+        
+        # Последние рассчитанные спреды для проверки подтверждения
+        self._last_calculated_spreads = {}
         
         # Путь к файлу с позициями
         self.positions_file = os.path.join(DATA_DIR, "positions.json")
@@ -509,7 +522,27 @@ class ArbitrageEngine:
             gross_spread_hb,
         )
 
+        # Сохраняем последние спреды для подтверждения перед входом
+        self._last_calculated_spreads = result
+        self._last_spread_update_time = time.time()
+
         return result
+    
+    def _get_current_spread_for_direction(self, direction: TradeDirection) -> Optional[float]:
+        """Получить текущий спред для направления (для подтверждения перед входом)"""
+        if not self._last_calculated_spreads:
+            return None
+        
+        # Проверяем свежесть данных (не старше 2 секунд)
+        if hasattr(self, '_last_spread_update_time'):
+            if time.time() - self._last_spread_update_time > 2.0:
+                logger.warning("Spread data is stale (>2s old)")
+                return None
+        
+        spread_data = self._last_calculated_spreads.get(direction)
+        if spread_data:
+            return spread_data.get('gross_spread')
+        return None
     
     def calculate_exit_spread_for_market(self, bitget_data: Dict, hyper_data: Dict,
                                         bitget_slippage: Dict = None, hyper_slippage: Dict = None) -> Dict:
@@ -668,6 +701,13 @@ class ArbitrageEngine:
             logger.debug("🔄 Already have open positions, skipping opportunity search")
             return None
         
+        # Проверка минимального интервала между ордерами
+        min_interval = self.config.get('MIN_ORDER_INTERVAL', 5.0)
+        time_since_last = time.time() - self.last_order_time
+        if time_since_last < min_interval:
+            logger.debug(f"⏳ Order interval: {time_since_last:.1f}s < {min_interval}s, waiting...")
+            return None
+        
         # Рассчитываем спреды с учетом реального проскальзывания (БЕЗ КОМИССИЙ)
         spreads = self.calculate_spreads(bitget_data, hyper_data, bitget_slippage, hyper_slippage)
         
@@ -677,36 +717,98 @@ class ArbitrageEngine:
         
         # MIN_SPREAD_ENTER теперь относится к валовому спреду (без комиссий)
         min_spread_required = self.config['MIN_SPREAD_ENTER'] * 100
-        # Убрали spam - логируем только при нахождении возможности
+        
+        # Получаем текущий размер позиции
+        current_contracts = self.get_total_position_contracts()
+        
+        # Логируем лучший спред каждые 10 вызовов
+        best_spread = max((d['gross_spread'] for d in spreads.values()), default=0)
+        if not hasattr(self, '_opp_check_count'):
+            self._opp_check_count = 0
+        self._opp_check_count += 1
+        if self._opp_check_count % 100 == 0:
+            from config import TRADING_MODE
+            logger.info(f"📊 Check #{self._opp_check_count}: Best spread={best_spread:.3f}%, threshold={min_spread_required:.3f}%, live={TRADING_MODE.get('LIVE_ENABLED', False)}")
         
         for direction, data in spreads.items():
             # Используем валовый спред без комиссий
             gross_spread = data['gross_spread']
             
             if gross_spread >= min_spread_required:
+                # Расчет слиппейджа для проверки
+                slippage_used = data.get('slippage_used', {})
+                max_slippage = max(
+                    slippage_used.get(f"{data['buy_exchange']}_buy", 0),
+                    slippage_used.get(f"{data['sell_exchange']}_sell", 0)
+                )
+                
                 risk_ok, reason = self.risk_manager.can_open_position(
-                    direction, gross_spread, data['buy_price']
+                    direction, gross_spread, data['buy_price'],
+                    current_position_contracts=current_contracts,
+                    slippage=max_slippage
                 )
                 if risk_ok:
                     logger.info(f"✅ Opportunity FOUND: {direction.value}, spread: {gross_spread:.3f}% - READY TO EXECUTE!")
                     return direction, data
                 else:
-                    logger.warning(f"⚠️ Risk check FAILED for {direction.value}: {reason}")
-            # Не логируем "spread too low" - это создает спам
+                    logger.debug(f"Risk check failed for {direction.value}: {reason}")
         
         return None
     
+    def _emit_slippage_warning(self, message: str, direction: 'TradeDirection', data: Dict):
+        """Эмитирует предупреждение о слишком высоком slippage для отображения в UI"""
+        warning = {
+            'type': 'slippage_warning',
+            'message': message,
+            'direction': direction.value if hasattr(direction, 'value') else str(direction),
+            'spread': data.get('gross_spread', 0),
+            'timestamp': time.time()
+        }
+        # Сохраняем для веб-интерфейса
+        if not hasattr(self, 'pending_warnings'):
+            self.pending_warnings = []
+        self.pending_warnings.append(warning)
+        logger.warning(f"⚠️ SLIPPAGE WARNING: {message}")
+    
+    def get_pending_warnings(self) -> list:
+        """Получение и очистка ожидающих предупреждений"""
+        warnings = getattr(self, 'pending_warnings', [])
+        self.pending_warnings = []
+        return warnings
+    
     async def execute_opportunity(self, opportunity: Tuple[TradeDirection, Dict]) -> bool:
-        """Исполнение арбитражной возможности с учетом проскальзывания"""
+        """Исполнение арбитражной возможности с частичным входом"""
         direction, spread_data = opportunity
+        initial_spread = spread_data['gross_spread']
+        min_spread_required = self.config['MIN_SPREAD_ENTER'] * 100
         
-        # Расчет размера позиции
+        # Задержка 1 секунда для подтверждения спреда
+        logger.info(f"⏳ Spread confirmation: waiting 1 second... (spread={initial_spread:.3f}%)")
+        await asyncio.sleep(1.0)
+        
+        # Повторная проверка спреда после задержки
+        current_spread = self._get_current_spread_for_direction(direction)
+        if current_spread is None:
+            logger.warning(f"❌ Spread confirmation FAILED: no current spread data available (was {initial_spread:.3f}%)")
+            return False
+        if current_spread < min_spread_required:
+            logger.warning(f"❌ Spread confirmation FAILED: {current_spread:.3f}% < {min_spread_required:.3f}% (was {initial_spread:.3f}%)")
+            return False
+        
+        logger.info(f"✅ Spread confirmed after 1s: {current_spread:.3f}% >= {min_spread_required:.3f}%")
+        
+        # Получаем текущий размер позиции для частичного входа
+        current_contracts = self.get_total_position_contracts(direction)
+        
+        # Расчет размера ордера (частичный вход)
         position_size = self.risk_manager.calculate_position_size(
             spread_data['buy_price'], 
-            spread_data['gross_spread']
+            spread_data['gross_spread'],
+            current_position_contracts=current_contracts
         )
         
         if position_size['contracts'] <= 0:
+            logger.warning(f"Cannot add to position: {position_size.get('reason', 'No capacity')}")
             return False
         
         # Подготовка ордеров FOK
@@ -730,9 +832,18 @@ class ArbitrageEngine:
             'estimated_slippage': spread_data['slippage_used'].get(f"{spread_data['sell_exchange']}_sell", 0.0001)
         }
         
-        # Исполнение
+        # Исполнение - выбор executor в зависимости от режима
+        from config import TRADING_MODE
         logger.info(f"Attempting to execute FOK pair: buy on {spread_data['buy_exchange']}, sell on {spread_data['sell_exchange']}")
-        entry_result = await self.paper_executor.execute_fok_pair(
+        
+        if TRADING_MODE.get('LIVE_ENABLED', False) and self.bot and hasattr(self.bot, 'live_executor') and self.bot.live_executor:
+            executor = self.bot.live_executor
+            logger.info("Using LIVE executor for entry")
+        else:
+            executor = self.paper_executor
+            logger.info("Using PAPER executor for entry")
+        
+        entry_result = await executor.execute_fok_pair(
             buy_order, sell_order, f"entry_{direction.value}"
         )
         
@@ -742,24 +853,49 @@ class ArbitrageEngine:
             logger.error(f"   Response: {entry_result}")
             return False
         
-        # Создание позиции с учетом проскальзывания
+        # Определяем режим торговли для позиции
+        position_mode = 'live' if (TRADING_MODE.get('LIVE_ENABLED', False) and self.bot and hasattr(self.bot, 'live_executor') and self.bot.live_executor) else 'paper'
+        
+        # Получаем реальные цены исполнения из результатов ордеров
+        buy_result = entry_result.get('buy_order', {})
+        sell_result = entry_result.get('sell_order', {})
+        
+        # Используем реальные цены если доступны, иначе расчётные
+        real_buy_price = buy_result.get('avg_price', 0) or buy_result.get('price', 0) or spread_data['buy_price']
+        real_sell_price = sell_result.get('avg_price', 0) or sell_result.get('price', 0) or spread_data['sell_price']
+        
+        # Рассчитываем реальный спред на основе цен исполнения
+        if real_buy_price > 0:
+            real_entry_spread = (real_sell_price / real_buy_price - 1) * 100
+        else:
+            real_entry_spread = spread_data['gross_spread']
+        
+        logger.info(f"📊 Entry prices - Expected: buy=${spread_data['buy_price']:.2f} sell=${spread_data['sell_price']:.2f}, "
+                   f"Actual: buy=${real_buy_price:.2f} sell=${real_sell_price:.2f}, "
+                   f"Expected spread: {spread_data['gross_spread']:.3f}%, Actual spread: {real_entry_spread:.3f}%")
+        
+        # Создание позиции с реальными ценами исполнения
         position = Position(
             id=f"pos_{self.position_counter:06d}",
             direction=direction,
             entry_time=time.time(),
             contracts=position_size['contracts'],
             entry_prices={
-                'buy': spread_data['buy_price'],
-                'sell': spread_data['sell_price']
+                'buy': real_buy_price,
+                'sell': real_sell_price,
+                'expected_buy': spread_data['buy_price'],
+                'expected_sell': spread_data['sell_price']
             },
-            entry_spread=spread_data['gross_spread'],
+            entry_spread=real_entry_spread,
             entry_slippage=spread_data['slippage_used'],
-            exit_target=self.config['MIN_SPREAD_EXIT'] * 100
+            exit_target=self.config['MIN_SPREAD_EXIT'] * 100,
+            mode=position_mode
         )
         
         self.open_positions.append(position)
         self.position_counter += 1
         self.total_volume += position_size['contracts'] * spread_data['buy_price']
+        self.last_order_time = time.time()
         
         logger.info(f"✅ Position opened: {position.id}, "
                    f"Direction: {direction.value}, "
@@ -828,8 +964,16 @@ class ArbitrageEngine:
             sell_order = {'exchange': 'hyperliquid', 'side': 'sell', 'amount': position.contracts}
             buy_order = {'exchange': 'bitget', 'side': 'buy', 'amount': position.contracts}
         
-        # Исполнение закрытия
-        exit_result = await self.paper_executor.execute_fok_pair_async(
+        # Исполнение закрытия - выбор executor в зависимости от режима ПОЗИЦИИ (не текущего режима!)
+        # Это позволяет закрывать paper позиции из live режима и наоборот
+        if position.mode == 'live' and self.bot and hasattr(self.bot, 'live_executor') and self.bot.live_executor:
+            executor = self.bot.live_executor
+            logger.info(f"Using LIVE executor for exit of {position.id} (position mode: {position.mode})")
+        else:
+            executor = self.paper_executor
+            logger.info(f"Using PAPER executor for exit of {position.id} (position mode: {position.mode})")
+        
+        exit_result = await executor.execute_fok_pair_async(
             buy_order, sell_order, f"exit_{position.id}"
         )
         
@@ -956,6 +1100,21 @@ class ArbitrageEngine:
     def get_open_positions(self) -> List[Position]:
         """Получение списка действительно открытых позиций"""
         return [pos for pos in self.open_positions if pos.status == 'open']
+    
+    def get_total_position_contracts(self, direction: 'TradeDirection' = None) -> float:
+        """Получение общего размера открытых позиций в контрактах
+        
+        Args:
+            direction: если указано, считаем только позиции в этом направлении
+            
+        Returns:
+            Суммарный размер в контрактах
+        """
+        total = 0.0
+        for pos in self.get_open_positions():
+            if direction is None or pos.direction == direction:
+                total += pos.contracts
+        return total
     
     def get_statistics(self) -> Dict:
         """Получение статистики движка"""

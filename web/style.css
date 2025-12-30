@@ -73,8 +73,36 @@ body {
     animation: none;
 }
 
+.bot-status-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #10b981;
+    color: #fff;
+}
+
+.bot-status-badge.status-active {
+    background: #10b981;
+}
+
+.bot-status-badge.status-paused {
+    background: #f59e0b;
+}
+
+.bot-status-badge.status-stopped {
+    background: #ef4444;
+}
+
 .mode-badge.stopped {
     background: #ef4444;
+    animation: none;
+}
+
+.mode-badge.paused {
+    background: #f59e0b;
     animation: none;
 }
 
@@ -280,6 +308,29 @@ body {
     font-size: 0.75rem;
     font-family: 'SF Mono', 'Fira Code', monospace;
     color: #6b7280;
+}
+
+.market-status {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 4px;
+}
+
+.market-status.market-open {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.market-status.market-closed {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.market-status.market-unknown {
+    background: rgba(107, 114, 128, 0.2);
+    color: #9ca3af;
 }
 
 .status-label {
@@ -571,6 +622,54 @@ body {
     border: 1px solid rgba(239, 68, 68, 0.1);
 }
 
+/* Session Records Section (inside Spreads Analysis) */
+.session-records-section {
+    display: flex;
+    gap: 20px;
+    padding: 12px 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.session-records-section .record-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.session-records-section .record-icon {
+    font-size: 1.5rem;
+}
+
+.session-records-section .record-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.session-records-section .record-label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.session-records-section .record-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #10b981;
+}
+
+.session-records-section .record-meta {
+    font-size: 0.7rem;
+    color: #6b7280;
+}
+
 /* Value coloring for spreads */
 .value-positive {
     color: #10b981;
@@ -632,6 +731,49 @@ body {
 .config-hint {
     font-size: 0.7rem;
     color: #6b7280;
+}
+
+.config-section {
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.config-section:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.config-section-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6366f1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+}
+
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.config-grid .config-item {
+    gap: 4px;
+}
+
+.config-grid .config-label {
+    font-size: 0.75rem;
+}
+
+.config-grid .config-input {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+}
+
+.config-grid .btn-config {
+    padding: 6px 10px;
+    font-size: 0.75rem;
 }
 
 /* Risk Card */
@@ -797,8 +939,114 @@ body {
     grid-column: span 2;
 }
 
+.portfolio-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.portfolio-mode-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.portfolio-mode-badge.paper {
+    background: rgba(99, 102, 241, 0.2);
+    color: #a5b4fc;
+}
+
+.portfolio-mode-badge.live {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    animation: pulse-live 2s ease-in-out infinite;
+}
+
+@keyframes pulse-live {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
 .portfolio-content {
     padding: 18px;
+}
+
+/* Live Portfolio Styles */
+.live-exchanges-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.exchange-balance-card {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.exchange-balance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.exchange-balance-header .exchange-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #a5b4fc;
+    letter-spacing: 0.5px;
+}
+
+.exchange-status {
+    font-size: 0.8rem;
+}
+
+.exchange-status.connected {
+    color: #10b981;
+}
+
+.exchange-status.disconnected {
+    color: #6b7280;
+}
+
+.balance-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.balance-label {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.balance-value {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #e5e7eb;
+}
+
+.position-row .balance-value {
+    color: #10b981;
+}
+
+.position-row .balance-value.short {
+    color: #ef4444;
+}
+
+.live-portfolio-total {
+    display: flex;
+    gap: 20px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .portfolio-main {
@@ -911,6 +1159,26 @@ body {
     font-weight: 600;
     color: #6b7280;
     min-width: 40px;
+}
+
+.position-mode-badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.position-mode-badge.paper {
+    background: rgba(251, 191, 36, 0.2);
+    color: #fbbf24;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.position-mode-badge.live {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .position-direction {
@@ -1683,6 +1951,86 @@ body {
     }
 }
 
+/* Trading Mode Toggle */
+.trading-mode-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.mode-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    color: #888;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mode-btn:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.mode-btn.active {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.mode-btn[data-mode="live"].active {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.live-warning {
+    padding: 8px 12px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    color: #ef4444;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.api-status {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    padding: 6px 0;
+}
+
+.api-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    color: #888;
+}
+
+.api-status .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #888;
+}
+
+.api-status .status-dot.connected {
+    background: #10b981;
+    box-shadow: 0 0 6px #10b981;
+}
+
+.api-status .status-dot.disconnected {
+    background: #888;
+}
+
 /* Animations */
 .card {
     animation: fadeInCard 0.3s ease-out;
@@ -1701,3 +2049,90 @@ body {
 .card:nth-child(6) { animation-delay: 0.3s; }
 .card:nth-child(7) { animation-delay: 0.35s; }
 .card:nth-child(8) { animation-delay: 0.4s; }
+
+/* Heatmap Styles */
+.heatmap-card {
+    grid-column: span 1;
+}
+
+.heatmap-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.heatmap-content {
+    padding: 15px;
+}
+
+.heatmap-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 4px;
+    margin-bottom: 15px;
+}
+
+.heatmap-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+    min-height: 40px;
+}
+
+.heatmap-cell:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+}
+
+.heatmap-cell .hour {
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.heatmap-cell .value {
+    font-size: 0.6rem;
+    opacity: 0.9;
+}
+
+.heatmap-cell .count {
+    font-size: 0.55rem;
+    opacity: 0.7;
+}
+
+.heatmap-cell.no-data {
+    background: rgba(55, 65, 81, 0.3);
+    color: #6b7280;
+}
+
+.heatmap-legend {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.legend-gradient {
+    width: 150px;
+    height: 12px;
+    border-radius: 6px;
+    background: linear-gradient(to right, 
+        rgba(59, 130, 246, 0.8),
+        rgba(16, 185, 129, 0.8),
+        rgba(245, 158, 11, 0.8),
+        rgba(239, 68, 68, 0.8)
+    );
+}
+
+.legend-label {
+    font-size: 0.7rem;
+}

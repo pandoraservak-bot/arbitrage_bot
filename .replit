@@ -16,15 +16,24 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "NVDA Arbitrage Bot"
+args = "Web Dashboard"
 
 [[workflows.workflow]]
-name = "NVDA Arbitrage Bot"
+name = "Web Dashboard"
 author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python main.py"
+waitForPort = 5000
 
-[workflows.workflow.metadata]
-outputType = "console"
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 8080
+externalPort = 8080

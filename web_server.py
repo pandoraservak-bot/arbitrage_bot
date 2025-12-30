@@ -11,12 +11,52 @@ from typing import Dict, Optional, Any
 import time
 
 try:
-    from aiohttp import web, WSMsgType
+    from aiohttp import web, WSMsgType, ClientSession
 except ImportError:
     logging.warning("aiohttp not installed. Web dashboard will not be available.")
     web = None
+    ClientSession = None
 
 logger = logging.getLogger(__name__)
+
+_bitget_market_status_cache = {
+    'status': 'unknown',
+    'last_check': 0,
+    'off_time': None,
+    'open_time': None
+}
+
+async def check_bitget_market_status() -> dict:
+    """Check Bitget NVDA futures market status (normal/maintain)"""
+    global _bitget_market_status_cache
+    
+    now = time.time()
+    if now - _bitget_market_status_cache['last_check'] < 60:
+        return _bitget_market_status_cache
+    
+    try:
+        if ClientSession is None:
+            return _bitget_market_status_cache
+            
+        async with ClientSession() as session:
+            url = "https://api.bitget.com/api/v2/mix/market/contracts"
+            params = {"productType": "USDT-FUTURES", "symbol": "NVDAUSDT"}
+            
+            async with session.get(url, params=params, timeout=5) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    if data.get('code') == '00000' and data.get('data'):
+                        contract = data['data'][0]
+                        _bitget_market_status_cache = {
+                            'status': contract.get('symbolStatus', 'unknown'),
+                            'last_check': now,
+                            'off_time': contract.get('offTime'),
+                            'open_time': contract.get('openTime')
+                        }
+    except Exception as e:
+        logger.debug(f"Error checking Bitget market status: {e}")
+    
+    return _bitget_market_status_cache
 
 
 # Content Security Policy Middleware
@@ -30,20 +70,26 @@ async def csp_middleware(request, handler):
     # chartjs-plugin-zoom uses Function constructor for dynamic function creation
     csp_policy = (
         "default-src 'self'; "
-        "script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net blob:; "
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-        "img-src 'self' data:; "
+        "img-src 'self' data: blob:; "
         "font-src 'self' https://fonts.gstatic.com; "
         "connect-src 'self' ws: wss: https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com; "
-        "frame-ancestors 'none'; "
+        "worker-src 'self' blob:; "
         "base-uri 'self'; "
         "form-action 'self'"
     )
     
     response.headers['Content-Security-Policy'] = csp_policy
     response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-XSS-Protection'] = '1; mode=block'
+    
+    # Disable caching for ALL responses to ensure updates are visible immediately
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    response.headers['ETag'] = ''
+    response.headers['Last-Modified'] = ''
     
     return response
 
@@ -103,10 +149,25 @@ def save_config_to_file(config_updates: Dict[str, Any]) -> Dict[str, Any]:
                 r"\g<1>{value}",
                 "RISK_CONFIG"
             ),
-            'MAX_POSITION_SIZE': (
+            'MAX_POSITION_CONTRACTS': (
                 r"(\"MAX_POSITION_CONTRACTS\"\s*:\s*)([0-9.-]+)",
                 r"\g<1>{value}",
                 "RISK_CONFIG"
+            ),
+            'MIN_ORDER_CONTRACTS': (
+                r"(\"MIN_ORDER_CONTRACTS\"\s*:\s*)([0-9.-]+)",
+                r"\g<1>{value}",
+                "RISK_CONFIG"
+            ),
+            'MAX_SLIPPAGE': (
+                r"(\"MAX_SLIPPAGE\"\s*:\s*)([0-9.-]+)",
+                r"\g<1>{value}",
+                "RISK_CONFIG"
+            ),
+            'MIN_ORDER_INTERVAL': (
+                r"('MIN_ORDER_INTERVAL'\s*:\s*)([0-9.-]+)",
+                r"\g<1>{value}",
+                "TRADING_CONFIG"
             ),
         }
         
@@ -177,9 +238,14 @@ class WebDashboardServer:
         self.site = None
         self.ws_clients = set()
         self.update_task = None
+        self.live_portfolio_task = None
+        self.live_mode_active = False
+        self.market_status = {'status': 'unknown', 'last_check': 0}
         
-        # Web directory path
         self.web_dir = Path(__file__).parent / "web"
+        
+        from core.spread_history import SpreadHistoryManager
+        self.spread_history = SpreadHistoryManager(max_points=1000, save_interval=60)
 
     @staticmethod
     def _normalize_direction_code(direction: Any) -> Optional[str]:
@@ -225,6 +291,10 @@ class WebDashboardServer:
         self.app.router.add_get('/api/positions', self.handle_api_positions)
         self.app.router.add_get('/api/portfolio', self.handle_api_portfolio)
         self.app.router.add_get('/api/stats', self.handle_api_stats)
+        self.app.router.add_get('/api/heatmap', self.handle_api_heatmap)
+        self.app.router.add_get('/api/export-csv', self.handle_api_export_csv)
+        self.app.router.add_post('/api/clear-heatmap', self.handle_api_clear_heatmap)
+        self.app.router.add_get('/api/live-portfolio', self.handle_api_live_portfolio)
     
     async def handle_index(self, request):
         """Serve main dashboard page"""
@@ -244,6 +314,9 @@ class WebDashboardServer:
         # Add client
         self.ws_clients.add(ws)
         logger.info(f"WebSocket client connected. Total clients: {len(self.ws_clients)}")
+        
+        # Send initial config to the new client
+        await self.send_initial_config(ws)
         
         try:
             async for msg in ws:
@@ -289,7 +362,9 @@ class WebDashboardServer:
         elif msg_type == 'bot_command':
             # Handle bot control commands (start/pause/stop)
             command = data.get('command', '').lower()
+            logger.info(f"[WS] Received bot_command: {command}")
             result = await self.handle_bot_command(command)
+            logger.info(f"[WS] bot_command result: {result}")
             await self.send_to_client(ws, 'command_result', result)
         
         elif msg_type == 'update_config':
@@ -311,6 +386,23 @@ class WebDashboardServer:
                 'enabled': getattr(self.bot, 'trading_enabled', True)
             })
         
+        elif msg_type == 'set_trading_mode':
+            # Set trading mode (paper/live)
+            mode = data.get('mode', 'paper')
+            result = await self.handle_trading_mode_change(mode)
+            await self.send_to_client(ws, 'command_result', result)
+            await self.send_to_client(ws, 'trading_mode', {
+                'mode': mode,
+                'live_executor_status': result.get('live_executor_status', {})
+            })
+            
+            if mode == 'live':
+                self.live_mode_active = True
+                await self.start_live_portfolio_updates()
+            else:
+                self.live_mode_active = False
+                await self.stop_live_portfolio_updates()
+        
         elif msg_type == 'update_position_exit_spread':
             # Update exit_target for a specific position
             position_id = data.get('position_id')
@@ -329,9 +421,12 @@ class WebDashboardServer:
             positions = arb_engine.get_open_positions()
             for pos in positions:
                 if pos.id == position_id:
-                    # Execute close logic
-                    if hasattr(arb_engine, 'close_position'):
-                        await arb_engine.close_position(pos)
+                    if hasattr(arb_engine, 'force_close_position'):
+                        await arb_engine.force_close_position(pos, "Manual close via dashboard")
+                        return True
+                    elif hasattr(arb_engine, 'close_position'):
+                        current_spread = getattr(pos, 'current_exit_spread', 0.0)
+                        await arb_engine.close_position(pos, current_spread, "Manual close via dashboard")
                         return True
             return False
         except Exception as e:
@@ -389,6 +484,18 @@ class WebDashboardServer:
                 return {
                     'success': True,
                     'message': f'Bot {command}ped successfully'
+                }
+            elif command == 'restart':
+                # Restart bot - reset session and re-enable trading
+                if hasattr(self.bot, 'trading_enabled'):
+                    self.bot.trading_enabled = True
+                if hasattr(self.bot, 'session_start'):
+                    self.bot.session_start = time.time()
+                if hasattr(self.bot, 'arb_engine') and hasattr(self.bot.arb_engine, 'reset_session_records'):
+                    self.bot.arb_engine.reset_session_records()
+                return {
+                    'success': True,
+                    'message': 'Bot restarted successfully'
                 }
             else:
                 return {
@@ -454,12 +561,28 @@ class WebDashboardServer:
                 if 1 <= value <= 10:
                     if isinstance(bot_config, dict):
                         bot_config['MAX_CONCURRENT_POSITIONS'] = value
-                    # Note: This field is not in config.py, only in memory
                     updated_fields.append(f"MAX_CONCURRENT_POSITIONS={value}")
                 else:
                     return {
                         'success': False,
                         'error': 'MAX_CONCURRENT_POSITIONS must be between 1 and 10'
+                    }
+
+            if 'MIN_ORDER_INTERVAL' in config:
+                value = float(config['MIN_ORDER_INTERVAL'])
+                if 0 <= value <= 60:
+                    if isinstance(bot_config, dict):
+                        bot_config['MIN_ORDER_INTERVAL'] = value
+                    # Update arbitrage_engine config
+                    arb_engine = getattr(self.bot, 'arbitrage_engine', None)
+                    if arb_engine:
+                        arb_engine.config['MIN_ORDER_INTERVAL'] = value
+                    config_to_save['MIN_ORDER_INTERVAL'] = value
+                    updated_fields.append(f"MIN_ORDER_INTERVAL={value}s")
+                else:
+                    return {
+                        'success': False,
+                        'error': 'MIN_ORDER_INTERVAL must be between 0 and 60 seconds'
                     }
 
             if updated_fields:
@@ -504,6 +627,10 @@ class WebDashboardServer:
                 if 10 <= value <= 10000:
                     if isinstance(bot_config, dict):
                         bot_config['DAILY_LOSS_LIMIT'] = value
+                    # Update risk_manager config
+                    risk_manager = getattr(self.bot, 'risk_manager', None)
+                    if risk_manager:
+                        risk_manager.config['MAX_DAILY_LOSS'] = value
                     config_to_save['DAILY_LOSS_LIMIT'] = value
                     updated_fields.append(f"DAILY_LOSS_LIMIT=${value}")
                 else:
@@ -512,17 +639,55 @@ class WebDashboardServer:
                         'error': 'DAILY_LOSS_LIMIT must be between 10 and 10000'
                     }
 
-            if 'MAX_POSITION_SIZE' in config:
-                value = float(config['MAX_POSITION_SIZE'])
-                if 0.1 <= value <= 100:
+            if 'MAX_POSITION_CONTRACTS' in config:
+                value = float(config['MAX_POSITION_CONTRACTS'])
+                if 0.01 <= value <= 100:
                     if isinstance(bot_config, dict):
-                        bot_config['MAX_POSITION_SIZE'] = value
-                    config_to_save['MAX_POSITION_SIZE'] = value
-                    updated_fields.append(f"MAX_POSITION_SIZE={value}")
+                        bot_config['MAX_POSITION_CONTRACTS'] = value
+                    # Update risk_manager config
+                    risk_manager = getattr(self.bot, 'risk_manager', None)
+                    if risk_manager:
+                        risk_manager.config['MAX_POSITION_CONTRACTS'] = value
+                    config_to_save['MAX_POSITION_CONTRACTS'] = value
+                    updated_fields.append(f"MAX_POSITION_CONTRACTS={value}")
                 else:
                     return {
                         'success': False,
-                        'error': 'MAX_POSITION_SIZE must be between 0.1 and 100'
+                        'error': 'MAX_POSITION_CONTRACTS must be between 0.01 and 100'
+                    }
+            
+            if 'MIN_ORDER_CONTRACTS' in config:
+                value = float(config['MIN_ORDER_CONTRACTS'])
+                if 0.001 <= value <= 10:
+                    if isinstance(bot_config, dict):
+                        bot_config['MIN_ORDER_CONTRACTS'] = value
+                    # Update risk_manager config
+                    risk_manager = getattr(self.bot, 'risk_manager', None)
+                    if risk_manager:
+                        risk_manager.config['MIN_ORDER_CONTRACTS'] = value
+                    config_to_save['MIN_ORDER_CONTRACTS'] = value
+                    updated_fields.append(f"MIN_ORDER_CONTRACTS={value}")
+                else:
+                    return {
+                        'success': False,
+                        'error': 'MIN_ORDER_CONTRACTS must be between 0.001 and 10'
+                    }
+            
+            if 'MAX_SLIPPAGE' in config:
+                value = float(config['MAX_SLIPPAGE'])
+                if 0.0001 <= value <= 0.05:  # 0.01% to 5%
+                    if isinstance(bot_config, dict):
+                        bot_config['MAX_SLIPPAGE'] = value
+                    # Update risk_manager config
+                    risk_manager = getattr(self.bot, 'risk_manager', None)
+                    if risk_manager:
+                        risk_manager.config['MAX_SLIPPAGE'] = value
+                    config_to_save['MAX_SLIPPAGE'] = value
+                    updated_fields.append(f"MAX_SLIPPAGE={value*100:.3f}%")
+                else:
+                    return {
+                        'success': False,
+                        'error': 'MAX_SLIPPAGE must be between 0.01% and 5%'
                     }
 
             if updated_fields:
@@ -553,6 +718,58 @@ class WebDashboardServer:
             return {
                 'success': False,
                 'error': str(e)
+            }
+    
+    async def handle_trading_mode_change(self, mode):
+        """Handle trading mode change (paper/live)"""
+        try:
+            from config import TRADING_MODE, save_trading_mode
+            
+            old_mode = TRADING_MODE.get('MODE', 'paper')
+            TRADING_MODE['MODE'] = mode
+            
+            live_executor_status = {}
+            
+            if mode == 'live':
+                TRADING_MODE['LIVE_ENABLED'] = True
+                save_trading_mode()
+                
+                if hasattr(self.bot, 'live_executor'):
+                    live_exec = self.bot.live_executor
+                    if live_exec and hasattr(live_exec, 'initialize'):
+                        if not live_exec.initialized:
+                            await live_exec.initialize()
+                        live_executor_status = live_exec.get_status() if hasattr(live_exec, 'get_status') else {}
+                else:
+                    from core.live_executor import LiveTradeExecutor
+                    self.bot.live_executor = LiveTradeExecutor()
+                    await self.bot.live_executor.initialize()
+                    live_executor_status = self.bot.live_executor.get_status()
+                
+                logger.warning(f"Trading mode changed from {old_mode} to LIVE")
+                return {
+                    'success': True,
+                    'message': f'Trading mode changed to LIVE. API Status: HL={live_executor_status.get("hyperliquid_connected", False)}, BG={live_executor_status.get("bitget_connected", False)}',
+                    'event_type': 'warning',
+                    'live_executor_status': live_executor_status
+                }
+            else:
+                TRADING_MODE['LIVE_ENABLED'] = False
+                save_trading_mode()
+                logger.info(f"Trading mode changed from {old_mode} to paper")
+                return {
+                    'success': True,
+                    'message': 'Trading mode changed to Paper',
+                    'event_type': 'success',
+                    'live_executor_status': {}
+                }
+                
+        except Exception as e:
+            logger.error(f"Error changing trading mode: {e}")
+            return {
+                'success': False,
+                'error': str(e),
+                'live_executor_status': {}
             }
     
     def collect_dashboard_data(self):
@@ -632,6 +849,7 @@ class WebDashboardServer:
         paper_executor = getattr(self.bot, 'paper_executor', None)
         if paper_executor and hasattr(paper_executor, 'get_portfolio'):
             portfolio = paper_executor.get_portfolio()
+            logger.debug(f"collect_dashboard_data(): portfolio={portfolio}")
 
         # Total value and PnL
         total_value = 0
@@ -655,15 +873,23 @@ class WebDashboardServer:
                 direction_code = self._normalize_direction_code(direction_obj)
                 direction_label = getattr(direction_obj, 'value', None)
 
+                entry_prices = getattr(pos, 'entry_prices', {})
+                entry_spread = getattr(pos, 'entry_spread', None)
+                size = getattr(pos, 'contracts', 0)
+                
                 positions.append({
                     'id': pos.id,
                     'direction': direction_code or str(direction_obj),
                     'direction_label': direction_label,
+                    'size': size,
+                    'entry_prices': entry_prices,
+                    'entry_spread': entry_spread,
                     'exit_spread': pos.current_exit_spread,
                     'current_exit_spread': pos.current_exit_spread,
                     'exit_target': pos.exit_target,
                     'age': pos.get_age_formatted() if hasattr(pos, 'get_age_formatted') else '--',
-                    'should_close': pos.should_close() if hasattr(pos, 'should_close') else False
+                    'should_close': pos.should_close() if hasattr(pos, 'should_close') else False,
+                    'mode': getattr(pos, 'mode', 'paper')
                 })
         except Exception:
             pass
@@ -717,12 +943,57 @@ class WebDashboardServer:
             best_exit_direction = self._normalize_direction_code(best_spreads_session.get('best_exit_direction'))
             best_exit_time = best_spreads_session.get('best_exit_time')
 
+        # Collect pending warnings from arb_engine
+        warnings = []
+        if arb_engine and hasattr(arb_engine, 'get_pending_warnings'):
+            warnings = arb_engine.get_pending_warnings()
+        
+        # Get live portfolio from WebSocket cache (sync, for quick access)
+        live_portfolio = None
+        if hasattr(self.bot, 'live_executor') and self.bot.live_executor:
+            live_exec = self.bot.live_executor
+            if hasattr(live_exec, 'get_ws_portfolio'):
+                live_portfolio = live_exec.get_ws_portfolio()
+        
+        # Check for position mismatch between bot and exchanges
+        if live_portfolio and positions:
+            hl_pos = live_portfolio.get('hyperliquid', {}).get('nvda_position')
+            bg_pos = live_portfolio.get('bitget', {}).get('nvda_position')
+            hl_size = abs(hl_pos.get('size', 0)) if hl_pos else 0
+            bg_size = abs(bg_pos.get('size', 0)) if bg_pos else 0
+            bot_size = sum(p.get('size', 0) for p in positions)
+            
+            if abs(hl_size - bot_size) > 0.001 or abs(bg_size - bot_size) > 0.001:
+                warnings.append({
+                    'type': 'position_mismatch',
+                    'message': f'Расхождение позиций: Бот={bot_size:.3f}, HL={hl_size:.3f}, BG={bg_size:.3f}'
+                })
+        
+        # Get total position size in contracts
+        total_position_contracts = 0.0
+        if arb_engine and hasattr(arb_engine, 'get_total_position_contracts'):
+            total_position_contracts = arb_engine.get_total_position_contracts()
+        
+        # Get live executor status
+        live_executor_status = {}
+        if hasattr(self.bot, 'live_executor') and self.bot.live_executor:
+            live_exec = self.bot.live_executor
+            if hasattr(live_exec, 'get_status'):
+                live_executor_status = live_exec.get_status()
+        
+        # Get paper/live trading mode from config
+        from config import TRADING_MODE
+        paper_or_live = 'live' if TRADING_MODE.get('LIVE_ENABLED', False) else 'paper'
+        
         return {
             'timestamp': datetime.now().strftime('%H:%M:%S'),
             'runtime': runtime,
             'trading_mode': mode,
+            'paper_or_live': paper_or_live,
+            'trading_enabled': getattr(self.bot, 'trading_enabled', True),
             'bitget_healthy': getattr(self.bot, 'bitget_healthy', False),
             'hyper_healthy': getattr(self.bot, 'hyper_healthy', False),
+            'live_executor_status': live_executor_status,
             'bitget_latency': max(0, min(bitget_latency, 999)),  # Cap at 999ms
             'hyper_latency': max(0, min(hyper_latency, 999)),
             'session_stats': session_stats,
@@ -741,85 +1012,69 @@ class WebDashboardServer:
             'pnl': pnl,
             'daily_loss': daily_loss,
             'positions': positions,
+            'total_position_contracts': total_position_contracts,
             'config': bot_config,
-            'spread_chart_data': self._get_spread_chart_data()
+            'spread_chart_data': self._get_spread_chart_data(),
+            'warnings': warnings,
+            'market_status': self.market_status.get('status', 'unknown'),
+            'live_portfolio': live_portfolio
         }
     
     def _get_spread_chart_data(self) -> Dict:
-        """Получение данных для графика спредов"""
+        """Получение данных для графика спредов из истории"""
         try:
-            # Получаем историю спредов из arb_engine или создаем из текущих данных
-            if hasattr(self.bot, 'arb_engine') and hasattr(self.bot.arb_engine, 'get_spread_history'):
-                # Если есть менеджер истории
-                history_data = self.bot.arb_engine.get_spread_history(100)
-                if history_data:
-                    return history_data
-
-            # Иначе создаем из текущих данных
+            return self.spread_history.get_chart_data(limit=500)
+        except Exception as e:
+            logger.debug(f"Error getting spread chart data: {e}")
+            return self._empty_chart_data()
+    
+    def _record_current_spreads(self):
+        """Записать текущие спреды в историю"""
+        try:
             bitget_ws = getattr(self.bot, 'bitget_ws', None)
             hyper_ws = getattr(self.bot, 'hyper_ws', None)
             arb_engine = getattr(self.bot, 'arb_engine', None)
 
             if not bitget_ws or not hyper_ws or not arb_engine:
-                return self._empty_chart_data()
+                return
 
             bitget_data = bitget_ws.get_latest_data() if hasattr(bitget_ws, 'get_latest_data') else None
             hyper_data = hyper_ws.get_latest_data() if hasattr(hyper_ws, 'get_latest_data') else None
 
-            if bitget_data and hyper_data:
-                bitget_slippage = bitget_ws.get_estimated_slippage() if hasattr(bitget_ws, 'get_estimated_slippage') else None
-                hyper_slippage = hyper_ws.get_estimated_slippage() if hasattr(hyper_ws, 'get_estimated_slippage') else None
+            if not bitget_data or not hyper_data:
+                return
 
-                spreads = arb_engine.calculate_spreads(
-                    bitget_data, hyper_data, bitget_slippage, hyper_slippage
-                ) if hasattr(arb_engine, 'calculate_spreads') else {}
+            bitget_slippage = bitget_ws.get_estimated_slippage() if hasattr(bitget_ws, 'get_estimated_slippage') else None
+            hyper_slippage = hyper_ws.get_estimated_slippage() if hasattr(hyper_ws, 'get_estimated_slippage') else None
 
-                exit_spreads = arb_engine.calculate_exit_spread_for_market(
-                    bitget_data, hyper_data, bitget_slippage, hyper_slippage
-                ) if hasattr(arb_engine, 'calculate_exit_spread_for_market') else {}
+            spreads = arb_engine.calculate_spreads(
+                bitget_data, hyper_data, bitget_slippage, hyper_slippage
+            ) if hasattr(arb_engine, 'calculate_spreads') else {}
 
-                if spreads and exit_spreads:
-                    entry_bh = 0.0
-                    entry_hb = 0.0
-                    for direction, spread_data in spreads.items():
-                        code = self._normalize_direction_code(direction)
-                        if not code or not isinstance(spread_data, dict):
-                            continue
-                        if code == 'B_TO_H':
-                            entry_bh = float(spread_data.get('gross_spread', 0) or 0)
-                        elif code == 'H_TO_B':
-                            entry_hb = float(spread_data.get('gross_spread', 0) or 0)
+            exit_spreads_raw = arb_engine.calculate_exit_spread_for_market(
+                bitget_data, hyper_data, bitget_slippage, hyper_slippage
+            ) if hasattr(arb_engine, 'calculate_exit_spread_for_market') else {}
 
-                    exit_bh = 0.0
-                    exit_hb = 0.0
-                    for direction, spread_value in exit_spreads.items():
-                        code = self._normalize_direction_code(direction)
-                        if not code:
-                            continue
-                        if code == 'B_TO_H':
-                            exit_bh = float(spread_value or 0)
-                        elif code == 'H_TO_B':
-                            exit_hb = float(spread_value or 0)
+            if spreads and exit_spreads_raw:
+                entry_spreads = {}
+                exit_spreads = {}
+                
+                for direction, spread_data in spreads.items():
+                    code = self._normalize_direction_code(direction)
+                    if code and isinstance(spread_data, dict):
+                        entry_spreads[code] = float(spread_data.get('gross_spread', 0) or 0)
+                
+                for direction, spread_value in exit_spreads_raw.items():
+                    code = self._normalize_direction_code(direction)
+                    if code:
+                        exit_spreads[code] = float(spread_value or 0)
 
-                    now = datetime.now().strftime('%H:%M:%S')
-                    return {
-                        'labels': [now],
-                        'datasets': {
-                            'entry_bh': [entry_bh],
-                            'entry_hb': [entry_hb],
-                            'exit_bh': [exit_bh],
-                            'exit_hb': [exit_hb],
-                        },
-                        'timestamps': [time.time()],
-                        'health': {
-                            'bitget': [getattr(self.bot, 'bitget_healthy', False)],
-                            'hyper': [getattr(self.bot, 'hyper_healthy', False)],
-                        }
-                    }
+                bitget_healthy = getattr(self.bot, 'bitget_healthy', False)
+                hyper_healthy = getattr(self.bot, 'hyper_healthy', False)
+                
+                self.spread_history.add_spreads(entry_spreads, exit_spreads, bitget_healthy, hyper_healthy)
         except Exception as e:
-            logger.debug(f"Error getting spread chart data: {e}")
-
-        return self._empty_chart_data()
+            logger.debug(f"Error recording spreads: {e}")
 
     def _empty_chart_data(self) -> Dict:
         """Return empty chart data structure"""
@@ -847,6 +1102,27 @@ class WebDashboardServer:
             except Exception as e:
                 logger.error(f"Error sending to client: {e}")
     
+    async def send_initial_config(self, ws):
+        """Send initial configuration to newly connected client"""
+        try:
+            from config import TRADING_CONFIG
+            
+            config_data = {
+                'MIN_SPREAD_ENTER': TRADING_CONFIG.get('MIN_SPREAD_ENTER', 0.0007),
+                'MIN_SPREAD_EXIT': TRADING_CONFIG.get('MIN_SPREAD_EXIT', 0.0006),
+                'MAX_POSITION_CONTRACTS': TRADING_CONFIG.get('MAX_POSITION_CONTRACTS', 0.05),
+                'MIN_ORDER_CONTRACTS': TRADING_CONFIG.get('MIN_ORDER_CONTRACTS', 0.01),
+                'MAX_SLIPPAGE': TRADING_CONFIG.get('MAX_SLIPPAGE', 0.001),
+                'MIN_ORDER_INTERVAL': TRADING_CONFIG.get('MIN_ORDER_INTERVAL', 5),
+                'DAILY_LOSS_LIMIT': TRADING_CONFIG.get('MAX_DAILY_LOSS', 100.0),
+                'MAX_CONCURRENT_POSITIONS': TRADING_CONFIG.get('MAX_CONCURRENT_POSITIONS', 5),
+            }
+            
+            await self.send_to_client(ws, 'config', {'config': config_data})
+            logger.debug(f"Sent initial config to client: {config_data}")
+        except Exception as e:
+            logger.error(f"Error sending initial config: {e}")
+    
     async def broadcast(self, msg_type, payload):
         """Broadcast message to all connected clients"""
         message = json.dumps({'type': msg_type, 'payload': payload}, cls=DateTimeEncoder)
@@ -869,10 +1145,102 @@ class WebDashboardServer:
         if self.update_task is None or self.update_task.done():
             self.update_task = asyncio.create_task(self._periodic_updates())
     
+    async def start_live_portfolio_updates(self):
+        """Start live portfolio updates (0.5s interval)"""
+        if self.live_portfolio_task is None or self.live_portfolio_task.done():
+            self.live_portfolio_task = asyncio.create_task(self._live_portfolio_updates())
+            logger.info("Started live portfolio updates (0.5s interval)")
+    
+    async def stop_live_portfolio_updates(self):
+        """Stop live portfolio updates"""
+        if self.live_portfolio_task and not self.live_portfolio_task.done():
+            self.live_portfolio_task.cancel()
+            try:
+                await self.live_portfolio_task
+            except asyncio.CancelledError:
+                pass
+            self.live_portfolio_task = None
+            logger.info("Stopped live portfolio updates")
+    
+    async def _live_portfolio_updates(self):
+        """Send live portfolio updates - uses WebSocket streaming when available"""
+        live_exec = getattr(self.bot, 'live_executor', None)
+        
+        if live_exec and live_exec.private_ws_manager:
+            live_exec.set_portfolio_callback(self._on_ws_portfolio_update)
+            logger.info("Live portfolio: Using WebSocket streaming")
+            
+            while self.live_mode_active:
+                try:
+                    await asyncio.sleep(1.0)
+                except asyncio.CancelledError:
+                    break
+            
+            live_exec.set_portfolio_callback(None)
+        else:
+            logger.info(f"Live portfolio: Using REST polling (0.5s), live_exec={live_exec}, initialized={getattr(live_exec, 'initialized', None) if live_exec else None}")
+            iteration = 0
+            while self.live_mode_active:
+                try:
+                    iteration += 1
+                    portfolio_data = None
+                    
+                    # Re-check live_exec each iteration in case it was initialized after start
+                    if live_exec is None:
+                        live_exec = getattr(self.bot, 'live_executor', None)
+                    
+                    if live_exec and live_exec.initialized:
+                        portfolio_data = await live_exec.get_live_portfolio()
+                    
+                    if iteration <= 3:
+                        print(f"[PORTFOLIO] iter={iteration}, live_exec={live_exec is not None}, init={getattr(live_exec, 'initialized', None) if live_exec else None}, data={portfolio_data is not None}, clients={len(self.ws_clients)}")
+                    
+                    # Fallback to paper portfolio if live data unavailable
+                    use_fallback = False
+                    if portfolio_data is None:
+                        use_fallback = True
+                    elif (not portfolio_data.get('hyperliquid', {}).get('connected') and 
+                          not portfolio_data.get('bitget', {}).get('connected')):
+                        use_fallback = True
+                    
+                    if use_fallback:
+                        paper_exec = getattr(self.bot, 'paper_executor', None)
+                        if paper_exec and hasattr(paper_exec, 'get_portfolio'):
+                            paper_portfolio = paper_exec.get_portfolio()
+                            usdt = paper_portfolio.get('USDT', 0)
+                            portfolio_data = {
+                                'hyperliquid': {'connected': False, 'equity': 0, 'available': 0, 'margin_used': 0},
+                                'bitget': {'connected': False, 'equity': 0, 'available': 0, 'margin_used': 0},
+                                'combined': {
+                                    'total_equity': usdt,
+                                    'total_pnl': usdt - 1000.0,
+                                    'note': 'Paper portfolio (live not connected)'
+                                }
+                            }
+                    
+                    if self.ws_clients and portfolio_data:
+                        await self.broadcast('live_portfolio', portfolio_data)
+                    await asyncio.sleep(0.5)
+                except asyncio.CancelledError:
+                    break
+                except Exception as e:
+                    logger.error(f"Error in live portfolio updates: {e}")
+                    await asyncio.sleep(1.0)
+    
+    async def _on_ws_portfolio_update(self, portfolio_data: dict):
+        """Callback when WebSocket receives portfolio update"""
+        if self.ws_clients and self.live_mode_active:
+            await self.broadcast('live_portfolio', portfolio_data)
+    
     async def _periodic_updates(self):
         """Send periodic updates to all connected clients"""
+        from config import TRADING_MODE
         while True:
             try:
+                self.market_status = await check_bitget_market_status()
+                
+                self._record_current_spreads()
+                
                 if self.ws_clients:
                     payload = self.collect_dashboard_data()
                     logger.debug(
@@ -880,7 +1248,8 @@ class WebDashboardServer:
                         len(self.ws_clients),
                     )
                     await self.broadcast('full_update', payload)
-                await asyncio.sleep(1.0)  # Update every second
+                
+                await asyncio.sleep(1.0)
             except asyncio.CancelledError:
                 break
             except Exception as e:
@@ -908,6 +1277,15 @@ class WebDashboardServer:
         
         # Start periodic updates
         await self.start_updates()
+        
+        # If live mode is enabled on startup, start live portfolio updates
+        from config import TRADING_MODE
+        live_exec = getattr(self.bot, 'live_executor', None)
+        print(f"[WEB] Startup check: LIVE_ENABLED={TRADING_MODE.get('LIVE_ENABLED', False)}, live_exec={live_exec is not None}, initialized={getattr(live_exec, 'initialized', None) if live_exec else None}")
+        if TRADING_MODE.get('LIVE_ENABLED', False):
+            self.live_mode_active = True
+            await self.start_live_portfolio_updates()
+            logger.info("Live mode enabled on startup, started live portfolio updates")
         
         return True
     
@@ -964,12 +1342,14 @@ class WebDashboardServer:
                     'id': pos.id,
                     'direction': self._normalize_direction_code(direction_obj) or str(direction_obj),
                     'direction_label': getattr(direction_obj, 'value', None),
-                    'size': getattr(pos, 'size', 0),
+                    'size': getattr(pos, 'contracts', 0),
                     'entry_price': pos.entry_prices if hasattr(pos, 'entry_prices') else {},
+                    'entry_spread': getattr(pos, 'entry_spread', 0),
                     'current_exit_spread': pos.current_exit_spread,
                     'exit_target': pos.exit_target,
                     'age': pos.get_age_formatted() if hasattr(pos, 'get_age_formatted') else None,
-                    'statistics': pos.get_statistics() if hasattr(pos, 'get_statistics') else {}
+                    'statistics': pos.get_statistics() if hasattr(pos, 'get_statistics') else {},
+                    'mode': getattr(pos, 'mode', 'paper')
                 })
         except Exception as e:
             return web.json_response({'error': str(e)}, status=500)
@@ -988,6 +1368,27 @@ class WebDashboardServer:
 
         return web.json_response({'portfolio': portfolio})
 
+    async def handle_api_live_portfolio(self, request):
+        """API endpoint for live portfolio - diagnostic"""
+        from config import TRADING_MODE
+        try:
+            live_exec = getattr(self.bot, 'live_executor', None)
+            debug_info = {
+                'live_enabled': TRADING_MODE.get('LIVE_ENABLED', False),
+                'live_executor_exists': live_exec is not None,
+                'live_executor_initialized': getattr(live_exec, 'initialized', None) if live_exec else None,
+                'hl_connected': getattr(live_exec, 'hyperliquid_connected', None) if live_exec else None,
+                'bg_connected': getattr(live_exec, 'bitget_connected', None) if live_exec else None,
+            }
+            
+            if live_exec:
+                portfolio_data = await live_exec.get_live_portfolio()
+                return web.json_response({'debug': debug_info, 'portfolio': portfolio_data})
+            else:
+                return web.json_response({'debug': debug_info, 'error': 'live_executor not found'})
+        except Exception as e:
+            return web.json_response({'error': str(e)}, status=500)
+
     async def handle_api_stats(self, request):
         """API endpoint for session stats"""
         session_stats = getattr(self.bot, 'session_stats', {})
@@ -996,6 +1397,42 @@ class WebDashboardServer:
             'session_stats': session_stats,
             'best_spreads_session': best_spreads_session
         })
+
+    async def handle_api_heatmap(self, request):
+        """API endpoint for spread heatmap data by hour"""
+        try:
+            heatmap_data = self.spread_history.get_heatmap_data()
+            return web.json_response({
+                'heatmap': heatmap_data,
+                'stats': self.spread_history.get_statistics()
+            })
+        except Exception as e:
+            logger.error(f"Error getting heatmap data: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def handle_api_export_csv(self, request):
+        """API endpoint for exporting spread history as CSV"""
+        try:
+            csv_data = self.spread_history.get_csv_export()
+            return web.Response(
+                text=csv_data,
+                content_type='text/csv',
+                headers={
+                    'Content-Disposition': 'attachment; filename="spread_history.csv"'
+                }
+            )
+        except Exception as e:
+            logger.error(f"Error exporting CSV: {e}")
+            return web.json_response({'error': str(e)}, status=500)
+
+    async def handle_api_clear_heatmap(self, request):
+        """API endpoint for clearing heatmap statistics"""
+        try:
+            self.spread_history.clear_hourly_stats()
+            return web.json_response({'success': True, 'message': 'Heatmap stats cleared'})
+        except Exception as e:
+            logger.error(f"Error clearing heatmap stats: {e}")
+            return web.json_response({'error': str(e)}, status=500)
 
 
 def integrate_web_dashboard(bot, host='0.0.0.0', port=8080):

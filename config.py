@@ -35,10 +35,10 @@ WS_CONFIG = {
 
 # Управление рисками
 RISK_CONFIG = {
-    "MAX_POSITION_CONTRACTS": 2.00,      # Максимум 2 контракта
-    "MAX_POSITION_USD": 500.0,             # Максимум $500 в позиции
-    "MAX_DAILY_LOSS": 400.0,               # Максимальный дневной убыток $400
-    "MAX_TRADE_LOSS": 100.0,               # Максимальный убыток за сделку $100
+    "MAX_POSITION_CONTRACTS": 0.1,       # Максимальный размер позиции в контрактах
+    "MIN_ORDER_CONTRACTS": 0.06,         # Минимальный размер ордера в контрактах (~$11 при $187)
+    "MAX_DAILY_LOSS": 100.0,             # Максимальный дневной убыток $
+    "MAX_SLIPPAGE": 0.0001,               # Максимальное проскальзывание (0.1%)
     "SAFETY_MULTIPLIER": 0.8,            # Коэффициент безопасности
 }
 
@@ -46,7 +46,7 @@ RISK_CONFIG = {
 TRADING_CONFIG = {
     # Пороги спреда (в десятичных долях) - ВАЛОВЫЕ СПРЕДЫ БЕЗ КОМИССИЙ
     'MIN_SPREAD_ENTER': 0.001,           # 0.1% минимальный валовый спред для входа
-    'MIN_SPREAD_EXIT': -0.0005,            # 0.1% валовый спред для выхода
+    'MIN_SPREAD_EXIT': -0.0002,            # 0.1% валовый спред для выхода
     
     # Параметры исполнения
     'ORDER_TYPE': 'market',              # Рыночные ордера
@@ -62,6 +62,7 @@ TRADING_CONFIG = {
     # Лимиты
     'POSITION_CHECK_INTERVAL': 0.5,      # Проверка позиций каждые 0.5с
     'MAIN_LOOP_INTERVAL': 0.1,           # 100мс основной цикл
+    'MIN_ORDER_INTERVAL': 3.0,           # Минимальный интервал между ордерами (секунды)
     
     # Настройки соединений
     'DATA_TIMEOUT': 15,                  # 15 секунд таймаут для данных
@@ -94,6 +95,59 @@ STATS_CONFIG = {
     'UPDATE_INTERVAL': 0.5,                # Обновление статистики каждые 5 сек
     'SAVE_INTERVAL': 60,                 # Сохранение каждые 60 сек
 }
+
+# API Keys Configuration (loaded from environment variables or Replit secrets)
+API_CONFIG = {
+    # Hyperliquid - loaded from environment at runtime
+    'HYPERLIQUID_SECRET_KEY': os.environ.get('HYPERLIQUID_SECRET_KEY', ''),
+    'HYPERLIQUID_ACCOUNT_ADDRESS': os.environ.get('HYPERLIQUID_ACCOUNT_ADDRESS', ''),
+    
+    # Bitget - loaded from environment at runtime
+    'BITGET_API_KEY': os.environ.get('BITGET_API_KEY', ''),
+    'BITGET_SECRET_KEY': os.environ.get('BITGET_SECRET_KEY', ''),
+    'BITGET_PASSPHRASE': os.environ.get('BITGET_PASSPHRASE', ''),
+}
+
+# Trading Mode
+TRADING_MODE = {
+    'MODE': 'paper',  # Options: 'paper', 'live'
+    'LIVE_ENABLED': False,  # Safety switch for live trading
+    'CONFIRM_BEFORE_TRADE': True,  # Require confirmation for live trades
+}
+
+TRADING_MODE_FILE = os.path.join(DATA_DIR, "trading_mode.json")
+
+def save_trading_mode():
+    """Save current trading mode to file"""
+    import json
+    try:
+        data = {
+            'MODE': TRADING_MODE.get('MODE', 'paper'),
+            'LIVE_ENABLED': TRADING_MODE.get('LIVE_ENABLED', False)
+        }
+        with open(TRADING_MODE_FILE, 'w') as f:
+            json.dump(data, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving trading mode: {e}")
+        return False
+
+def load_trading_mode():
+    """Load trading mode from file on startup"""
+    import json
+    try:
+        if os.path.exists(TRADING_MODE_FILE):
+            with open(TRADING_MODE_FILE, 'r') as f:
+                data = json.load(f)
+            TRADING_MODE['MODE'] = data.get('MODE', 'paper')
+            TRADING_MODE['LIVE_ENABLED'] = data.get('LIVE_ENABLED', False)
+            print(f"Loaded trading mode: {TRADING_MODE['MODE']}, LIVE_ENABLED: {TRADING_MODE['LIVE_ENABLED']}")
+            return True
+    except Exception as e:
+        print(f"Error loading trading mode: {e}")
+    return False
+
+load_trading_mode()
 
 # Настройки отображения
 DISPLAY_CONFIG = {
