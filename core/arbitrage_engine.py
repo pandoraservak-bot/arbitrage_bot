@@ -297,6 +297,12 @@ class ArbitrageEngine:
         """Установка callback для обновления статистики лучших спредов выхода"""
         self.update_exit_spread_callback = callback
     
+    def update_contracts_from_api(self, real_contracts: float):
+        """Обновление количества контрактов на основе реальных данных с бирж"""
+        if self.contracts != real_contracts:
+            logger.info(f"🔄 Syncing position {self.id} size: {self.contracts} -> {real_contracts}")
+            self.contracts = real_contracts
+
     def _save_positions(self):
         """Сохранение открытых позиций в файл"""
         try:

@@ -762,6 +762,29 @@ class LiveTradeExecutor:
         """Check if executor is ready for trading"""
         return self.initialized
     
+    async def get_bitget_position(self) -> Dict:
+        """Get current position on Bitget for NVDAUSDT"""
+        if not self.bitget_credentials:
+            return {}
+            
+        try:
+            response = await asyncio.to_thread(
+                self._bitget_request, 'GET', '/api/v2/mix/position/all-position', {
+                    'productType': 'USDT-FUTURES',
+                    'marginCoin': 'USDT'
+                }
+            )
+            
+            if response and response.get('code') == '00000':
+                positions = response.get('data', [])
+                for pos in positions:
+                    if pos.get('symbol') == self.bitget_symbol:
+                        return pos
+            return {}
+        except Exception as e:
+            logger.error(f"Error getting Bitget position: {e}")
+            return {}
+
     def get_status(self) -> Dict:
         """Get executor status"""
         return {

@@ -162,6 +162,21 @@ class NVDAFuturesArbitrageBot:
                 await self.live_executor.initialize()
                 status = self.live_executor.get_status()
                 logger.info(f"Live executor status: HL={status.get('hyperliquid_connected')}, BG={status.get('bitget_connected')}")
+                
+                # Синхронизация позиций при запуске
+                try:
+                    hl_pos = await self.live_executor.get_hyperliquid_position()
+                    bg_pos = await self.live_executor.get_bitget_position()
+                    hl_size = float(hl_pos.get('s', 0)) if hl_pos else 0
+                    bg_size = float(bg_pos.get('total', 0)) if bg_pos else 0
+                    real_size = min(abs(hl_size), abs(bg_size))
+                    if self.arb_engine.open_positions:
+                        for pos in self.arb_engine.open_positions:
+                            if pos.mode == 'live' and pos.status == 'open':
+                                pos.update_contracts_from_api(real_size)
+                        self.arb_engine._save_positions()
+                except Exception as e:
+                    logger.error(f"Error during startup position sync: {e}")
             else:
                 logger.info("📄 Режим Paper торговли")
             
