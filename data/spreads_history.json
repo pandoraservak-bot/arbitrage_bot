@@ -1,18 +1,6 @@
 {
-  "last_saved": "2025-12-30T23:15:43.854466",
+  "last_saved": "2025-12-30T23:17:11.123521",
   "data": [
-    {
-      "timestamp": 1767041974.6357167,
-      "time_str": "20:59:34",
-      "entry_spread_bh": -0.1697522677841956,
-      "entry_spread_hb": 0.1381288848748996,
-      "exit_spread_bh": 0.1381288848748996,
-      "exit_spread_hb": -0.1697522677841956,
-      "best_entry_spread": 0.1381288848748996,
-      "best_exit_spread": -0.1697522677841956,
-      "bitget_healthy": true,
-      "hyper_healthy": true
-    },
     {
       "timestamp": 1767041975.6427202,
       "time_str": "20:59:35",
@@ -11998,6 +11986,18 @@
       "exit_spread_hb": -0.1812849906691616,
       "best_entry_spread": 0.14419225634179078,
       "best_exit_spread": -0.1812849906691616,
+      "bitget_healthy": true,
+      "hyper_healthy": true
+    },
+    {
+      "timestamp": 1767136631.1016922,
+      "time_str": "23:17:11",
+      "entry_spread_bh": -0.270350816871745,
+      "entry_spread_hb": 0.044048064085444594,
+      "exit_spread_bh": 0.044048064085444594,
+      "exit_spread_hb": -0.270350816871745,
+      "best_entry_spread": 0.044048064085444594,
+      "best_exit_spread": -0.270350816871745,
       "bitget_healthy": true,
       "hyper_healthy": true
     }

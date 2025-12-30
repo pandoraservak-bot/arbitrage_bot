@@ -571,6 +571,30 @@ class NVDAFuturesArbitrageBot:
                         self.display_status()
                         last_status_update = current_time
                     
+                    # Периодическая синхронизация позиций с реальными данными (раз в минуту)
+                    if int(current_time) % 60 == 0:
+                        try:
+                            # Получаем позиции с обеих бирж
+                            hl_pos = await self.live_executor.get_hyperliquid_position() if self.live_executor else None
+                            bg_pos = await self.live_executor.get_bitget_position() if self.live_executor else None
+                            
+                            hl_size = float(hl_pos.get('s', 0)) if hl_pos else 0
+                            bg_size = float(bg_pos.get('total', 0)) if bg_pos else 0
+                            
+                            # Размер арбитражной позиции - это минимум из двух сторон (абсолютное значение)
+                            real_size = min(abs(hl_size), abs(bg_size))
+                            
+                            if self.arb_engine.open_positions:
+                                # Для NVDA у нас обычно одна позиция, обновляем ее
+                                for pos in self.arb_engine.open_positions:
+                                    if pos.mode == 'live' and pos.status == 'open':
+                                        pos.update_contracts_from_api(real_size)
+                                
+                                # Сохраняем обновленные данные
+                                self.arb_engine._save_positions()
+                        except Exception as e:
+                            logger.error(f"Error during position sync: {e}")
+
                     await asyncio.sleep(self.config['MAIN_LOOP_INTERVAL'])
                     
                 except Exception as e:
