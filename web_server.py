@@ -988,8 +988,11 @@ class WebDashboardServer:
         daily_loss = 0
         try:
             risk_manager = getattr(self.bot, 'risk_manager', None)
-            if risk_manager and hasattr(risk_manager, 'daily_loss'):
-                daily_loss = risk_manager.daily_loss
+            if risk_manager:
+                # Calculate daily loss: stats['total_loss'] is persistent from file, session_loss is for current session
+                stats = getattr(risk_manager, 'daily_stats', {})
+                session_loss = getattr(risk_manager, 'session_loss', 0.0)
+                daily_loss = stats.get('total_loss', 0.0) + session_loss
         except Exception:
             pass
 
@@ -1033,7 +1036,10 @@ class WebDashboardServer:
         
         # Get total position size in contracts
         total_position_contracts = 0.0
-        if arb_engine and hasattr(arb_engine, 'get_total_position_contracts'):
+        if hl_size > 0 and bg_size > 0:
+            # For arbitrage, we use the minimum of both sides as the true balanced position
+            total_position_contracts = min(hl_size, bg_size)
+        elif arb_engine and hasattr(arb_engine, 'get_total_position_contracts'):
             total_position_contracts = arb_engine.get_total_position_contracts()
         
         # Get live executor status
