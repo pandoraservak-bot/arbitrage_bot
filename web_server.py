@@ -873,6 +873,7 @@ class WebDashboardServer:
         
         # Positions
         positions = []
+        position_size_mismatch_warning = None  # Track mismatch warning to merge logic
         try:
             open_positions = arb_engine.get_open_positions() if arb_engine and hasattr(arb_engine, 'get_open_positions') else []
             
@@ -882,6 +883,26 @@ class WebDashboardServer:
             hl_size = abs(float(hl_pos.get('size', 0)) or 0) if hl_pos else 0
             bg_size = abs(float(bg_pos.get('size', 0)) or 0) if bg_pos else 0
             
+            # Unified position size logic: compare HL and BG sizes
+            # Tolerance for equality check
+            size_tolerance = 0.001
+            
+            if hl_size > 0 or bg_size > 0:
+                # Check if sizes are equal (within tolerance)
+                if abs(hl_size - bg_size) <= size_tolerance:
+                    # Sizes are equal - use average
+                    position_size = (hl_size + bg_size) / 2.0
+                else:
+                    # Sizes are different - create warning and use both values
+                    position_size = hl_size + bg_size
+                    position_size_mismatch_warning = {
+                        'type': 'position_size_mismatch',
+                        'message': f'⚠️ Расхождение размеров позиций: Hyperliquid={hl_size:.3f}, Bitget={bg_size:.3f}. Разница={abs(hl_size - bg_size):.3f}'
+                    }
+            else:
+                # No positions on exchanges, use bot's cached value as fallback
+                position_size = 0.0
+            
             for pos in open_positions:
                 direction_obj = getattr(pos, 'direction', None)
                 direction_code = self._normalize_direction_code(direction_obj)
@@ -890,9 +911,8 @@ class WebDashboardServer:
                 entry_prices = getattr(pos, 'entry_prices', {})
                 entry_spread = getattr(pos, 'entry_spread', None)
                 
-                # Use real-time position size from exchanges instead of bot's cached value
-                # Take the size from whichever exchange has the position, or sum if split
-                size = hl_size + bg_size if (hl_size > 0 or bg_size > 0) else getattr(pos, 'contracts', 0)
+                # Use unified position size from above logic
+                size = position_size if position_size > 0 else getattr(pos, 'contracts', 0)
                 
                 positions.append({
                     'id': pos.id,
@@ -965,19 +985,9 @@ class WebDashboardServer:
         if arb_engine and hasattr(arb_engine, 'get_pending_warnings'):
             warnings = arb_engine.get_pending_warnings()
         
-        # Check for position mismatch between bot and exchanges
-        if live_portfolio and positions:
-            hl_pos = live_portfolio.get('hyperliquid', {}).get('nvda_position')
-            bg_pos = live_portfolio.get('bitget', {}).get('nvda_position')
-            hl_size = abs(hl_pos.get('size', 0)) if hl_pos else 0
-            bg_size = abs(bg_pos.get('size', 0)) if bg_pos else 0
-            bot_size = sum(p.get('size', 0) for p in positions)
-            
-            if abs(hl_size - bot_size) > 0.001 or abs(bg_size - bot_size) > 0.001:
-                warnings.append({
-                    'type': 'position_mismatch',
-                    'message': f'Расхождение позиций: Бот={bot_size:.3f}, HL={hl_size:.3f}, BG={bg_size:.3f}'
-                })
+        # Add position size mismatch warning if detected (unified logic from above)
+        if position_size_mismatch_warning:
+            warnings.append(position_size_mismatch_warning)
         
         # Get total position size in contracts
         total_position_contracts = 0.0
