@@ -28,3 +28,13 @@ python-dotenv
 requests
 websocket-client
 websockets
+aiohttp
+colorama
+eth-account
+hyperliquid-python-sdk
+numpy
+pandas
+python-dotenv
+requests
+websocket-client
+websockets
