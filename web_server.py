@@ -936,13 +936,33 @@ class WebDashboardServer:
                 # Use unified position size from above logic
                 size = position_size if position_size > 0 else getattr(pos, 'contracts', 0)
                 
+                # Calculate real entry spread from prices if available
+                calc_entry_spread = entry_spread
+                if entry_prices.get('hyperliquid') and entry_prices.get('bitget'):
+                    try:
+                        # Spread = (Ask - Bid) / Bid * 100
+                        # For B_TO_H (Buy Bitget, Sell Hyper): (Hyper_Sell - Bitget_Buy) / Bitget_Buy
+                        # For H_TO_B (Buy Hyper, Sell Bitget): (Bitget_Sell - Hyper_Buy) / Hyper_Buy
+                        
+                        hl_price = float(entry_prices['hyperliquid'])
+                        bg_price = float(entry_prices['bitget'])
+                        
+                        if direction_code == 'B_TO_H':
+                            # Buy Bitget (bg_price), Sell Hyper (hl_price)
+                            calc_entry_spread = ((hl_price - bg_price) / bg_price) * 100
+                        elif direction_code == 'H_TO_B':
+                            # Buy Hyper (hl_price), Sell Bitget (bg_price)
+                            calc_entry_spread = ((bg_price - hl_price) / hl_price) * 100
+                    except Exception:
+                        pass
+
                 positions.append({
                     'id': pos.id,
                     'direction': direction_code or str(direction_obj),
                     'direction_label': direction_label,
                     'size': size,
                     'entry_prices': entry_prices,
-                    'entry_spread': entry_spread,
+                    'entry_spread': calc_entry_spread,
                     'exit_spread': pos.current_exit_spread,
                     'current_exit_spread': pos.current_exit_spread,
                     'exit_target': pos.exit_target,
