@@ -883,15 +883,6 @@ class WebDashboardServer:
             hl_size = abs(float(hl_pos.get('size', 0)) or 0) if hl_pos else 0
             bg_size = abs(float(bg_pos.get('size', 0)) or 0) if bg_pos else 0
             
-            # Extract real entry prices from exchange data (try multiple possible field names)
-            hl_entry_price = 0
-            if hl_pos:
-                hl_entry_price = float(hl_pos.get('entry_price') or hl_pos.get('avg_price') or hl_pos.get('entry_px') or 0)
-            
-            bg_entry_price = 0
-            if bg_pos:
-                bg_entry_price = float(bg_pos.get('entry_price') or bg_pos.get('avg_price') or bg_pos.get('entry_px') or 0)
-            
             # Unified position size logic: compare HL and BG sizes
             # Tolerance for equality check
             size_tolerance = 0.001
@@ -912,20 +903,13 @@ class WebDashboardServer:
                 # No positions on exchanges, use bot's cached value as fallback
                 position_size = 0.0
             
-            # Determine real entry prices from exchanges
-            real_entry_prices = {}
-            if hl_size > 0 and hl_entry_price > 0:
-                real_entry_prices['hyperliquid'] = hl_entry_price
-            if bg_size > 0 and bg_entry_price > 0:
-                real_entry_prices['bitget'] = bg_entry_price
-            
             for pos in open_positions:
                 direction_obj = getattr(pos, 'direction', None)
                 direction_code = self._normalize_direction_code(direction_obj)
                 direction_label = getattr(direction_obj, 'value', None)
 
-                # Use real entry prices from exchanges if available, otherwise use bot's cached prices
-                entry_prices = real_entry_prices if real_entry_prices else getattr(pos, 'entry_prices', {})
+                # Use bot's entry prices (they're correct from the position objects)
+                entry_prices = getattr(pos, 'entry_prices', {})
                 entry_spread = getattr(pos, 'entry_spread', None)
                 
                 # Use unified position size from above logic
