@@ -1042,6 +1042,100 @@ class ArbitrageEngine:
         current_spread = position.current_exit_spread
         await self.close_position(position, current_spread, f"FORCE: {reason}")
     
+    async def partial_close_position(self, position: Position, close_percent: float, reason: str):
+        """Закрытие части позиции (partial exit)
+        
+        Args:
+            position: Позиция для частичного закрытия
+            close_percent: Процент позиции для закрытия (0-100)
+            reason: Причина закрытия
+        """
+        if close_percent <= 0 or close_percent > 100:
+            logger.warning(f"⚠️ Invalid close_percent {close_percent}%, skipping partial close")
+            return False
+        
+        # Расчет размера для частичного закрытия
+        close_ratio = close_percent / 100.0
+        contracts_to_close = position.contracts * close_ratio
+        remaining_contracts = position.contracts - contracts_to_close
+        
+        logger.info(f"📊 Partial closing position {position.id}: {close_percent}% ({contracts_to_close:.4f} contracts)")
+        
+        # Создаем copy позиции для закрытия
+        from copy import deepcopy
+        partial_position = deepcopy(position)
+        partial_position.contracts = contracts_to_close
+        
+        # Закрываем частичную позицию
+        from config import TRADING_MODE
+        if TRADING_MODE.get('LIVE_ENABLED', False) and self.bot and hasattr(self.bot, 'live_executor'):
+            executor = self.bot.live_executor
+        else:
+            executor = self.paper_executor
+        
+        # Подготовка ордеров для частичного выхода
+        if position.direction.value == 'H_TO_B':
+            buy_order = {
+                'exchange': 'bitget',
+                'symbol': 'NVDAUSDT',
+                'side': 'buy',
+                'type': 'market',
+                'amount': contracts_to_close,
+                'time_in_force': 'FOK'
+            }
+            sell_order = {
+                'exchange': 'hyperliquid',
+                'symbol': 'xyz:NVDA',
+                'side': 'sell',
+                'type': 'market',
+                'amount': contracts_to_close,
+                'time_in_force': 'FOK'
+            }
+        else:  # B_TO_H
+            buy_order = {
+                'exchange': 'hyperliquid',
+                'symbol': 'xyz:NVDA',
+                'side': 'buy',
+                'type': 'market',
+                'amount': contracts_to_close,
+                'time_in_force': 'FOK'
+            }
+            sell_order = {
+                'exchange': 'bitget',
+                'symbol': 'NVDAUSDT',
+                'side': 'sell',
+                'type': 'market',
+                'amount': contracts_to_close,
+                'time_in_force': 'FOK'
+            }
+        
+        exit_result = await executor.execute_fok_pair(
+            buy_order, sell_order, f"partial_exit_{position.direction.value}_{close_percent}%"
+        )
+        
+        if exit_result.get('success', False):
+            # Обновляем размер позиции
+            position.contracts = remaining_contracts
+            
+            # Закрываем частичную позицию в истории
+            partial_position.final_pnl = self.calculate_trade_pnl(partial_position, exit_result)
+            self.trade_history.append(partial_position)
+            
+            # Обновляем статистику
+            self.total_fees += partial_position.final_pnl.get('fees', 0)
+            self.total_pnl += partial_position.final_pnl.get('net', 0)
+            
+            logger.info(f"✅ Partial close successful: {position.id}, "
+                       f"Remaining: {remaining_contracts:.4f} contracts, "
+                       f"Closed PnL: ${partial_position.final_pnl.get('net', 0):.4f}")
+            
+            # Сохраняем позиции после частичного закрытия
+            self._save_positions()
+            return True
+        else:
+            logger.error(f"❌ Partial close failed: {exit_result.get('error', 'Unknown error')}")
+            return False
+    
     async def close_all_positions(self, reason: str = "System shutdown"):
         """Асинхронное закрытие всех открытых позиций"""
         for position in self.open_positions[:]:

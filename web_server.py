@@ -360,6 +360,18 @@ class WebDashboardServer:
                     'error': None if success else 'Position not found or could not be closed'
                 })
         
+        elif msg_type == 'partial_close_position':
+            # Partial close a specific position
+            position_id = data.get('position_id')
+            close_percent = float(data.get('close_percent', 50))
+            if position_id:
+                success = await self.partial_close_position(position_id, close_percent)
+                await self.send_to_client(ws, 'command_result', {
+                    'success': success,
+                    'message': f'Position #{position_id} partially closed ({close_percent}%) successfully' if success else f'Failed to partially close position #{position_id}',
+                    'error': None if success else 'Position not found or could not be closed'
+                })
+        
         elif msg_type == 'bot_command':
             # Handle bot control commands (start/pause/stop)
             command = data.get('command', '').lower()
@@ -446,6 +458,24 @@ class WebDashboardServer:
             return False
         except Exception as e:
             logger.error(f"Error closing position {position_id}: {e}")
+            return False
+    
+    async def partial_close_position(self, position_id, close_percent):
+        """Partially close a specific position"""
+        try:
+            arb_engine = getattr(self.bot, 'arb_engine', None)
+            if not arb_engine or not hasattr(arb_engine, 'get_open_positions'):
+                return False
+
+            positions = arb_engine.get_open_positions()
+            for pos in positions:
+                if pos.id == position_id:
+                    if hasattr(arb_engine, 'partial_close_position'):
+                        result = await arb_engine.partial_close_position(pos, close_percent, "Manual partial close via dashboard")
+                        return result
+            return False
+        except Exception as e:
+            logger.error(f"Error partially closing position {position_id}: {e}")
             return False
     
     async def update_position_exit_spread(self, position_id, new_exit_spread):
