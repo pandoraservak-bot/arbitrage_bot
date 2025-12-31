@@ -241,6 +241,7 @@ class WebDashboardServer:
         self.live_portfolio_task = None
         self.live_mode_active = False
         self.market_status = {'status': 'unknown', 'last_check': 0}
+        self.chart_range_minutes = 15
         
         self.web_dir = Path(__file__).parent / "web"
         
@@ -403,13 +404,27 @@ class WebDashboardServer:
                 self.live_mode_active = False
                 await self.stop_live_portfolio_updates()
         
-        elif msg_type == 'update_position_exit_spread':
-            # Update exit_target for a specific position
-            position_id = data.get('position_id')
-            new_exit_spread = data.get('new_exit_spread')
-            if position_id is not None and new_exit_spread is not None:
-                result = await self.update_position_exit_spread(position_id, float(new_exit_spread))
-                await self.send_to_client(ws, 'command_result', result)
+        elif msg_type == 'set_time_aggregation':
+            # Set time aggregation for chart
+            minutes = data.get('minutes', 1)
+            # Notify arb_engine or update display logic if needed
+            # For now just confirm
+            await self.send_to_client(ws, 'command_result', {
+                'success': True,
+                'message': f'Aggregation set to {minutes} min',
+                'event_type': 'info'
+            })
+        
+        elif msg_type == 'set_chart_range':
+            # Set chart time range
+            minutes = int(data.get('minutes', 15))
+            self.chart_range_minutes = minutes
+            # Confirm range update
+            await self.send_to_client(ws, 'command_result', {
+                'success': True,
+                'message': f'Chart range set to {minutes} min',
+                'event_type': 'info'
+            })
     
     async def close_position(self, position_id):
         """Close a specific position"""
@@ -1091,7 +1106,10 @@ class WebDashboardServer:
     def _get_spread_chart_data(self) -> Dict:
         """Получение данных для графика спредов из истории"""
         try:
-            return self.spread_history.get_chart_data(limit=500)
+            # Превращаем минуты в количество точек (примерно 1 точка в сек)
+            # Но учитываем ограничение max_points в SpreadHistoryManager (по умолчанию 1000)
+            limit = min(1000, self.chart_range_minutes * 60)
+            return self.spread_history.get_chart_data(limit=limit)
         except Exception as e:
             logger.debug(f"Error getting spread chart data: {e}")
             return self._empty_chart_data()

@@ -1707,6 +1707,19 @@ function updateChartYScale(value) {
     eventLogger.addEvent(`Масштаб Y: ±${value}%`, 'info');
 }
 
+// Current chart range setting
+let currentChartRangeMinutes = 15;
+
+// Update chart time range
+function updateChartRange(minutes) {
+    currentChartRangeMinutes = parseInt(minutes);
+    if (dashboard) {
+        dashboard.sendCommand('set_chart_range', { minutes: currentChartRangeMinutes });
+        dashboard.requestFullUpdate();
+    }
+    eventLogger.addEvent(`Диапазон графика: ${minutes} мин`, 'info');
+}
+
 // Current time aggregation setting
 let currentTimeAggMinutes = 1;
 

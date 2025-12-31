@@ -498,6 +498,14 @@
                 <div class="card-header">
                     <h2>📈 История спредов</h2>
                     <div class="chart-controls">
+                        <select id="chartRange" onchange="updateChartRange(this.value)" title="Временной диапазон">
+                            <option value="5">5 мин</option>
+                            <option value="15" selected>15 мин</option>
+                            <option value="30">30 мин</option>
+                            <option value="60">1 час</option>
+                            <option value="180">3 часа</option>
+                            <option value="1440">Сутки</option>
+                        </select>
                         <select id="chartYScale" onchange="updateChartYScale(this.value)" title="Масштаб Y">
                             <option value="0.5">±0.5%</option>
                             <option value="1" selected>±1%</option>
