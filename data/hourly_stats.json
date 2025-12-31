@@ -1,5 +1,5 @@
 {
-  "last_saved": "2025-12-31T02:00:34.823173",
+  "last_saved": "2025-12-31T03:13:08.495345",
   "stats": {
     "0": {
       "count": 1943,
@@ -23,11 +23,11 @@
       "max_entry_hb": 0.16551871429333342
     },
     "3": {
-      "count": 0,
-      "sum_entry_bh": 0.0,
-      "sum_entry_hb": 0.0,
+      "count": 1,
+      "sum_entry_bh": -0.2543134298810479,
+      "sum_entry_hb": 0.04397886196221279,
       "max_entry_bh": 0,
-      "max_entry_hb": 0
+      "max_entry_hb": 0.04397886196221279
     },
     "4": {
       "count": 0,
