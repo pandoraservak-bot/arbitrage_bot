@@ -376,7 +376,7 @@ class WebDashboardServer:
                 await self.send_to_client(ws, 'command_result', {
                     'success': success,
                     'message': f'Position #{position_id} partially closed ({contracts} contracts) successfully' if success else f'Failed to partially close position #{position_id}',
-                    'error': None if success else 'Position not found or could not be closed'
+                    'error': None if success else f'Position {position_id} not found or could not be closed. Check server logs.'
                 })
         
         elif msg_type == 'bot_command':
@@ -475,26 +475,25 @@ class WebDashboardServer:
                 logger.error("partial_close_position: arb_engine not found")
                 return False
             
-            if not hasattr(arb_engine, 'get_open_positions'):
-                logger.error("partial_close_position: get_open_positions method not found in arb_engine")
-                return False
-
+            # Robust ID matching
             positions = arb_engine.get_open_positions()
-            logger.info(f"partial_close_position: searching for id {position_id} in {len(positions)} positions")
+            target_id = str(position_id).strip().lower()
+            
+            logger.info(f"partial_close_position: Looking for '{target_id}' in {[str(p.id) for p in positions]}")
+            
             for pos in positions:
-                logger.debug(f"Checking position: {pos.id}")
-                if pos.id == position_id:
+                if str(pos.id).strip().lower() == target_id:
                     if hasattr(arb_engine, 'partial_close_position'):
-                        logger.info(f"Calling arb_engine.partial_close_position for {position_id}")
+                        logger.info(f"Executing partial_close on {pos.id} for {contracts_to_close} contracts")
+                        # The engine method now takes contracts directly:
+                        # partial_close_position(self, position: Position, contracts_to_close: float, reason: str)
                         result = await arb_engine.partial_close_position(pos, contracts_to_close, "Manual partial close via dashboard")
                         return result
-                    else:
-                        logger.error("partial_close_position: arb_engine has no partial_close_position method")
             
-            logger.warning(f"partial_close_position: position {position_id} not found in open positions")
+            logger.warning(f"partial_close_position: Position {target_id} not found among {[p.id for p in positions]}")
             return False
         except Exception as e:
-            logger.error(f"Error partially closing position {position_id}: {e}", exc_info=True)
+            logger.error(f"Error in partial_close_position: {e}", exc_info=True)
             return False
     
     async def update_position_exit_spread(self, position_id, new_exit_spread):

@@ -1092,94 +1092,59 @@ class ArbitrageEngine:
         current_spread = position.current_exit_spread
         await self.close_position(position, current_spread, f"FORCE: {reason}")
     
-    async def partial_close_position(self, position: Position, close_percent: float, reason: str):
-        """Закрытие части позиции (partial exit)
+    async def partial_close_position(self, position: Position, contracts_to_close: float, reason: str):
+        """Частичное закрытие позиции (по количеству контрактов)
         
         Args:
             position: Позиция для частичного закрытия
-            close_percent: Процент позиции для закрытия (0-100)
+            contracts_to_close: Количество контрактов для закрытия
             reason: Причина закрытия
         """
-        if close_percent <= 0 or close_percent > 100:
-            logger.warning(f"⚠️ Invalid close_percent {close_percent}%, skipping partial close")
+        # Ensure position is still in our open list
+        if position not in self.open_positions:
+            logger.error(f"Position {position.id} not found in engine's open positions list")
             return False
+
+        if contracts_to_close <= 0:
+            logger.warning(f"⚠️ Invalid contracts_to_close {contracts_to_close}, skipping")
+            return False
+            
+        if contracts_to_close >= position.contracts * 0.99: 
+            logger.info(f"Contracts to close ({contracts_to_close}) >= position size ({position.contracts}). Doing full close.")
+            return await self.close_position(position, position.current_exit_spread, reason)
         
-        # Расчет размера для частичного закрытия
-        close_ratio = close_percent / 100.0
-        contracts_to_close = position.contracts * close_ratio
         remaining_contracts = position.contracts - contracts_to_close
+        logger.info(f"📊 Partial closing position {position.id}: {contracts_to_close:.4f} contracts. Remaining: {remaining_contracts:.4f}")
         
-        logger.info(f"📊 Partial closing position {position.id}: {close_percent}% ({contracts_to_close:.4f} contracts)")
-        
-        # Создаем copy позиции для закрытия
-        from copy import deepcopy
-        partial_position = deepcopy(position)
-        partial_position.contracts = contracts_to_close
-        
-        # Закрываем частичную позицию
+        # В бумажном режиме просто уменьшаем количество
+        if position.mode == 'paper':
+            position.contracts = remaining_contracts
+            logger.info(f"✅ Partial close (PAPER) successful: {position.id}")
+            self._save_positions()
+            return True
+            
+        # В реальном режиме исполняем ордера
         from config import TRADING_MODE
         if TRADING_MODE.get('LIVE_ENABLED', False) and self.bot and hasattr(self.bot, 'live_executor'):
             executor = self.bot.live_executor
         else:
             executor = self.paper_executor
         
-        # Подготовка ордеров для частичного выхода
-        if position.direction.value == 'H_TO_B':
-            buy_order = {
-                'exchange': 'bitget',
-                'symbol': 'NVDAUSDT',
-                'side': 'buy',
-                'type': 'market',
-                'amount': contracts_to_close,
-                'time_in_force': 'FOK'
-            }
-            sell_order = {
-                'exchange': 'hyperliquid',
-                'symbol': 'xyz:NVDA',
-                'side': 'sell',
-                'type': 'market',
-                'amount': contracts_to_close,
-                'time_in_force': 'FOK'
-            }
-        else:  # B_TO_H
-            buy_order = {
-                'exchange': 'hyperliquid',
-                'symbol': 'xyz:NVDA',
-                'side': 'buy',
-                'type': 'market',
-                'amount': contracts_to_close,
-                'time_in_force': 'FOK'
-            }
-            sell_order = {
-                'exchange': 'bitget',
-                'symbol': 'NVDAUSDT',
-                'side': 'sell',
-                'type': 'market',
-                'amount': contracts_to_close,
-                'time_in_force': 'FOK'
-            }
+        # Подготовка ордеров
+        if position.direction == TradeDirection.B_TO_H:
+            buy_order = {'exchange': 'hyperliquid', 'side': 'buy', 'amount': contracts_to_close}
+            sell_order = {'exchange': 'bitget', 'side': 'sell', 'amount': contracts_to_close}
+        else:
+            buy_order = {'exchange': 'bitget', 'side': 'buy', 'amount': contracts_to_close}
+            sell_order = {'exchange': 'hyperliquid', 'side': 'sell', 'amount': contracts_to_close}
         
-        exit_result = await executor.execute_fok_pair(
-            buy_order, sell_order, f"partial_exit_{position.direction.value}_{close_percent}%"
+        exit_result = await executor.execute_fok_pair_async(
+            buy_order, sell_order, f"partial_{position.id}"
         )
         
         if exit_result.get('success', False):
-            # Обновляем размер позиции
             position.contracts = remaining_contracts
-            
-            # Закрываем частичную позицию в истории
-            partial_position.final_pnl = self.calculate_trade_pnl(partial_position, exit_result)
-            self.trade_history.append(partial_position)
-            
-            # Обновляем статистику
-            self.total_fees += partial_position.final_pnl.get('fees', 0)
-            self.total_pnl += partial_position.final_pnl.get('net', 0)
-            
-            logger.info(f"✅ Partial close successful: {position.id}, "
-                       f"Remaining: {remaining_contracts:.4f} contracts, "
-                       f"Closed PnL: ${partial_position.final_pnl.get('net', 0):.4f}")
-            
-            # Сохраняем позиции после частичного закрытия
+            logger.info(f"✅ Partial close (LIVE) successful: {position.id}. Remaining: {remaining_contracts:.4f}")
             self._save_positions()
             return True
         else:
@@ -1257,6 +1222,7 @@ class ArbitrageEngine:
     
     def get_open_positions(self) -> List[Position]:
         """Получение списка действительно открытых позиций"""
+        # Возвращаем копию списка для безопасности при итерации и сравнении
         return [pos for pos in self.open_positions if pos.status == 'open']
     
     def get_total_position_contracts(self, direction: 'TradeDirection' = None) -> float:
