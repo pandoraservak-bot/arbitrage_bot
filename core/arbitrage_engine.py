@@ -297,11 +297,61 @@ class ArbitrageEngine:
         """Установка callback для обновления статистики лучших спредов выхода"""
         self.update_exit_spread_callback = callback
     
-    def update_contracts_from_api(self, real_contracts: float):
-        """Обновление количества контрактов на основе реальных данных с бирж"""
-        if self.contracts != real_contracts:
-            logger.info(f"🔄 Syncing position {self.id} size: {self.contracts} -> {real_contracts}")
-            self.contracts = real_contracts
+    async def partial_close_position(self, position, contracts_to_close, reason=""):
+        """Partially close an existing position by contracts amount"""
+        if contracts_to_close >= position.contracts:
+            # If requested amount is >= current size, close the whole position
+            current_spread = getattr(position, 'current_exit_spread', 0.0)
+            return await self.close_position(position, current_spread, reason)
+        
+        try:
+            # In paper mode we can simulate partial closure
+            if position.mode == "paper":
+                # For paper trading, we just reduce the contracts and update portfolio
+                # In a real implementation, we'd calculate PnL for the closed part
+                old_contracts = position.contracts
+                position.contracts -= contracts_to_close
+                
+                # Update paper executor (re-use closing logic but only for partial amount)
+                # This is simplified for paper trading
+                logger.info(f"Partial close (paper) position {position.id}: {contracts_to_close} contracts. Remaining: {position.contracts}")
+                self._save_positions()
+                return True
+            
+            # In live mode we need to execute real orders
+            elif position.mode == "live":
+                # We need access to live executor from bot
+                live_executor = getattr(self.bot, 'live_executor', None)
+                if not live_executor:
+                    logger.error("Live executor not available for partial close")
+                    return False
+                
+                # Determine sides based on direction
+                if position.direction == TradeDirection.B_TO_H:
+                    # Original: Buy Bitget, Sell Hyperliquid
+                    # Close: Sell Bitget, Buy Hyperliquid
+                    buy_order = {'exchange': 'hyperliquid', 'symbol': 'xyz:NVDA', 'amount': contracts_to_close}
+                    sell_order = {'exchange': 'bitget', 'symbol': 'NVDAUSDT', 'amount': contracts_to_close}
+                else:
+                    # Original: Buy Hyperliquid, Sell Bitget
+                    # Close: Sell Hyperliquid, Buy Bitget
+                    buy_order = {'exchange': 'bitget', 'symbol': 'NVDAUSDT', 'amount': contracts_to_close}
+                    sell_order = {'exchange': 'hyperliquid', 'symbol': 'xyz:NVDA', 'amount': contracts_to_close}
+                
+                result = await live_executor.execute_fok_pair(buy_order, sell_order, f"Partial close {position.id}")
+                if result.get('success'):
+                    position.contracts -= contracts_to_close
+                    logger.info(f"Partial close (live) position {position.id} SUCCESS: {contracts_to_close} contracts. Remaining: {position.contracts}")
+                    self._save_positions()
+                    return True
+                else:
+                    logger.error(f"Partial close (live) position {position.id} FAILED: {result.get('error')}")
+                    return False
+                
+            return False
+        except Exception as e:
+            logger.error(f"Error in partial_close_position: {e}")
+            return False
 
     def _save_positions(self):
         """Сохранение открытых позиций в файл"""

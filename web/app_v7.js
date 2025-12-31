@@ -1083,6 +1083,17 @@ class DashboardClient {
             closeBtn.setAttribute('data-position-id', pos.id);
             closeBtn.textContent = '❌ Close';
             
+            // Partial Close Button
+            const partialBtn = document.createElement('button');
+            partialBtn.className = 'btn btn-close-position'; // Reusing similar styling
+            partialBtn.style.backgroundColor = '#f59e0b';
+            partialBtn.style.marginLeft = '5px';
+            partialBtn.textContent = '✂️ Partial';
+            partialBtn.onclick = (e) => {
+                e.stopPropagation();
+                this.promptPartialClose(pos.id, pos.contracts);
+            };
+            
             // Assemble position item
             positionItem.appendChild(positionId);
             positionItem.appendChild(modeBadge);
@@ -1090,8 +1101,30 @@ class DashboardClient {
             positionItem.appendChild(detailsDiv);
             positionItem.appendChild(exitStatus);
             positionItem.appendChild(closeBtn);
+            positionItem.appendChild(partialBtn);
             
             positionsList.appendChild(positionItem);
+        });
+    }
+
+    promptPartialClose(positionId, maxContracts) {
+        const amountStr = prompt(`Введите количество контрактов для закрытия (макс ${maxContracts}):`, (maxContracts / 2).toFixed(3));
+        if (amountStr === null) return;
+        
+        const amount = parseFloat(amountStr);
+        if (isNaN(amount) || amount <= 0) {
+            toast.error('Некорректное количество');
+            return;
+        }
+        
+        if (amount > maxContracts) {
+            toast.error(`Количество превышает размер позиции (${maxContracts})`);
+            return;
+        }
+        
+        this.sendCommand('partial_close_position', {
+            position_id: positionId,
+            contracts: amount
         });
     }
 

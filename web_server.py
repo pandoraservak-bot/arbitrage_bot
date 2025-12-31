@@ -363,12 +363,17 @@ class WebDashboardServer:
         elif msg_type == 'partial_close_position':
             # Partial close a specific position
             position_id = data.get('position_id')
-            close_percent = float(data.get('close_percent', 50))
-            if position_id:
-                success = await self.partial_close_position(position_id, close_percent)
+            contracts = data.get('contracts')
+            try:
+                contracts = float(contracts)
+            except (TypeError, ValueError):
+                contracts = None
+                
+            if position_id and contracts is not None and contracts > 0:
+                success = await self.partial_close_position(position_id, contracts)
                 await self.send_to_client(ws, 'command_result', {
                     'success': success,
-                    'message': f'Position #{position_id} partially closed ({close_percent}%) successfully' if success else f'Failed to partially close position #{position_id}',
+                    'message': f'Position #{position_id} partially closed ({contracts} contracts) successfully' if success else f'Failed to partially close position #{position_id}',
                     'error': None if success else 'Position not found or could not be closed'
                 })
         
@@ -460,8 +465,8 @@ class WebDashboardServer:
             logger.error(f"Error closing position {position_id}: {e}")
             return False
     
-    async def partial_close_position(self, position_id, close_percent):
-        """Partially close a specific position"""
+    async def partial_close_position(self, position_id, contracts_to_close):
+        """Partially close a specific position by contracts amount"""
         try:
             arb_engine = getattr(self.bot, 'arb_engine', None)
             if not arb_engine or not hasattr(arb_engine, 'get_open_positions'):
@@ -471,7 +476,7 @@ class WebDashboardServer:
             for pos in positions:
                 if pos.id == position_id:
                     if hasattr(arb_engine, 'partial_close_position'):
-                        result = await arb_engine.partial_close_position(pos, close_percent, "Manual partial close via dashboard")
+                        result = await arb_engine.partial_close_position(pos, contracts_to_close, "Manual partial close via dashboard")
                         return result
             return False
         except Exception as e:
