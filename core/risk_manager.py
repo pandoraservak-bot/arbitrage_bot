@@ -98,6 +98,12 @@ class RiskManager:
             logger.warning(f"❌ Max position reached: {current_position_contracts:.4f} >= {max_contracts:.4f} contracts")
             return False, f"Max position reached: {current_position_contracts:.4f} >= {max_contracts:.4f} contracts"
         
+        # Проверка минимального размера ордера
+        min_order = self.config.get('MIN_ORDER_CONTRACTS', 0.01)
+        if (current_position_contracts + min_order) > max_contracts + 0.0001: # небольшая погрешность
+            logger.warning(f"❌ No capacity for even minimal order: {current_position_contracts:.4f} + {min_order} > {max_contracts:.4f}")
+            return False, f"No capacity for minimal order"
+        
         # Проверка проскальзывания
         max_slippage = self.config.get('MAX_SLIPPAGE', 0.001)
         if slippage > max_slippage:

@@ -803,8 +803,8 @@ class ArbitrageEngine:
         
         logger.info(f"✅ Spread confirmed after 1s: {current_spread:.3f}% >= {min_spread_required:.3f}%")
         
-        # Получаем текущий размер позиции для частичного входа
-        current_contracts = self.get_total_position_contracts(direction)
+        # Получаем текущий размер позиции для проверки лимита (общий размер по всем направлениям)
+        current_contracts = self.get_total_position_contracts()
         
         # Расчет размера ордера (частичный вход)
         position_size = self.risk_manager.calculate_position_size(
