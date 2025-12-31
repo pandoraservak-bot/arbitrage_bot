@@ -908,8 +908,25 @@ class WebDashboardServer:
                 direction_code = self._normalize_direction_code(direction_obj)
                 direction_label = getattr(direction_obj, 'value', None)
 
-                # Use bot's entry prices (they're correct from the position objects)
-                entry_prices = getattr(pos, 'entry_prices', {})
+                # Build real entry prices from exchange data
+                entry_prices = {}
+                try:
+                    # Get real entry prices from WebSocket data (live_portfolio)
+                    if hl_pos and hl_size > 0:
+                        hl_entry = float(hl_pos.get('entry_px', 0) or 0)
+                        if hl_entry > 0:
+                            entry_prices['hyperliquid'] = hl_entry
+                    if bg_pos and bg_size > 0:
+                        bg_entry = float(bg_pos.get('entry_px', 0) or 0)
+                        if bg_entry > 0:
+                            entry_prices['bitget'] = bg_entry
+                except Exception:
+                    pass
+                
+                # Fallback to bot's entry prices if WebSocket data is not available
+                if not entry_prices:
+                    entry_prices = getattr(pos, 'entry_prices', {})
+                
                 entry_spread = getattr(pos, 'entry_spread', None)
                 
                 # Use unified position size from above logic
