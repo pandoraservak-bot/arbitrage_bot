@@ -703,8 +703,10 @@ class ArbitrageEngine:
     def find_opportunity(self, bitget_data: Dict, hyper_data: Dict,
                         bitget_slippage: Dict = None, hyper_slippage: Dict = None) -> Optional[Tuple[TradeDirection, Dict]]:
         """Поиск арбитражной возможности для входа с учетом реального проскальзывания (БЕЗ КОМИССИЙ)"""
-        if self.open_positions:
-            logger.debug("🔄 Already have open positions, skipping opportunity search")
+        # Проверяем только реально открытые позиции, а не все позиции в списке
+        open_positions_count = len(self.get_open_positions())
+        if open_positions_count > 0:
+            logger.debug(f"🔄 Already have {open_positions_count} open position(s), skipping opportunity search")
             return None
         
         # Проверка минимального интервала между ордерами
@@ -805,6 +807,12 @@ class ArbitrageEngine:
         
         # Получаем текущий размер позиции для проверки лимита (общий размер по всем направлениям)
         current_contracts = self.get_total_position_contracts()
+        
+        # ПОВТОРНАЯ ПРОВЕРКА ЛИМИТА ПОЗИЦИИ - защита от race condition
+        max_contracts = self.risk_manager.config['MAX_POSITION_CONTRACTS']
+        if current_contracts >= max_contracts:
+            logger.warning(f"❌ RACE CONDITION DETECTED: Max position already reached: {current_contracts:.4f} >= {max_contracts:.4f}, aborting execution")
+            return False
         
         # Расчет размера ордера (частичный вход)
         position_size = self.risk_manager.calculate_position_size(
