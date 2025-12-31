@@ -364,6 +364,7 @@ class WebDashboardServer:
             # Partial close a specific position
             position_id = data.get('position_id')
             contracts = data.get('contracts')
+            logger.info(f"[WS] Received partial_close_position: id={position_id}, contracts={contracts}")
             try:
                 contracts = float(contracts)
             except (TypeError, ValueError):
@@ -371,6 +372,7 @@ class WebDashboardServer:
                 
             if position_id and contracts is not None and contracts > 0:
                 success = await self.partial_close_position(position_id, contracts)
+                logger.info(f"[WS] partial_close_position result for {position_id}: {success}")
                 await self.send_to_client(ws, 'command_result', {
                     'success': success,
                     'message': f'Position #{position_id} partially closed ({contracts} contracts) successfully' if success else f'Failed to partially close position #{position_id}',
@@ -469,18 +471,30 @@ class WebDashboardServer:
         """Partially close a specific position by contracts amount"""
         try:
             arb_engine = getattr(self.bot, 'arb_engine', None)
-            if not arb_engine or not hasattr(arb_engine, 'get_open_positions'):
+            if not arb_engine:
+                logger.error("partial_close_position: arb_engine not found")
+                return False
+            
+            if not hasattr(arb_engine, 'get_open_positions'):
+                logger.error("partial_close_position: get_open_positions method not found in arb_engine")
                 return False
 
             positions = arb_engine.get_open_positions()
+            logger.info(f"partial_close_position: searching for id {position_id} in {len(positions)} positions")
             for pos in positions:
+                logger.debug(f"Checking position: {pos.id}")
                 if pos.id == position_id:
                     if hasattr(arb_engine, 'partial_close_position'):
+                        logger.info(f"Calling arb_engine.partial_close_position for {position_id}")
                         result = await arb_engine.partial_close_position(pos, contracts_to_close, "Manual partial close via dashboard")
                         return result
+                    else:
+                        logger.error("partial_close_position: arb_engine has no partial_close_position method")
+            
+            logger.warning(f"partial_close_position: position {position_id} not found in open positions")
             return False
         except Exception as e:
-            logger.error(f"Error partially closing position {position_id}: {e}")
+            logger.error(f"Error partially closing position {position_id}: {e}", exc_info=True)
             return False
     
     async def update_position_exit_spread(self, position_id, new_exit_spread):
