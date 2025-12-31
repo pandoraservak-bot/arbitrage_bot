@@ -997,9 +997,9 @@ class DashboardClient {
             entryPricesLabel.textContent = 'Цены:';
             const entryPricesValue = document.createElement('span');
             entryPricesValue.className = 'position-detail-value entry-prices';
-            if (pos.entry_prices && (pos.entry_prices.buy || pos.entry_prices.sell)) {
-                const buyPrice = pos.entry_prices.buy ? `$${pos.entry_prices.buy.toFixed(2)}` : '--';
-                const sellPrice = pos.entry_prices.sell ? `$${pos.entry_prices.sell.toFixed(2)}` : '--';
+            if (pos.entry_prices && (pos.entry_prices.buy || pos.entry_prices.sell || pos.entry_prices.hyperliquid || pos.entry_prices.bitget)) {
+                const buyPrice = (pos.entry_prices.buy || pos.entry_prices.hyperliquid) ? `$${(pos.entry_prices.buy || pos.entry_prices.hyperliquid).toFixed(2)}` : '--';
+                const sellPrice = (pos.entry_prices.sell || pos.entry_prices.bitget) ? `$${(pos.entry_prices.sell || pos.entry_prices.bitget).toFixed(2)}` : '--';
                 entryPricesValue.textContent = `${buyPrice} / ${sellPrice}`;
             } else {
                 entryPricesValue.textContent = '--';

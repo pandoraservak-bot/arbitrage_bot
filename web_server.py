@@ -887,6 +887,10 @@ class WebDashboardServer:
             # Tolerance for equality check
             size_tolerance = 0.001
             
+            # Entry prices from WebSocket data
+            hl_entry_px = float(hl_pos.get('entry_px', 0)) if hl_pos else 0
+            bg_entry_px = float(bg_pos.get('entry_px', 0)) if bg_pos else 0
+            
             if hl_size > 0 or bg_size > 0:
                 # Check if sizes are equal (within tolerance)
                 if abs(hl_size - bg_size) <= size_tolerance:
