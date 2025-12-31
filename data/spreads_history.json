@@ -1,30 +1,6 @@
 {
-  "last_saved": "2025-12-31T03:21:17.613674",
+  "last_saved": "2025-12-31T03:22:26.417897",
   "data": [
-    {
-      "timestamp": 1767145837.5060976,
-      "time_str": "01:50:37",
-      "entry_spread_bh": -0.20790020790021346,
-      "entry_spread_hb": 0.18158513138217813,
-      "exit_spread_bh": 0.18158513138217813,
-      "exit_spread_hb": -0.20790020790021346,
-      "best_entry_spread": 0.18158513138217813,
-      "best_exit_spread": -0.20790020790021346,
-      "bitget_healthy": true,
-      "hyper_healthy": true
-    },
-    {
-      "timestamp": 1767145838.515111,
-      "time_str": "01:50:38",
-      "entry_spread_bh": -0.20790020790021346,
-      "entry_spread_hb": 0.18158513138217813,
-      "exit_spread_bh": 0.18158513138217813,
-      "exit_spread_hb": -0.20790020790021346,
-      "best_entry_spread": 0.18158513138217813,
-      "best_exit_spread": -0.20790020790021346,
-      "bitget_healthy": true,
-      "hyper_healthy": true
-    },
     {
       "timestamp": 1767145839.5346622,
       "time_str": "01:50:39",
@@ -11998,6 +11974,30 @@
       "exit_spread_hb": -0.181217354226626,
       "best_entry_spread": 0.16550987720234112,
       "best_exit_spread": -0.181217354226626,
+      "bitget_healthy": true,
+      "hyper_healthy": true
+    },
+    {
+      "timestamp": 1767151317.1409044,
+      "time_str": "03:21:57",
+      "entry_spread_bh": -0.28093641780880807,
+      "entry_spread_hb": 0.06534436732514859,
+      "exit_spread_bh": 0.06534436732514859,
+      "exit_spread_hb": -0.28093641780880807,
+      "best_entry_spread": 0.06534436732514859,
+      "best_exit_spread": -0.28093641780880807,
+      "bitget_healthy": true,
+      "hyper_healthy": true
+    },
+    {
+      "timestamp": 1767151346.404243,
+      "time_str": "03:22:26",
+      "entry_spread_bh": -0.28626101539436233,
+      "entry_spread_hb": 0.06534436732514859,
+      "exit_spread_bh": 0.06534436732514859,
+      "exit_spread_hb": -0.28626101539436233,
+      "best_entry_spread": 0.06534436732514859,
+      "best_exit_spread": -0.28626101539436233,
       "bitget_healthy": true,
       "hyper_healthy": true
     }
